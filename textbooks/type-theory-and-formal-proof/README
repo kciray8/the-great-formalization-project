@@ -1,0 +1,5 @@
+==How to compile==
+
+coqc -Q . Rob -noinit NaturalDeduction.v
+coqc -Q . Rob -noinit MathematicsFirstAttempt.v
+
