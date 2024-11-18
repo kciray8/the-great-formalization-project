@@ -650,53 +650,101 @@ left H6.
 apply (H7 H5).
 Defined.
 
+Ltac extract_iota obj H :=
+let uniqueness_proof := fresh in
+let my_set := fresh "s" in
+let prop := fresh "iota_prop" in
+let eq_to_iota := fresh in
+let eq_to_iota_backwards := fresh in
+let replaced_H := fresh in
+match obj with
+|context [ (?t) ] =>
+match eval unfold t in obj with
+| ι ?P ?u => 
+pose proof u as uniqueness_proof; 
+pose proof conj_el_1 _ _ uniqueness_proof as ex_proof;
+clear uniqueness_proof;
+apply (ex_proof  _); 
+intro my_set; 
+intro prop;
+clear ex_proof;
+pose proof lemma_12_7_1 P u my_set prop as eq_to_iota;
+pose proof eq_symm _ _ eq_to_iota as eq_to_iota_backwards;
+pose proof eq_subs _ _ my_set (eq_to_iota_backwards) H as replaced_H;
+clear H;
+rename replaced_H into H;
+move H after prop;
+clear eq_to_iota;
+clear eq_to_iota_backwards
+| _ => idtac "error inside nested match"
+end
+| _ => idtac "error inside outer match"
+end.
+
+Ltac extract_iota_from_goal obj :=
+let uniqueness_proof := fresh in
+let my_set := fresh "s" in
+let prop := fresh "iota_prop" in
+let eq_to_iota := fresh in
+let eq_to_iota_backwards := fresh in
+let replaced_H := fresh in
+match obj with
+|context [ (?t) ] =>
+match eval unfold t in obj with
+| ι ?P ?u => 
+pose proof u as uniqueness_proof; 
+pose proof conj_el_1 _ _ uniqueness_proof as ex_proof;
+clear uniqueness_proof;
+apply (ex_proof  _); 
+intro my_set; 
+intro prop;
+clear ex_proof;
+pose proof lemma_12_7_1 P u my_set prop as eq_to_iota;
+pose proof eq_symm _ _ eq_to_iota as eq_to_iota_backwards;
+apply (eq_subs _ _ _ (eq_to_iota));
+clear eq_to_iota;
+clear eq_to_iota_backwards
+| _ => idtac "error inside nested match"
+end
+| _ => idtac "error inside outer match"
+end.
+
 Definition collapse_unit (u: Set): {u, u} = (unit_set u).
 apply (ZF1_extension ({u, u}) (unit_set u)).
 intro k.
 apply (conj_in _ _).
 intro.
-pose proof pair_unord_exists u u.
+extract_iota ({u, u}) H.
+unfold set in iota_prop .
+extract_iota_from_goal {u}.
+cbv beta in iota_prop0 .
+unfold set in iota_prop0.
+pose proof iota_prop k.
+cbv beta in H0.
 left H0.
-destruct_ex H1 p.
-pose proof lemma_12_7_1 _ (pair_unord_exists u u) p H2.
-pose proof eq_subs _ _ _ (eq_symm _ _ H3) H.
-unfold set in H2.
-pose proof unit_set_exists u.
-left H5.
-destruct_ex H6 n.
-pose proof lemma_12_7_1 _ (unit_set_exists u) n H7.
-pose proof eq_subs (fun g => k ∈ (g)) _ _ (H8).
-cbv beta in H9.
-apply H9.
-pose proof H7 k.
-cbv beta in H10.
-right H10.
-apply H11.
-pose proof H2 k.
-left H12.
-pose proof H13 H4.
-apply (disj_el _ _ (k = u) H14).
+pose proof H1 H.
+pose proof iota_prop0 k.
+cbv beta in H3.
+right H3.
+apply H4.
+apply (disj_el _ _ (k = u) H2).
 intro.
-apply H15.
+apply H5.
 intro.
-apply H15.
+apply H5.
 intro.
-pose proof element_of_unit_set k u.
-pose proof H0 H.
-pose proof eq_subs (fun g => g ∈ ({u, u})) u k (eq_symm _ _ H1).
+extract_iota {u} H.
+unfold set in iota_prop.
+extract_iota_from_goal {u, u}.
+pose proof iota_prop k.
+cbv beta in H0.
+pose proof iota_prop0 k.
+cbv beta in H1.
+right H1.
 apply H2.
-pose proof pair_unord_exists u u.
-left H3.
-destruct_ex H4 p.
-pose proof lemma_12_7_1 _ (pair_unord_exists u u) p H5.
-pose proof eq_subs (fun g => u ∈ g) _ _ H6.
-cbv beta in H7.
-apply H7.
-unfold set in H5.
-pose proof H5 u.
-right H8.
-apply H9.
-apply (disj_in_1 _ _ (eq_refl u)).
+left H0.
+pose proof H3 H.
+apply (disj_in_1 _ _ H4).
 Defined.
 
 Definition pair_unord_eq_to_unit_set (a b c: Set):
