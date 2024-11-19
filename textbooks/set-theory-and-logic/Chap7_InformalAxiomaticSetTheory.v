@@ -4,6 +4,15 @@ From BASE Require Import MathLogic.
 Parameter In: Set -> Set -> Prop.
 Notation "a ∈ b" := (In a b)(at level 80, left associativity).
 
+(* not working! *)
+Definition biimpl_el_left {A: Prop} {s: Set} {x: Set} 
+(H: (∀z . (z ∈ s) ⇔ A)) (u: x ∈ s)  : A.
+pose proof H x.
+left H0.
+pose proof H1 u.
+apply H2.
+Defined.
+
 Axiom ZF1_extension: ∀ a. ∀ b. (∀ x. x ∈ a ⇔ x ∈ b) -> a = b.
 
 Axiom ZF2_subsets: forall A: (Set -> Prop), ∀ a: Set. 
@@ -238,7 +247,8 @@ Defined.
 
 Definition unit_set (a: Set): Set := (ι _ (unit_set_exists a)).
 
-Notation "{ a }" := (unit_set a).
+(* '`' is used to prevent collision with coq { } *)
+Notation "{` a }" := (unit_set a).
 
 Definition everySetIsElementOfSomeSet: ∀ a . ∃b. a ∈ b.
 intro.
@@ -716,7 +726,7 @@ apply (conj_in _ _).
 intro.
 extract_iota ({u, u}) H.
 unfold set in iota_prop .
-extract_iota_from_goal {u}.
+extract_iota_from_goal {`u}.
 cbv beta in iota_prop0 .
 unfold set in iota_prop0.
 pose proof iota_prop k.
@@ -733,7 +743,7 @@ apply H5.
 intro.
 apply H5.
 intro.
-extract_iota {u} H.
+extract_iota {`u} H.
 unfold set in iota_prop.
 extract_iota_from_goal {u, u}.
 pose proof iota_prop k.
@@ -908,7 +918,7 @@ pose proof lemma_12_7_1 _ (pair_unord_exists (unit_set x) {x, y}) p H11.
 pose proof eq_symm _ _ H12.
 pose proof eq_subs (fun g => {(unit_set u), {u, v}} = g) _ _ H13 H8.
 cbv beta in H14.
-pose proof pair_equals_to_set ({u}) ({u,v}) p H14.
+pose proof pair_equals_to_set ({`u}) ({u,v}) p H14.
 right H15.
 pose proof H11 ({u, v}).
 left H17.
@@ -951,6 +961,461 @@ intro.
 apply H27.
 Defined.
 
+Axiom ZF6_power_set: ∀a. ∃b. ∀x. (x ⊆ a) -> x ∈ b.
 
+Definition power_set_exists: ∀a. ∃1b. 
+(b ≔ { x | (x ⊆ a) }).
+intro a.
+pose proof ZF6_power_set a.
+destruct_ex H b.
+pose proof ZF2_subsets (fun x => (x ⊆ a)) b.
+cbv beta in H1.
+destruct_ex H1 c.
+clear H1.
+cbv beta in H.
+clear H.
+refine (conj_in _ _ _ (any_biimpl_set_is_no_more_than_one _)).
+unfold set.
+refine (ex_in _ c _).
+intro x.
+apply (conj_in _ _).
+intro.
+pose proof (H2 x).
+cbv beta in H1.
+left H1.
+pose proof H3 H.
+right H4.
+apply H5.
+intro.
+pose proof H2 x.
+cbv beta in H1.
+right H1.
+apply H3.
+apply (conj_in _ _).
+apply (H0 x H).
+apply H.
+Defined.
 
+Definition power_set (a: Set) := ι _ (power_set_exists a).
 
+Notation "'𝒫' a " := (power_set a)(at level 70, left associativity).
+
+Definition cartesian_product_exists (a b: Set): ∃1c. 
+(c ≔ { w | (∃x. (x ∈ a) ∧ (∃y. (y ∈ b) ∧ w = <x,y>))}).
+pose proof ZF2_subsets (
+    fun w => (∃x. ∃y. ((¬(x = y)) ∧ (x ∈ a) ∧ (y ∈ b) ∧ (∀z. (z ∈ w) ⇔ 
+    (z = {`x} ∨ z = {x, y}))))
+     ∨ (∃x. (x ∈ a) ∧ (x ∈ b) ∧ (∀z. (z ∈ w) ⇔ z = {`x})
+)) (𝒫(𝒫((a ∪ b)))).
+refine (conj_in _ _ _ (any_biimpl_set_is_no_more_than_one _)).
+destruct_ex H big.
+apply (ex_in _ big).
+clear H.
+unfold set.
+intro.
+apply (conj_in _ _).
+intro.
+pose proof H0 x.
+left H1.
+pose proof H2 H.
+clear H1 H2.
+left H3.
+right H3.
+clear H3.
+apply (disj_el _ _ _ H2).
+intro.
+clear H2.
+destruct_ex H3 c.
+clear H3.
+destruct_ex H2 d.
+clear H2.
+left H3.
+right H3.
+clear H3.
+apply (ex_in _ c).
+left H2.
+right H2.
+left H3.
+right H3.
+refine (conj_in _ _ H7 _).
+apply (ex_in _ d).
+refine (conj_in _ _ H5 _).
+unfold pair.
+extract_iota_from_goal ({{`c}, {c, d}}).
+unfold set in iota_prop.
+pose proof iota_prop : ∀ x
+. x ∈ s
+⇔ (x = {`c}
+∨ x =
+{c, d}).
+clear iota_prop.
+apply (ZF1_extension x s).
+intro m.
+apply (conj_in _ _).
+intro.
+pose proof H4 m.
+pose proof H8 m.
+cbv beta in H10.
+cbv beta in H11.
+pose proof biimpl_symm _ _ H11.
+pose proof (biimpl_trans _ _ _ H10 H12).
+left H13.
+apply H14.
+apply H9.
+intro.
+pose proof H8 m.
+left H10.
+pose proof H11 H9.
+pose proof H4 m.
+right H13.
+apply H14.
+apply H12.
+intro.
+destruct_ex H3 w.
+left H4.
+right H4.
+left H5.
+right H5.
+apply (ex_in _ w).
+refine (conj_in _ _ H7 _).
+apply (ex_in _ w).
+refine (conj_in _ _ H8 _).
+unfold pair.
+extract_iota_from_goal ({{`w}, {w, w}}).
+unfold set in iota_prop .
+pose proof (iota_prop: ∀ x
+. x ∈ s
+⇔ (x = {`w}
+∨ x =
+{w,w})).
+clear iota_prop.
+clear H4 H5.
+apply (ZF1_extension x s).
+intro m.
+apply (conj_in _ _).
+intro.
+pose proof H9 m.
+right H5.
+apply H10.
+pose proof H6 m.
+left H11.
+pose proof H12 H4.
+apply (disj_in_1 _ _ H13).
+intro.
+pose proof H6 m.
+right H5.
+apply H10.
+pose proof H9 m.
+left H11.
+pose proof H12 H4.
+apply (disj_el _ _ _ H13).
+intro.
+apply H14.
+intro.
+pose proof collapse_unit w.
+pose proof eq_subs (fun g => m = g) _ _ H15 H14.
+apply H16.
+intro.
+rename x into w.
+pose proof H0 w.
+right H1.
+apply H2.
+clear H1 H2.
+destruct_ex H x.
+left H1.
+right H1.
+clear H1.
+clear H.
+destruct_ex H3 y.
+left H.
+right H.
+clear H.
+apply (conj_in _ _).
+Focus 2.
+pose proof exc_thrd (x = y).
+apply (disj_el _ _ _ H).
+intro.
+refine (disj_in_2 _ _ _).
+apply (ex_in _ x).
+pose proof eq_subs (fun g=>g ∈ b) _ _ (eq_symm _ _ H5) H1.
+cbv beta in H6.
+pose proof (conj_in _ _ H2 H6).
+refine (conj_in _ _ H7 _).
+intro z.
+apply (conj_in _ _).
+intro.
+pose proof eq_subs (fun g=>w = (< x, g >)) _ _ (eq_symm _ _ H5) H4.
+cbv beta in H9.
+unfold pair in H9.
+extract_iota ({{`x}, {x, x}}) H9.
+unfold set in iota_prop.
+pose proof iota_prop : ∀ x0
+. x0 ∈ s
+⇔ (x0 = {`x}
+∨ x0 =
+{x, x}).
+pose proof eq_subs (fun g=>z ∈ g) _ _ H9 H8.
+cbv beta in H11.
+pose proof H10 z.
+cbv beta in H12.
+left H12.
+pose proof H13 H11.
+apply (disj_el _ _ _ H14).
+intro.
+apply H15.
+intro.
+pose proof collapse_unit x.
+pose proof eq_subs (fun g => z = g) _ _ H16 H15.
+apply H17.
+intro.
+unfold pair in H4.
+pose proof eq_subs (fun g => w = {g, {x, y}}) _ _ (eq_symm _ _ H8) H4.
+cbv beta in H9.
+pose proof eq_symm _ _ H9.
+pose proof pair_equals_to_set _ _ _ H10.
+left H11.
+apply H12.
+intro.
+refine (disj_in_1 _ _ _).
+apply (ex_in _ x).
+apply (ex_in _ y).
+apply (conj_in _ _).
+apply (conj_in _ _).
+apply (conj_in _ _).
+apply H5.
+apply H2.
+apply H1.
+pose proof eq_symm _ _ H4.
+pose proof pair_equals_to_set _ _ _ H6.
+unfold pair in H6.
+extract_iota ({{`x}, {x, y}}) H6.
+pose proof (pair_unord_exists {`x}
+(ι (set (fun x0 : Set => x0 = x ∨ x0 = y))
+(pair_unord_exists x y))).
+left H8.
+destruct_ex H9 r.
+unfold set in H10.
+pose proof lemma_12_7_1 _ (pair_unord_exists {`x}
+(ι (set (fun x0 : Set => x0 = x ∨ x0 = y))
+(pair_unord_exists x y))) r H10.
+pose proof eq_symm _ _ H11.
+pose proof eq_subs (fun g=> g = w) _ _ H12 H6.
+cbv beta in H13.
+pose proof (H10 :∀ z. z ∈ r⇔ (z = {`x}∨ z ={x, y})).
+pose proof eq_subs (fun g => ∀ z . z ∈ g ⇔ (z = {`x} ∨ z = {x, y})) r w H13 H14.
+cbv beta in H15.
+apply H15.
+clear H3.
+assert ({`x} ⊆ a).
+intro m.
+intro.
+extract_iota {`x} H.
+unfold set in iota_prop.
+pose proof iota_prop m.
+cbv beta in H3.
+left H3.
+pose proof H5 H.
+pose proof eq_subs (fun g => g ∈ a) _ _ (eq_symm _ _ H6) H2.
+apply H7.
+assert ({`y} ⊆ b).
+intro m.
+intro.
+extract_iota {`y} H3.
+unfold set in iota_prop.
+pose proof iota_prop m.
+cbv beta in H5.
+left H5.
+pose proof H6 H3.
+pose proof eq_subs (fun g => g ∈ b) _ _ (eq_symm _ _ H7) H1.
+apply H8.
+
+assert (∃ p_p_a_b. p_p_a_b = 𝒫 (𝒫 (a ∪ b))).
+pose proof power_set_exists (𝒫 (a ∪ b)).
+left H5.
+destruct_ex H6 p_p_a_b.
+pose proof lemma_12_7_1 _ (power_set_exists (𝒫 (a ∪ b))) p_p_a_b H7.
+apply (ex_in _ p_p_a_b).
+apply H8.
+destruct_ex H5 p_p_a_b.
+
+assert (∃ p_a_b. p_a_b = (𝒫 (a ∪ b))).
+pose proof power_set_exists ((a ∪ b)).
+left H7.
+destruct_ex H8 p_a_b.
+pose proof lemma_12_7_1 _ (power_set_exists ((a ∪ b))) p_a_b H9.
+apply (ex_in _ p_a_b).
+apply H10.
+destruct_ex H7 p_a_b.
+
+assert (∃ a_b. a_b = ((a ∪ b))).
+pose proof union2_exists a b.
+left H9.
+destruct_ex H10 a_b.
+pose proof lemma_12_7_1 _ (union2_exists a b) a_b H11.
+apply (ex_in _ a_b).
+apply H12.
+destruct_ex H9 a_b.
+clear H5 H7 H9.
+
+assert ({`x} ⊆ a_b).
+intro e.
+intro.
+pose proof element_of_unit_set e x H5.
+pose proof H10.
+extract_iota (a ∪ b) H9.
+unfold set in iota_prop.
+pose proof eq_subs (fun g => ∀ x . x ∈ g ⇔ (x ∈ a ∨ x ∈ b)) 
+_ _ (eq_symm _ _ H9) iota_prop.
+cbv beta in H11.
+pose proof H11 e.
+right H12.
+apply H13.
+pose proof eq_subs (fun g => g ∈ a ∨ g ∈ b) _ _ (eq_symm _ _ H7).
+apply H14.
+apply (disj_in_1 _ _ H2).
+
+pose proof H10.
+extract_iota (a ∪ b) H7.
+unfold set in iota_prop.
+pose proof eq_subs (fun g => ∀ x . x ∈ g ⇔ (x ∈ a ∨ x ∈ b)) 
+_ _ (eq_symm _ _ H7) iota_prop.
+cbv beta in H9.
+clear H7 iota_prop.
+clear s.
+
+pose proof H8.
+extract_iota (𝒫 (a ∪ b)) H7.
+unfold set in iota_prop.
+pose proof eq_subs (fun g => ∀ x . x ∈ g ⇔ x ⊆ (a ∪ b)) 
+_ _ (eq_symm _ _ H7) iota_prop.
+cbv beta in H11.
+clear H7 iota_prop s.
+
+pose proof H6.
+extract_iota (𝒫 (𝒫 (a ∪ b))) H7.
+unfold set in iota_prop.
+pose proof (iota_prop : ∀ x. x ∈ s ⇔ x ⊆ (𝒫(a ∪ b))).
+pose proof eq_subs (fun g => ∀ x . x ∈ g ⇔ x ⊆ 𝒫 (a ∪ b)) 
+_ _ (eq_symm _ _ H7) iota_prop.
+cbv beta in H13.
+clear H7 iota_prop s H12.
+
+assert ({x, y} ⊆ a_b).
+intro m.
+intro.
+pose proof element_of_pair m x y H7.
+clear H7.
+pose proof H9 m.
+right H7.
+apply H14.
+apply (disj_el _ _ _ H12).
+intro.
+pose proof eq_subs (fun g => g ∈ a) _ _ (eq_symm _ _ H15) H2.
+apply (disj_in_1 _ _ H16).
+intro.
+pose proof eq_subs (fun g => g ∈ b) _ _ (eq_symm _ _ H15) H1.
+apply (disj_in_2 _ _ H16).
+
+assert ({`x} ∈ p_a_b).
+pose proof H11 ({`x}).
+right H12.
+apply H14.
+intro g.
+intro.
+pose proof element_of_unit_set g x H15.
+pose proof eq_subs (fun g => g ∈ (a ∪ b)) _ _ (eq_symm _ _ H16).
+apply H17.
+pose proof eq_subs (fun g => x ∈ g) _ _ (H10).
+apply H18.
+pose proof H9 x.
+right H19.
+apply H20.
+apply (disj_in_1 _ _ H2).
+
+assert ({x, y} ∈ p_a_b).
+pose proof H11 ({x, y}).
+right H14.
+apply H15.
+intro g.
+intro.
+pose proof element_of_pair g x y H16.
+apply (disj_el _ _ _ H17).
+intro.
+pose proof eq_subs (fun g => g ∈ (a ∪ b)) _ _ (eq_symm _ _ H18).
+apply H19.
+pose proof eq_subs (fun g => x ∈ g) _ _ (H10).
+apply H20.
+pose proof H9 x.
+right H21.
+apply H22.
+apply (disj_in_1 _ _ H2).
+intro.
+pose proof eq_subs (fun g => g ∈ (a ∪ b)) _ _ (eq_symm _ _ H18).
+apply H19.
+pose proof eq_subs (fun g => y ∈ g) _ _ (H10).
+apply H20.
+pose proof H9 y.
+right H21.
+apply H22.
+apply (disj_in_2 _ _ H1).
+
+assert (w ⊆ p_a_b).
+intro h.
+intro.
+pose proof H4.
+unfold pair in H16.
+extract_iota {{`x}, {x, y}} H16.
+unfold set in iota_prop.
+pose proof (iota_prop : ∀ x0. x0 ∈ s⇔ (x0 = {`x}∨ x0 ={x , y })).
+pose proof eq_subs (fun g => 
+∀ x0 . x0 ∈ g ⇔ (x0 = {`x} ∨ x0 = {x, y})) _ _ (eq_symm _ _ H16) H17.
+cbv beta in H18.
+pose proof H18 h.
+left H19.
+pose proof H20 H15.
+pose proof H11 h.
+right H22.
+apply H23.
+intro l.
+intro.
+pose proof eq_subs (fun g => l ∈ (g)) _ _ H10.
+apply H25.
+pose proof H9 l.
+right H26.
+apply H27.
+apply (disj_el _ _ _ H21).
+intro.
+extract_iota {`x} H28.
+unfold set in iota_prop0.
+pose proof eq_subs (fun g => ∀ x0 . x0 ∈ g ⇔ x0 = x) _ _ 
+(eq_symm _ _ H28) iota_prop0 .
+cbv beta in H29.
+pose proof H29 l.
+left H30.
+pose proof H31 H24.
+pose proof eq_subs (fun g => g ∈ a) _ _ (eq_symm _ _ H32) H2.
+apply (disj_in_1 _ _  H33).
+intro.
+extract_iota {x ,y} H28.
+unfold set in iota_prop0.
+pose proof eq_subs (fun g => ∀ x0 . x0 ∈ g ⇔ (x0 = x ∨ x0 = y)) _ _ 
+(eq_symm _ _ H28) iota_prop0 .
+pose proof H29 l.
+left H30.
+pose proof H31 H24.
+apply (disj_el _ _ _ H32).
+intro.
+pose proof eq_subs (fun g => g ∈ a) _ _ (eq_symm _ _ H33) H2.
+apply (disj_in_1 _ _  H34).
+intro.
+pose proof eq_subs (fun g => g ∈ b) _ _ (eq_symm _ _ H33) H1.
+apply (disj_in_2 _ _  H34).
+pose proof eq_subs (fun g => ∀ x . x ∈ p_p_a_b ⇔ x ⊆ g)
+ _ _ (eq_symm _ _ H8) H13.
+ cbv beta in H16.
+ pose proof H16 w.
+ right H17.
+ pose proof H18 H15.
+ pose proof eq_subs (fun g => w ∈ g) _ _ H6 H19.
+ apply H20.
+ Defined.
