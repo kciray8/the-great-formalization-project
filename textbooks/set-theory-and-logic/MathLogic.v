@@ -76,6 +76,24 @@ Defined.
 Definition disj (A B: Prop) := (forall C, (A -> C) -> (B -> C) -> C): Prop.
 Notation "A ∨ B" := (disj A B) (at level 99).
 
+Axiom exc_thrd : forall A, A ∨ (¬ A).
+
+Definition disj_exclusive (A B: Prop) := 
+(A ∨ B) ∧ 
+(A -> (¬(B))) ∧ 
+(B -> (¬(A))).
+
+Notation "A ⊽ B" := (disj_exclusive A B) (at level 97).
+
+Definition disj_exclusive_triple (A B C: Prop) := 
+(A ∨ B ∨ C) ∧ 
+(A -> (¬(B)) ∧ (¬(C))) ∧ 
+(B -> (¬(A)) ∧ (¬(C))) ∧ 
+(C -> (¬(A)) ∧ (¬(B))).
+
+Notation "A ⊽ B ⊽ C" := (disj_exclusive_triple A B C) (at level 95, B at next level).
+
+
 Definition disj_in_1 (A B: Prop) (u: A) :  A ∨ B.
 unfold disj.
 intros.
@@ -119,8 +137,6 @@ unfold biimpl in u.
 pose proof conj_el_2 (A ⇒ B) (B ⇒ A) u.
 exact H.
 Defined.
-
-Axiom exc_thrd : forall A, A ∨ (¬ A).
 
 Definition DN_in (A: Prop) (u: A) : ¬¬ A.
 unfold neg.
@@ -205,7 +221,7 @@ pose proof abs_el A H1.
 apply H2.
 Defined.
 
-Definition all (P: Set->Prop) := forall x: Set, P x.
+Definition all {T: Type} (P: T->Prop) := forall x: T, P x.
 
 Declare Scope type_scope.
 Notation "'∀' x . p" := (all (fun x => p))
@@ -224,14 +240,14 @@ pose proof u v.
 exact H.
 Defined.
 
-Definition ex (P: Set->Prop) := forall A: Prop,  (∀ x. (P x ⇒ A)) ⇒ A.
+Definition ex {T: Type} (P: T->Prop) := forall A: Prop,  (∀ x. (P x ⇒ A)) ⇒ A.
 
 Declare Scope type_scope.
 
 Notation "'∃' x . p" := (ex (fun x => p))
   (at level 200, x binder, right associativity).
 
-Definition ex_in (P: Set->Prop) (u: Set) (v: P u): ∃ x . P x.
+Definition ex_in {T: Type} (P: T->Prop) (u: T) (v: P u): ∃ x . P x.
 unfold ex.
 intros.
 unfold imp.
@@ -285,6 +301,14 @@ unfold all in H0.
 unfold imp in H0.
 apply H0.
 exact H.
+Defined.
+
+Definition contrapositive {A B: Prop}: (A -> B) -> ((¬ B) -> (¬ A)).
+intro.
+intro.
+intro.
+pose proof H H1.
+apply (H0 H2).
 Defined.
 
 Definition Exercise_11_7 (A B: Prop): (A ∨ B) ⇒ (B ∨ A).
@@ -466,7 +490,8 @@ pose proof conj_in A B H5 H3.
 apply (abs_in (A ∧ B) H6 H1).
 Defined.
 
-Definition Exercise_11_12_c(A B: Prop): ¬(A ∨ B) ⇔ (¬A ∧ ¬B).
+(* Exercise_11_12_c *)
+Definition deMorganNotOrBiimpl(A B: Prop): ¬(A ∨ B) ⇔ (¬A ∧ ¬B).
 apply (biimpl_in (¬ (A ∨ B)) (¬ A ∧ ¬ B)).
 apply (imp_in (¬ (A ∨ B)) (¬ A ∧ ¬ B)).
 intro.
@@ -1063,5 +1088,30 @@ pose proof eq_trans _ _ _ H H6.
 pose proof eq_symm _ _ H7.
 pose proof eq_subs (fun q => R q y) z x H8 H2.
 exact H9.
+Defined.
+
+Definition deMorganNotAnd (A B:Prop):  ¬(A ∧ B) ⇒ (¬A ∨ ¬B).
+intro.
+pose proof exc_thrd A.
+pose proof exc_thrd B.
+apply (disj_el _ _ _ H0).
+apply (disj_el _ _ _ H1).
+intro.
+intro.
+pose proof conj_in _ _ H3 H2.
+apply (abs_el _ (H H4)).
+intro.
+intro.
+apply (disj_in_2).
+apply H2.
+intro.
+apply (disj_in_1).
+apply H2.
+Defined.
+
+Definition deMorganNotOr(A B: Prop): ¬(A ∨ B) -> (¬A ∧ ¬B).
+pose proof deMorganNotOrBiimpl A B.
+left H.
+apply H0.
 Defined.
 
