@@ -93,7 +93,6 @@ Definition disj_exclusive_triple (A B C: Prop) :=
 
 Notation "A ⊽ B ⊽ C" := (disj_exclusive_triple A B C) (at level 95, B at next level).
 
-
 Definition disj_in_1 (A B: Prop) (u: A) :  A ∨ B.
 unfold disj.
 intros.
@@ -240,6 +239,7 @@ pose proof u v.
 exact H.
 Defined.
 
+
 Definition ex {T: Type} (P: T->Prop) := forall A: Prop,  (∀ x. (P x ⇒ A)) ⇒ A.
 
 Declare Scope type_scope.
@@ -267,6 +267,7 @@ apply H.
 apply v.
 Defined.
 
+
 (* Figure 11.26 Example: ¬∃ implies ∀¬ *)
 Definition not_ex_implies_all_not (P: Set->Prop) 
 (u: ¬∃x . P x) : ∀y . ¬(P y).
@@ -279,6 +280,22 @@ pose proof ex_in P x H.
 pose proof abs_in (∃ x. P x) H0 u.
 apply H1.
 Defined.
+
+Definition ex_el_alt_simple := not_ex_implies_all_not.
+
+Definition all_el_alt (P: Set->Prop) (u : (¬(∀x . P x))): (∃x. (¬(P x))).
+pose proof DN_el (∃ x . ¬ P x).
+apply H.
+intro.
+pose proof ex_el_alt_simple _ H0.
+cbv beta in H1.
+apply u.
+intro.
+pose proof H1 x.
+pose proof DN_el _ H2.
+apply H3.
+Defined.
+
 
 Definition ex_in_alt (P: Set->Prop) (u : ¬∀x . ¬(P x)) : ∃x . P x.
 assert(¬¬ ∃ y. P y).
@@ -1113,5 +1130,170 @@ Definition deMorganNotOr(A B: Prop): ¬(A ∨ B) -> (¬A ∧ ¬B).
 pose proof deMorganNotOrBiimpl A B.
 left H.
 apply H0.
+Defined.
+
+Definition negation_of_implication (A B: Prop): (¬ (A -> B)) -> A ∧ (¬ B).
+intro.
+assert (¬ B).
+intro.
+assert ((A -> B)).
+intro.
+apply H0.
+apply H.
+apply H1.
+apply (conj_in _ _).
+assert (¬ (¬ B -> ¬ A)).
+intro.
+pose proof contrapositive H1.
+assert ((A -> B)).
+intro.
+pose proof DN_in _ H3.
+pose proof H2 H4.
+pose proof DN_el _ H5.
+apply H6.
+apply H.
+apply H3.
+pose proof DN_el A.
+apply H2.
+intro.
+assert ((¬ B -> ¬ A)).
+intro.
+apply H3.
+apply H1.
+apply H4.
+apply H0.
+Defined.
+
+Definition disj_comm (A B: Prop): (A ∨ B) -> (B ∨ A).  
+intro.
+apply (disj_el _ _ _ H).
+intro.
+apply (disj_in_2).
+apply H0.
+intro.
+apply (disj_in_1).
+apply H0.
+Defined.
+
+Definition each_pair_causing_contradiction (A B C: Prop) :=
+(¬ (A ∧ B)) ∧ (¬ (A ∧ C)) ∧ (¬ (B ∧ C)).
+
+Definition disj_exclusive_triple_in (A B C: Prop)
+(disj_ordinary: (A ∨ B ∨ C)) (H: (each_pair_causing_contradiction A B C)): 
+(A ⊽ B ⊽ C).
+unfold each_pair_causing_contradiction in H.
+left H.
+right H.
+left H0.
+right H0.
+apply (conj_in _ _).
+apply (conj_in _ _).
+apply (conj_in _ _).
+apply disj_ordinary.
+pose proof exc_thrd A as a_or_not_a.
+apply (disj_el _ _ _ a_or_not_a).
+intro.
+pose proof exc_thrd B as b_or_not_b.
+apply (disj_el _ _ _ b_or_not_b).
+intro.
+pose proof exc_thrd C as c_or_not_c.
+apply (disj_el _ _ _ c_or_not_c).
+intro.
+intro.
+pose proof (conj_in _ _ H7 H6).
+pose proof H3 H8.
+apply (abs_el _ H9).
+intro.
+intro.
+pose proof (conj_in _ _ H4 H5).
+pose proof H2 H8.
+apply (abs_el _ H9).
+pose proof exc_thrd C as c_or_not_c.
+apply (disj_el _ _ _ c_or_not_c).
+intro.
+intro.
+intro.
+pose proof (conj_in _ _ H7 H5).
+pose proof H3 H8.
+apply (abs_el _ H9).
+intro.
+intro.
+intro.
+apply (conj_in _ _ H6 H5).
+intro.
+pose proof exc_thrd B as b_or_not_b.
+apply (disj_el _ _ _ b_or_not_b).
+intro.
+pose proof exc_thrd C as c_or_not_c.
+apply (disj_el _ _ _ c_or_not_c).
+intro.
+intro.
+pose proof (conj_in _ _ H5 H6).
+pose proof H1 H8.
+apply (abs_el _ H9).
+intro.
+intro.
+pose proof (conj_in _ _ H7 H5).
+pose proof H2 H8.
+apply (abs_el _ H9).
+pose proof exc_thrd C as c_or_not_c.
+apply (disj_el _ _ _ c_or_not_c).
+intro.
+intro.
+intro.
+pose proof (conj_in _ _ H7 H5).
+pose proof H3 H8.
+apply (abs_el _ H9).
+intro.
+intro.
+intro.
+apply (conj_in _ _ H6 H5).
+intro.
+pose proof exc_thrd A as a_or_not_a.
+apply (disj_el _ _ _ a_or_not_a).
+intro.
+pose proof exc_thrd C as c_or_not_c.
+apply (disj_el _ _ _ c_or_not_c).
+intro.
+pose proof (conj_in _ _ H5 H4).
+pose proof H2 H7.
+apply (abs_el _ H8).
+intro.
+pose proof (conj_in _ _ H5 H4).
+pose proof H2 H7.
+apply (abs_el _ H8).
+intro.
+pose proof exc_thrd C as c_or_not_c.
+apply (disj_el _ _ _ c_or_not_c).
+intro.
+pose proof (conj_in _ _ H4 H6).
+pose proof H1 H7.
+apply (abs_el _ H8).
+intro.
+apply (conj_in _ _ H5 H6).
+intro.
+pose proof exc_thrd A as a_or_not_a.
+apply (disj_el _ _ _ a_or_not_a).
+intro.
+pose proof exc_thrd B as b_or_not_b.
+apply (disj_el _ _ _ b_or_not_b).
+intro.
+pose proof (conj_in _ _ H5 H6).
+pose proof H2 H7.
+apply (abs_el _ H8).
+intro.
+pose proof (conj_in _ _ H5 H4).
+pose proof H3 H7.
+apply (abs_el _ H8).
+intro.
+pose proof exc_thrd B as b_or_not_b.
+apply (disj_el _ _ _ b_or_not_b).
+intro.
+pose proof (conj_in _ _ H6 H4).
+pose proof H1 H7.
+apply (abs_el _ H8).
+intro.
+pose proof (conj_in _ _ H5 H6).
+apply H7.
 Defined.
 

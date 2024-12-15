@@ -1668,7 +1668,7 @@ apply H2.
 apply (any_biimpl_set_is_no_more_than_one _).
 Defined.
 
-Definition domain (r: Set) (is_relation: relation r): ι _ (domain_exists r is_relation).
+Definition domain (r: Set) (is_relation: relation r):= ι _ (domain_exists r is_relation).
 
 Definition range_exists (r: Set) (is_relation: relation r): ∃1d. 
 (d ≔ { y | (∃x. <x,y> ∈ r )}).
@@ -2012,6 +2012,12 @@ Definition N := ι _ min_successor_set_exists.
 Definition n_is_successor_set: is_successor_set N.
 extract_iota_from_goal N.
 left iota_prop.
+apply H.
+Defined.
+
+Definition n_is_subset_of_any_successor_set: (∀z. (is_successor_set z) -> N ⊆ z).
+extract_iota_from_goal N.
+right iota_prop.
 apply H.
 Defined.
 
@@ -3113,9 +3119,6 @@ clear applied_H right_H
 | _ => idtac "First argument is not in form ∀ x . (_ ⇔ _)"
 end.
 
-Definition function_result_is_in_arg(f x: Set):
-∀y. (f[x] ≔ y) -> y ∈ x.
-
 Definition non_empty_subsets_of (a: Set) := { x ε (𝒫 a) | (¬(x = ∅)) }.
 
 Definition in_non_empty_subsets_of_union(w x: Set) (not_empty: ¬ (w = ∅)):
@@ -3513,4 +3516,377 @@ apply (disj_in_2).
 apply H5.
 apply H4.
 Defined.
+
+Definition zero_in_every_natual_number (n:Set) (n_in_N: n ∈ N ): (¬(n = 0)) -> 0 ∈ n.
+pose proof PN5_induction (fun k => (¬(k = 0)) -> 0 ∈ k).
+cbv beta in H.
+assert ((¬ (0 = 0) -> 0 ∈ 0)).
+intro.
+pose proof (eq_refl 0).
+apply (abs_el _ (H0 H1)).
+pose proof H H0.
+assert ((∀ x :: N
+. (¬ (x = 0) -> 0 ∈ x) ->
+¬ (S x = 0) -> 0 ∈ S x)).
+intro.
+intro.
+intro.
+intro.
+unfold S.
+extract_iota_from_goal ((x ∪ {`x})).
+pose proof iota_prop 0.
+right H5.
+apply H6.
+pose proof exc_thrd ((x = 0)).
+apply (disj_el _ _ _ H7).
+intro.
+apply (disj_in_2).
+pose proof every_set_is_in_unit_set x.
+cbv beta in H9.
+pose proof eq_subs (fun k=>  k ∈ {`x}) _ _ H8 H9.
+apply H10.
+intro.
+pose proof H3 H8.
+apply (disj_in_1).
+apply H9.
+pose proof H1 H2.
+pose proof H3 n n_in_N.
+apply H4.
+Defined.
+
+Definition zero_is_not_in_itself: ¬ (0 ∈ 0).
+intro.
+unfold zero in H.
+extract_iota ∅ H.
+apply (abs_el _ (iota_prop s H)).
+Defined.
+
+Definition set_in_zero_causes_contradiction {n: Set}: (n ∈ 0) -> ⊥.
+intro.
+unfold zero in H.
+extract_iota ∅ H.
+pose proof iota_prop n.
+pose proof H0 H.
+apply H1.
+Defined.
+
+Definition unfold_S_into_disj 
+{a: Set} {b: Set} 
+: (a ∈ S b) -> ((a = b) ∨ (a ∈ b)).
+intro.
+unfold S in H.
+extract_iota ((b ∪ {`b})) H.
+pose proof iota_prop a.
+left H0.
+pose proof H1 H.
+cbv beta in H2.
+apply (disj_el _ _ _ H2).
+intro.
+apply (disj_in_2).
+apply H3.
+intro.
+extract_iota {`b} H3.
+pose proof iota_prop0 a.
+left H4.
+pose proof H5 H3.
+apply (disj_in_1).
+apply H6.
+Defined.
+
+Definition any_set_belongs_to_successor (a: Set): a ∈ (S a).
+unfold S.
+extract_iota_from_goal (a ∪ {`a}).
+extract_iota {`a} iota_prop.
+pose proof iota_prop a.
+right H.
+apply H0.
+pose proof iota_prop0 a.
+right H1.
+apply (disj_in_2).
+apply H2.
+apply (eq_refl a).
+Defined.
+
+Definition any_set_is_subset_of_its_successor (a: Set): a ⊆ (S a).
+intro m.
+intro.
+unfold S.
+extract_iota_from_goal (a ∪ {`a}).
+extract_iota {`a} iota_prop.
+pose proof iota_prop m.
+right H0.
+apply H1.
+pose proof iota_prop0 m.
+cbv beta in H2.
+apply (disj_in_1).
+apply H.
+Defined.
+
+Definition in_or_equal (a b: Set) := (a ∈ b) ∨ (a = b).
+
+Definition transitive_set (A: Set) := ∀x. ∀a. ((x ∈ a) ∧ (a ∈ A)) -> (x ∈ A).
+
+Definition every_natual_number_is_transitive: ∀n::N. transitive_set n.
+apply (PN5_induction (fun n => transitive_set n)).
+unfold transitive_set.
+intro.
+intro.
+intro.
+right H.
+pose proof set_in_zero_causes_contradiction H0.
+apply (abs_el _ H1).
+intro n.
+intro.
+unfold transitive_set.
+intro.
+intro x.
+intro a.
+intro.
+pose proof H0 x a.
+cbv beta in H2.
+unfold S.
+extract_iota_from_goal (n ∪ {`n}).
+extract_iota {`n} iota_prop.
+pose proof iota_prop x.
+right H3.
+apply H4.
+pose proof iota_prop0 x.
+right H5.
+cbv beta in H6.
+left H1.
+right H1.
+pose proof unfold_S_into_disj H8.
+apply (disj_el _ _ _ H9).
+intro.
+repl H10 H7.
+apply (disj_in_1).
+apply H11.
+intro.
+apply (disj_in_1).
+apply H2.
+apply (conj_in _ _).
+apply H7.
+apply H10.
+Defined.
+
+
+
+(* Lemma 4L (a) from Enderton's "Elements of set theory" *)
+Definition m_in_n_equiv_Sm_in_Sn
+(m: Set) (m_is_natual_number: m ∈ N) 
+(n: Set) (n_is_natual_number: n ∈ N)
+: (m ∈ n) ⇔ ((S m) ∈ (S n)).
+apply (conj_in _ _).
+intro.
+unfold S.
+pose proof ZF2_subsets (fun n=> ∀ m::n. (S m) ∈ (S n)) N.
+cbv beta in H0.
+destruct_ex H0 T.
+assert (is_successor_set T).
+apply (conj_in _ _).
+pose proof H1 ∅ .
+right H2.
+apply H3.
+apply (conj_in _ _).
+apply (PN1_empty_set).
+intro g.
+intro.
+extract_iota ∅ H4.
+pose proof iota_prop g H4.
+apply (abs_el _ H5).
+intro k.
+intro.
+pose proof H1 k.
+left H3.
+pose proof H4 H2.
+left H5.
+pose proof PN2_succ k H6.
+pose proof H1 (S k).
+right H8.
+apply H9.
+apply (conj_in _ _).
+apply H7.
+intro m'.
+intro.
+pose proof unfold_S_into_disj H10.
+apply (disj_el _ _ _ H11).
+intro.
+pose proof eq_subs (fun k=> S m' ∈ S (S k)) _ _ H12.
+apply H13.
+apply (any_set_belongs_to_successor (S m')).
+intro.
+cbv beta in H8.
+right H5.
+pose proof H13 m' H12.
+pose proof (any_set_is_subset_of_its_successor (S k)) (S m') H14.
+apply H15.
+pose proof n_is_subset_of_any_successor_set T H2.
+assert (T ⊆ N).
+intro t.
+intro.
+pose proof H1 t.
+left H5.
+pose proof H6 H4.
+left H7.
+apply H8.
+assert (T = N).
+apply (extensionality_for_subsets H4 H3).
+repl H5 H1.
+pose proof H6 n.
+left H7.
+pose proof H8 n_is_natual_number.
+right H9.
+pose proof H10 m H.
+apply H11.
+intro.
+pose proof any_set_belongs_to_successor m.
+assert (in_or_equal (S m) n).
+unfold in_or_equal.
+pose proof unfold_S_into_disj H.
+apply disj_comm.
+apply H1.
+unfold in_or_equal in H1.
+apply (disj_el _ _ _ H1).
+intro.
+pose proof every_natual_number_is_transitive n n_is_natual_number m (S m).
+apply H3.
+apply (conj_in).
+apply H0.
+apply H2.
+intro.
+pose proof any_set_belongs_to_successor m.
+pose proof eq_subs (fun k=> m ∈ k) _ _ H2.
+apply H4.
+apply H3.
+Defined.
+
+(* Lemma 4L (b) from Enderton's "Elements of set theory" *)
+Definition no_natural_number_is_member_of_itself
+(m: Set) (m_is_natual_number: m ∈ N) 
+: ¬ (m ∈ m).
+apply (PN5_induction (fun m => ¬ (m ∈ m))).
+intro.
+pose proof set_in_zero_causes_contradiction H.
+apply H0.
+intro.
+intro.
+intro.
+pose proof m_in_n_equiv_Sm_in_Sn x H x H.
+right H1.
+pose proof contrapositive H2.
+apply H3.
+apply H0.
+apply m_is_natual_number.
+Defined.
+
+
+Definition belongs_to_set_then_belongs_to_successor (a b: Set): 
+(a ∈ b) -> (a ∈ (S b)).
+intro.
+unfold S.
+extract_iota_from_goal (b ∪ {`b}).
+extract_iota {`b} iota_prop.
+pose proof iota_prop a.
+right H0.
+apply H1.
+apply (disj_in_1).
+apply H.
+Defined.
+
+Definition trichotomy_for_set_inclusion_only_disj
+(m: Set) (m_is_natual_number: m ∈ N) 
+(n: Set) (n_is_natual_number: n ∈ N):
+(m ∈ n ∨ m = n ∨ n ∈ m).
+pose proof PN5_induction (fun n => (m ∈ n ∨ m = n) ∨ n ∈ m).
+cbv beta in H.
+apply H.
+pose proof exc_thrd (m = 0).
+apply (disj_el _ _ _ H0).
+intro.
+apply (disj_in_1).
+apply (disj_in_2).
+apply H1.
+intro.
+apply (disj_in_2).
+pose proof (zero_in_every_natual_number m m_is_natual_number H1).
+apply H2.
+intro.
+intro.
+intro.
+apply (disj_el _ _ _ H1).
+intro.
+apply (disj_el _ _ _ H2).
+intro.
+rename H3 into case1.
+pose proof belongs_to_set_then_belongs_to_successor m x case1.
+apply (disj_in_1).
+apply (disj_in_1).
+apply H3.
+intro.
+pose proof any_set_belongs_to_successor m.
+pose proof eq_subs (fun k => m ∈ S k) _ _ H3 H4.
+cbv beta in H5.
+apply (disj_in_1).
+apply (disj_in_1).
+apply H5.
+intro.
+pose proof m_in_n_equiv_Sm_in_Sn x H0 m m_is_natual_number.
+left H3.
+pose proof H4 H2.
+assert (in_or_equal (S x) m).
+unfold in_or_equal.
+pose proof unfold_S_into_disj H5.
+pose proof disj_comm _ _ H6.
+apply H7.
+apply (disj_el _ _ _ H6).
+intro.
+apply (disj_in_2).
+apply H7.
+intro.
+apply (disj_in_1).
+apply (disj_in_2).
+apply (eq_symm _ _ H7).
+apply n_is_natual_number.
+Defined.
+
+(* Lemma 4.3 
+The authors of "Set Theory and Logic" textbook specified this theorem as 
+"easily derivable" from the other two lemmas, but they were WRONG.
+It required me to look up another textbook (Enderton's "Elements of set theory")
+and add 7 extra lemmas (!!!) in order to make things correct and fit in.
+*)
+Definition trichotomy_for_set_inclusion 
+(m: Set) (m_is_natual_number: m ∈ N) 
+(n: Set) (n_is_natual_number: n ∈ N):
+((m ∈ n) ⊽ (m = n) ⊽ (n ∈ m)).
+apply (disj_exclusive_triple_in).
+apply (trichotomy_for_set_inclusion_only_disj m
+m_is_natual_number n n_is_natual_number).
+apply (conj_in _ _).
+apply (conj_in _ _).
+intro.
+left H.
+right H.
+repl H1 H0.
+pose proof no_natural_number_is_member_of_itself m m_is_natual_number H2.
+apply H3.
+intro.
+left H.
+right H.
+pose proof every_natural_number_is_complete n n_is_natual_number m H0.
+pose proof every_natural_number_is_complete m m_is_natual_number n H1.
+pose proof extensionality_for_subsets H2 H3.
+repl H4 H0.
+pose proof no_natural_number_is_member_of_itself m m_is_natual_number H5.
+apply H6.
+intro.
+left H.
+right H.
+repl H0 H1.
+pose proof no_natural_number_is_member_of_itself m m_is_natual_number H2.
+apply H3.
+Defined.
+
+
+
 
