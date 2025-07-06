@@ -1317,7 +1317,6 @@ clear symmetric_eq
 let my_func := (context g [b]) in 
 pose proof (eq_subs (fun k => _)
 a b eq_hyp target_hyp) : my_func as target_hyp_repl
-
 | _ => fail "error inside nested matches"
 end
 end.

@@ -3,6 +3,7 @@ From BASE Require Import MathLogic.
 
 Parameter In: Set -> Set -> Prop.
 Notation "a ∈ b" := (In a b)(at level 80, left associativity).
+Notation "a ∉ b" := (¬(a ∈ b))(at level 80, left associativity).
 
 Notation "∀ x :: S . p" := (all (fun x => ((x ∈ S) -> p)))
   (at level 200, x binder).
@@ -94,6 +95,8 @@ Defined.
 Definition subset(a b: Set) := ∀ x. (x ∈ a) -> (x ∈ b).
 
 Notation "a ⊆ b" := (subset a b)(at level 80, left associativity).
+
+Notation "a ⊈ b" := (¬(subset a b))(at level 80, left associativity).
 
 Module RusselParadox.
 
@@ -530,7 +533,10 @@ cbv beta in H.
 apply H.
 Defined.
 
-Notation " a ∩ b " := (intersection2_exists a b)(at level 80, left associativity).
+Definition intersection2 (a b: Set): Set 
+:= ι _ (intersection2_exists a b).
+
+Notation " a ∩ b " := (intersection2 a b)(at level 80, left associativity).
 
 Definition triple_unord_exists (a b c: Set): ∃1t. 
 (∀ x. ((x ∈ t) ⇔ ((x = a) ∨ (x = b) ∨ (x = c)))).
@@ -631,6 +637,75 @@ Defined.
 
 Definition triple_unord(a b c: Set) := ι _ (triple_unord_exists a b c).
 
+Notation "{ a , b , c }" := (triple_unord a b c).
+
+Definition quadriple_unord_exists (a b c d: Set): ∃1t. 
+(∀ x. ((x ∈ t) ⇔ ((x = a) ∨ (x = b) ∨ (x = c) ∨ (x = d)))).
+pose proof triple_unord_exists a b c.
+conj_el H.
+destruct_ex H0 l.
+pose proof union2_exists l ({`d}).
+conj_el H3.
+clear H1 H5.
+destruct_ex H4 s.
+clear H H0 H3 H4.
+apply (conj_in).
+apply (ex_in _ s).
+intro x.
+apply conj_in.
+intro.
+pose proof H1 x.
+conj_el H0.
+pose proof H3 H.
+apply (disj_el _ _ _ H5).
+intro.
+apply disj_in_1.
+pose proof H2 x.
+pose proof biimpl_el_1 _ _ H7.
+apply H8.
+assumption.
+intro.
+apply disj_in_2.
+extract_iota ({`d}) H6.
+pose proof (iota_prop x).
+pose proof biimpl_el_1 _ _ H7.
+apply H8.
+apply H6.
+intro.
+apply (disj_el _ _ _ H).
+pose proof biimpl_el_2 _ _ (H2 x).
+intro.
+pose proof H0 H3.
+pose proof biimpl_el_2 _ _ (H1 x).
+apply H5.
+apply disj_in_1.
+apply H4.
+intro.
+pose proof biimpl_el_2 _ _ (H1 x).
+apply H3.
+apply disj_in_2.
+repl_in_goal H0.
+pose proof every_set_is_in_unit_set d.
+apply H4.
+intros q w.
+intro.
+intro.
+apply ZF1_extension.
+intro x.
+pose proof H x.
+pose proof H0 x.
+simpl in H3.
+simpl in H4.
+pose proof biimpl_symm _ _ H3.
+pose proof biimpl_trans _ _ _ H4 H5.
+apply biimpl_symm.
+apply H6.
+Qed.
+
+Definition quadriple_unord(a b c d: Set) := ι _ (quadriple_unord_exists a b c d).
+
+Notation "{ a , b , c , d }" := (quadriple_unord a b c d).
+
 Definition relative_complement_exists (a b: Set): ∃1c. 
 (∀ x. ((x ∈ c) ⇔ ((x ∈ a) ∧ ¬(x ∈ b)))).
 pose proof unique_subset_exists (fun x => ¬(x ∈ b) ) a.
@@ -645,6 +720,8 @@ Notation "a - b" := (relative_complement a b)(at level 80, left associativity).
 
 Definition symmetric_difference (a b: Set) :=
 (relative_complement a b) ∪ (relative_complement b a).
+
+Notation "a + b" := (symmetric_difference a b)(at level 80, left associativity).
 
 Definition pair (a b: Set) := { (unit_set a) , { a, b } }. 
 
@@ -1855,7 +1932,7 @@ Definition S (x: Set) := x ∪ {`x}.
 
 Definition is_successor_set (a: Set) := (∅ ∈ a) ∧ (∀x. ((x ∈ a) -> (S x) ∈ a)).
 
-Definition subset_ref (a: Set): a ⊆ a.
+Definition subset_refl (a: Set): a ⊆ a.
 intro x.
 intro.
 apply H.
@@ -1916,7 +1993,7 @@ apply (conj_in _ _).
 pose proof pa_prop some_successor_set.
 right H4.
 apply H5.
-apply (subset_ref some_successor_set).
+apply (subset_refl some_successor_set).
 unfold is_successor_set.
 apply (conj_in _ _).
 right empty_set_prop.
@@ -2137,6 +2214,8 @@ Notation "3" := three.
 Definition four := (S 3).
 Notation "4" := four.
 
+Definition five := (S 4).
+Notation "5" := five.
 
 Definition PN1_empty_set: ∅ ∈ N.
 extract_iota_from_goal N.
@@ -2246,7 +2325,7 @@ repl H19 H17.
 apply H20.
 pose proof (eq_subs (fun g=>N ⊆ g) _ _ (eq_symm _ _ eq_to_iota)).
 apply H17.
-apply (subset_ref N).
+apply (subset_refl N).
 repl H17 H11.
 repl H17 H12.
 right H19.
@@ -2573,7 +2652,7 @@ pose proof H9 H3.
 right H8.
 pose proof H10 n.
 cbv beta in H11.
-pose proof subset_ref n.
+pose proof subset_refl n.
 apply H11.
 apply H7.
 apply H6.
@@ -2747,7 +2826,7 @@ pose proof eq_symm _ _ H20.
 apply (H H21).
 pose proof disj_el_alt_2 _ _ H18 H19.
 pose proof every_natural_number_is_complete n n_nat m H9 n H20.
-pose proof subset_ref n.
+pose proof subset_refl n.
 pose proof no_nat_is_subset_of_any_its_elements n n_nat n H21.
 apply (H23 H22).
 Defined.
@@ -3126,38 +3205,45 @@ Definition inc_alt (x: Set) (x_in_N: x ∈ N):= ι _ (inc_ex_alt_super_simple x 
 
 Definition zero_in_N : 0 ∈ N := PN1_empty_set.
 
+Ltac apply_succ_recursively H n :=
+match eval cbn delta in n with
+| 1 => do 1 apply PN2_succ in H
+| 2 => do 2 apply PN2_succ in H
+| 3 => do 3 apply PN2_succ in H
+| 4 => do 4 apply PN2_succ in H
+| 5 => do 5 apply PN2_succ in H
+| 0 => idtac 
+end.
+
+(* to get something like "7 ∈ N" fast *)
+Ltac prove_natural_number_in_N n :=
+pose proof PN1_empty_set as H;
+apply_succ_recursively H n; 
+change (n ∈ N) in H.
+
 Definition one_in_N : 1 ∈ N.
-unfold one.
-pose proof PN1_empty_set.
-pose proof PN2_succ ∅ H.
-apply H0.
+prove_natural_number_in_N 1.
+apply H.
 Defined.
 
 Definition two_in_N : 2 ∈ N.
-unfold one.
-pose proof PN1_empty_set.
-pose proof PN2_succ ∅ H.
-pose proof PN2_succ (S ∅) H0.
-apply H1.
+prove_natural_number_in_N 2.
+apply H.
 Defined.
 
 Definition three_in_N : 3 ∈ N.
-unfold one.
-pose proof PN1_empty_set.
-pose proof PN2_succ ∅ H.
-pose proof PN2_succ (S ∅) H0.
-pose proof PN2_succ (S (S ∅)) H1.
-apply H2.
+prove_natural_number_in_N 3.
+apply H.
 Defined.
 
 Definition four_in_N : 4 ∈ N.
-unfold one.
-pose proof PN1_empty_set.
-pose proof PN2_succ ∅ H.
-pose proof PN2_succ (S ∅) H0.
-pose proof PN2_succ (S (S ∅)) H1.
-pose proof PN2_succ (S (S (S ∅))) H2.
-apply H3.
+prove_natural_number_in_N 4.
+apply H.
+Defined.
+
+Definition five_in_N : 5 ∈ N.
+prove_natural_number_in_N 5.
+apply H.
 Defined.
 
 Definition inc_one_eq_two: (inc 1 one_in_N) = 2.
@@ -4296,6 +4382,45 @@ pose proof zero_not_equals_to_one.
 apply H1.
 apply H0.
 apply H.
+Qed.
+
+Definition three_not_equals_to_two: ¬ (2 = 3).
+intro.
+pose proof PN4_injection 1 one_in_N 2 two_in_N H.
+apply one_not_equals_to_two.
+apply H0.
+Defined.
+
+
+Definition three_not_equals_to_one: ¬ (3 = 1).
+intro.
+unfold two in H.
+pose proof PN4_injection 2 two_in_N 0 zero_in_N.
+pose proof H0 H.
+pose proof extension_backwards H1 0.
+simpl in H2.
+left H2.
+unfold zero in H3.
+pose proof (@any_set_in_empty_set_causes_contradiction ∅).
+apply H4.
+apply H3.
+pose proof any_set_belongs_to_successor 0.
+pose proof any_set_belongs_to_successor 1.
+fold one in H5.
+fold two in H6.
+pose proof any_set_is_subset_of_its_successor 1.
+fold two in H7.
+pose proof H7 0.
+apply H8.
+apply H5.
+Defined.
+
+Definition two_is_not_lt_than_zero: ¬ (2 < 0).
+unfold lt.
+intro.
+unfold zero.
+pose proof any_set_in_empty_set_causes_contradiction H.
+apply H0.
 Defined.
 
 Definition two_is_not_lt_than_one: ¬ (2 < 1).
@@ -4306,13 +4431,14 @@ pose proof eq_symm _ _ H0.
 apply (zero_not_equal_to_two H1).
 Defined.
 
-Definition two_is_not_lt_than_zero: ¬ (2 < 0).
+Definition two_is_not_lt_than_two: ¬ (2 < 2).
 unfold lt.
 intro.
-unfold zero.
-pose proof any_set_in_empty_set_causes_contradiction H.
+pose proof no_natural_number_is_member_of_itself 2 two_in_N.
 apply H0.
+apply H.
 Defined.
+
 
 Definition one_is_not_lt_than_zero: ¬ (1 < 0).
 unfold lt.
@@ -4648,3 +4774,4 @@ pose proof (eq_symm _ _ H15).
 pose proof (eq_trans _ _ _ H16 H17).
 apply H18.
 Defined.
+

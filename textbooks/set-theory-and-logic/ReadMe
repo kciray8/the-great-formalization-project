@@ -1,0 +1,21 @@
+=How to compile=
+
+coqc  -noinit -Q . BASE MathLogic.v; 
+coqc  -noinit -Q . BASE Chap7_InformalAxiomaticSetTheory.v; 
+coqc  -noinit -Q . BASE Chap1_SetsAndRelations.v
+
+=Unicode Characters=
+∈
+∨ ∧
+¬
+⊥
+ (¬∃x:S. (¬P(x))) ⇒ ∀y:S. (P(y)).
+(u: A ⇒ B) (v: B ⇒ A) :  A ⇔ B.
+⇔
+ι ε 𝒫
+ꟲ ∅
+∃
+∃≥1'
+∃≤1
+≔
+⊆ ∩ ∪
