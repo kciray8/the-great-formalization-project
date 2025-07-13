@@ -4,6 +4,10 @@ coqc  -noinit -Q . BASE MathLogic.v;
 coqc  -noinit -Q . BASE Chap7_InformalAxiomaticSetTheory.v; 
 coqc  -noinit -Q . BASE Chap1_SetsAndRelations.v
 
+=Queries=
+Search _ is:Axiom in MathLogic.
+Print Assumptions empty_set_el.
+
 =Unicode Characters=
 ∈
 ∨ ∧
@@ -19,3 +23,6 @@ coqc  -noinit -Q . BASE Chap1_SetsAndRelations.v
 ∃≤1
 ≔
 ⊆ ∩ ∪
+
+=Tips=
+VSCode suggestions: Editor: Quick Suggestions, other:off

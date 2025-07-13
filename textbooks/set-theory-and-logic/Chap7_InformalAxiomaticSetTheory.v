@@ -713,6 +713,7 @@ cbv beta in H.
 apply H.
 Defined.
 
+(* The relative complement of b with respect to a set a (don't read backward!) *)
 Definition relative_complement (a b: Set) := 
 ι _ (relative_complement_exists a b). 
 

@@ -667,11 +667,67 @@ Notation "'∃≤1' x . p" := (ex_less (fun x => p))
   (at level 200, x binder, right associativity,
    format "'[' '∃≤1' '/ ' x . '/ ' p ']'").
 
+Lemma ex_less_conj_in (P Q: Set-> Prop): ex_less (fun x => P x) -> 
+ex_less (fun x => (P x ∧ Q x)).
+intro.
+intros a b H1 H2.
+pose proof H a b.
+apply H0.
+pose proof conj_el_1 _ _ H1.
+apply H3.
+pose proof conj_el_1 _ _ H2.
+apply H3.
+Qed.
+
+Lemma ex_less_conj_in_2 (P Q: Set-> Prop): ex_less (fun x => Q x) -> 
+ex_less (fun x => (P x ∧ Q x)).
+intro.
+intros a b H1 H2.
+pose proof H a b.
+apply H0.
+pose proof conj_el_2 _ _ H1.
+apply H3.
+pose proof conj_el_2 _ _ H2.
+apply H3.
+Qed.
+
 Definition ex_unique (P: Set-> Prop) := (∃≥1 x. P x) ∧ (∃≤1 x. P x).
 
 Notation "'∃1' x . p" := (ex_unique (fun x => p))
   (at level 200, x binder, right associativity,
    format "'[' '∃1' '/ ' x . '/ ' p ']'").
+
+(* This lemma is a key to elimitane iota for learning purposes *)
+Definition ex_unique_in(P Q: Set-> Prop): 
+(ex_unique P) -> (((∀y. P y -> Q y) ->(ex_unique (fun x => (P x ∧ Q x))))).
+intros H1 H2.
+apply (conj_in).
+pose proof (conj_el_1 _ _ H1).
+apply (ex_el _ H).
+intros x H3.
+apply (ex_in _ x).
+apply (conj_in).
+apply H3.
+pose proof H2 x H3.
+apply H0.
+apply ex_less_conj_in.
+pose proof (conj_el_2 _ _ H1).
+apply H.
+Qed.
+
+Definition ex_unique_in_alt(P Q: Set-> Prop): 
+(ex_unique P) -> ((∃x. P x ∧ Q x) -> (ex_unique (fun x => (P x ∧ Q x)))).
+intros H1 H2.
+apply (conj_in).
+pose proof (conj_el_1 _ _ H1).
+apply H2.
+apply ex_less_conj_in.
+pose proof (conj_el_2 _ _ H1).
+apply H.
+Qed.
+
+
+
 
 (* 
 Definition 12.1.1 Let Setbe a set and ≤ a binary relation on S.
@@ -841,8 +897,11 @@ pose proof u P.
 exact H.
 Defined.
 
-Ltac left x := pose proof conj_el_1 _ _ x.
-Ltac right x := pose proof conj_el_2 _ _ x.
+Ltac left_core x := pose proof conj_el_1 _ _ x.
+Ltac right_core x := pose proof conj_el_2 _ _ x.
+
+Tactic Notation "left" uconstr(x) := left_core x.
+Tactic Notation "right" uconstr(x) := right_core x.
 
 Ltac conj_el x:= left x; right x.
 
@@ -1478,3 +1537,4 @@ intro.
 pose proof C H0.
 apply H1.
 Defined.
+
