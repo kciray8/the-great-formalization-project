@@ -2,8 +2,8 @@ Require Import Ltac.
 From BASE Require Import MathLogic.
 
 Parameter In: Set -> Set -> Prop.
-Notation "a ∈ b" := (In a b)(at level 80, left associativity).
-Notation "a ∉ b" := (¬(a ∈ b))(at level 80, left associativity).
+Notation "a ∈ b" := (In a b)(at level 81, left associativity).
+Notation "a ∉ b" := (¬(a ∈ b))(at level 81, left associativity).
 
 Notation "∀ x :: S . p" := (all (fun x => ((x ∈ S) -> p)))
   (at level 200, x binder).
@@ -94,9 +94,9 @@ Defined.
 
 Definition subset(a b: Set) := ∀ x. (x ∈ a) -> (x ∈ b).
 
-Notation "a ⊆ b" := (subset a b)(at level 80, left associativity).
+Notation "a ⊆ b" := (subset a b)(at level 81, left associativity).
 
-Notation "a ⊈ b" := (¬(subset a b))(at level 80, left associativity).
+Notation "a ⊈ b" := (¬(subset a b))(at level 81, left associativity).
 
 Module RusselParadox.
 
@@ -425,7 +425,7 @@ Defined.
 
 Definition union2 (a b: Set) := ι _ (union2_exists a b).
 
-Notation " a ∪ b " := (union2 a b)(at level 80, left associativity).
+Notation " a ∪ b " := (union2 a b)(at level 81, left associativity).
 
 Axiom ZF6_infinity: ∃a. ((∃e.  (∀ x . ¬(x ∈ e)) ∧ (e ∈ a))
 ∧ (∀ x . (x ∈ a) -> (x ∪ (unit_set x)) ∈ a)).
@@ -536,7 +536,7 @@ Defined.
 Definition intersection2 (a b: Set): Set 
 := ι _ (intersection2_exists a b).
 
-Notation " a ∩ b " := (intersection2 a b)(at level 80, left associativity).
+Notation " a ∩ b " := (intersection2 a b)(at level 81, left associativity).
 
 Definition triple_unord_exists (a b c: Set): ∃1t. 
 (∀ x. ((x ∈ t) ⇔ ((x = a) ∨ (x = b) ∨ (x = c)))).
@@ -717,20 +717,20 @@ Defined.
 Definition relative_complement (a b: Set) := 
 ι _ (relative_complement_exists a b). 
 
-Notation "a - b" := (relative_complement a b)(at level 80, left associativity).
+Notation "a - b" := (relative_complement a b)(at level 81, left associativity).
 
 Definition symmetric_difference (a b: Set) :=
 (relative_complement a b) ∪ (relative_complement b a).
 
-Notation "a + b" := (symmetric_difference a b)(at level 80, left associativity).
+Notation "a + b" := (symmetric_difference a b)(at level 81, left associativity).
 
 Definition pair (a b: Set) := { (unit_set a) , { a, b } }. 
 
-Notation "< a , b >" := (pair a b)(at level 80, left associativity).
+Notation "< a , b >" := (pair a b)(at level 81, left associativity).
 
 Definition triple (a b c: Set) := <<a, b>, c>.
 
-Notation "< a , b , c >" := (triple a b c)(at level 80, left associativity).
+Notation "< a , b , c >" := (triple a b c)(at level 81, left associativity).
 
 Definition tuple4 (a b c d: Set) := <(triple a b c), d>.
 Definition tuple5 (a b c d e: Set) := <(tuple4 a b c d), e>.
@@ -1263,7 +1263,7 @@ Defined.
 
 Definition power_set (a: Set) := ι _ (power_set_exists a).
 
-Notation "'𝒫' a " := (power_set a)(at level 70, left associativity).
+Notation "'𝒫' a " := (power_set a)(at level 69, left associativity).
 
 Definition cartesian_product_exists (a b: Set): ∃1c. 
 (∀ w. ((w ∈ c) ⇔ ((∃x. (x ∈ a) ∧ (∃y. (y ∈ b) ∧ w = <x,y>))))).

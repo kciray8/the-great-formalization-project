@@ -26,3 +26,26 @@ Print Assumptions empty_set_el.
 
 =Tips=
 VSCode suggestions: Editor: Quick Suggestions, other:off
+
+=Setoids=
+(*Require Import Setoid.*)
+
+Instance Equivalence_eq : Equivalence eq.
+split.
+intros x.
+apply eq_refl.
+intros a b.
+intro. 
+repl_in_goal H.
+apply eq_refl.
+intros a b c.
+intros.
+take eq_trans a b c H H0.
+apply H1.
+Qed.
+
+Add Parametric Relation : Set eq
+reflexivity  proved by eq_refl
+     symmetry     proved by eq_symm
+     transitivity proved by eq_trans
+ as set_eq_rel.

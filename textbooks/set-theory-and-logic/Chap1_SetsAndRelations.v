@@ -2,7 +2,6 @@ Require Import Ltac.
 From BASE Require Import MathLogic.
 From BASE Require Import Chap7_InformalAxiomaticSetTheory.
 
-
 Ltac take_core a :=
 let H := fresh "H" in
 pose proof a as H;
@@ -213,10 +212,10 @@ Qed.
 Notation "A ≠ B" := (¬(A = B))(at level 51, right associativity).
 
 Definition proper_subset(a b: Set) := (a ⊆ b) ∧ (a ≠ b).
-Notation "a ⊂ b" := (proper_subset a b)(at level 70, left associativity).
+Notation "a ⊂ b" := (proper_subset a b)(at level 71, left associativity).
 
 Definition subset_backward(a b: Set) := b ⊆ a.
-Notation "a ⊇ b" := (subset_backward a b)(at level 70, left associativity).
+Notation "a ⊇ b" := (subset_backward a b)(at level 71, left associativity).
 
 (* Exercise 3.1 
 a) (->) assume x is from set A, then it is divisible by 6. then it is divisible by 2 and 3. take u = x/2 and v = x/3, OK
@@ -684,7 +683,14 @@ Definition disjoint_collection (A: Set) :=
 Definition partition (X P: Set) := (disjoint_collection P) ∧ 
 (∀s. (s ⊆ X) -> (s ≠ ∅) -> s ∈ P) ∧ (∀x::X. ∃p::P. x ∈ p).
 
-Definition absolute_compelement_exists (A: Set): 
+Tactic Notation "left" := apply (disj_in_1).
+Tactic Notation "right" := apply (disj_in_2).
+
+Ltac both_old H := left H; right H.
+
+Section AbsoluteComplementation.
+
+Local Definition absolute_compelement_exists (A: Set): 
 ∃1c. ∀ x. ((x ∈ c) ⇔ (x ∉ A)).
 take intuitive_abstraction (fun x => x ∉ A).
 split.
@@ -693,12 +699,12 @@ take any_biimpl_set_is_no_more_than_one (fun x =>x ∉ A).
 apply H0.
 Qed.
 
-Definition absolute_compelement (A: Set): Set 
+Local Definition absolute_compelement (A: Set): Set 
 := ι _ (absolute_compelement_exists A).
 
-Notation ac A := (absolute_compelement A).
+Local Notation ac A := (absolute_compelement A).
 
-Definition universal_set_exists: 
+Local Definition universal_set_exists: 
 ∃1u. ∀k. k ⊆ u.
 split.
 take intuitive_abstraction (fun x => x = x).
@@ -727,10 +733,8 @@ apply H0.
 ass.
 Qed.
 
-Definition U: Set := ι _ (universal_set_exists).
-
-Tactic Notation "left" := apply (disj_in_1).
-Tactic Notation "right" := apply (disj_in_2).
+Local Definition U_global: Set := ι _ (universal_set_exists).
+Local Notation U := (U_global).
 
 Theorem exercise_4_1: ∀A. ∀B. (∅ ⊆ (A ∩ B)) ∧ ((A ∩ B) ⊆ (A ∪ B)).
 intros A B.
@@ -937,8 +941,6 @@ repl_in_goal H.
 apply every_set_is_in_unit_set.
 Qed.
 
-Ltac both H := left H; right H.
-
 (* Exercise 4.4  *)
 Goal ∀A. ((A ∩ ∅) = ∅).
 intro A.
@@ -947,7 +949,7 @@ intro x.
 split.
 intro.
 apply intersection_el in H.
-both H.
+both_old H.
 apply H1.
 intro.
 take any_set_in_empty_set_causes_contradiction H.
@@ -1009,7 +1011,7 @@ intro x.
 split.
 intro.
 apply relative_complement_el in H.
-both H.
+both_old H.
 take H1 H0.
 apply H2.
 intro.
@@ -1089,7 +1091,7 @@ intro x.
 split.
 intro.
 apply relative_complement_el in H.
-both H.
+both_old H.
 apply pair_el in H0.
 apply (disj_el _ _ _ H0).
 intro.
@@ -1125,7 +1127,7 @@ intro x.
 split.
 intro.
 apply relative_complement_el in H.
-both H.
+both_old H.
 apply pair_el in H0.
 apply (disj_el _ _ _ H0).
 intro.
@@ -1315,7 +1317,7 @@ intros A B H.
 apply eq_in.
 intros x H1.
 apply intersection_el in H1.
-both H1.
+both_old H1.
 take H x H2.
 apply ac_el in H3.
 apply H3.
@@ -1397,7 +1399,7 @@ apply eq_in.
 intro g.
 intro.
 apply intersection_el in H0.
-both H0.
+both_old H0.
 take H2 g H3.
 apply ac_el in H4.
 apply abs_el.
@@ -1466,7 +1468,7 @@ ass.
 intros x.
 intro.
 take intersection_el _ _ _ H0.
-both H1.
+both_old H1.
 apply union_in.
 apply union_el in H3.
 apply (disj_el _ _ _ H3).
@@ -1500,9 +1502,9 @@ ass.
 right H.
 ass.
 apply relative_complement_el in H.
-both H.
+both_old H.
 apply relative_complement_el in H0.
-both H0.
+both_old H0.
 intro.
 apply relative_complement_el in H4.
 left H4.
@@ -1511,9 +1513,9 @@ ass.
 intro x.
 intro.
 apply relative_complement_el in H.
-both H.
+both_old H.
 apply relative_complement_el in H0.
-both H0.
+both_old H0.
 apply relative_complement_in.
 split.
 apply relative_complement_in.
@@ -1527,8 +1529,6 @@ ass.
 ass.
 ass.
 Qed.
-
-
 
 (* Exercises 4.9 a b, 4.10, 4.11 - did them on paper *)
 
@@ -1568,7 +1568,8 @@ Qed.
 
 
 (* Exercises 4.9 c *)
-Goal ∀A. (((A + A) = ∅) ∧ ((A + ∅) = A)).
+Theorem symmetric_difference_algebra: 
+∀A. (((A + A) = ∅) ∧ ((A + ∅) = A)).
 intros A.
 split.
 apply eq_in.
@@ -1576,11 +1577,11 @@ intros x H.
 apply symmetric_difference_el in H.
 apply (disj_el _ _ _ H).
 intro.
-both H0.
+both_old H0.
 apply H2.
 ass.
 intro.
-both H0.
+both_old H0.
 apply H2.
 ass.
 intros x H.
@@ -1609,6 +1610,22 @@ ass.
 apply empty_set_el.
 Qed.
 
+Theorem symmetric_difference_eq_to_empty_set: 
+∀A. ((A + A) = ∅).
+intros A.
+take symmetric_difference_algebra A.
+left H.
+apply H0.
+Qed.
+
+Theorem symmetric_difference_with_empty_set: 
+∀A. ((A + ∅) = A).
+intros A.
+take symmetric_difference_algebra A.
+right H.
+apply H0.
+Qed.
+
 (* Exercises 4.11 - a - valid*)
 Goal ∀A. ∀B. ∀C. (((A ∩ B) ⊆ (ac C)) ∧ ((A ∪ C) ⊆ B)) -> 
 ((A ∩ C)) = ∅.
@@ -1616,9 +1633,9 @@ intros A B C H.
 apply eq_in.
 intros x H2.
 apply intersection_el in H2.
-both H2.
+both_old H2.
 apply abs_el.
-both H.
+both_old H.
 take H3 x.
 take H4 x.
 take union_in_1 A C x H0.
@@ -1657,4 +1674,837 @@ apply ac_in.
 apply empty_set_el.
 Qed.
 
+End AbsoluteComplementation.
 
+Ltac disj H := apply (disj_el _ _ _ H); intro; clear H.
+
+(* Theorem 5.1 - 1 *)
+Lemma union_assoc: ∀A. ∀B. ∀C. (A ∪ (B ∪ C)) = ((A ∪ B) ∪ C). 
+intros A B C.
+apply eq_in.
+intros x H.
+apply union_in.
+apply union_el in H.
+apply (disj_el _ _ _ H).
+intro.
+left.
+apply union_in_1.
+ass.
+intro.
+apply union_el in H0.
+disj H0.
+take union_in_2 A B x H1.
+left.
+ass.
+right.
+ass.
+intros x H.
+apply union_el in H.
+disj H.
+apply union_el in H0.
+disj H0.
+apply union_in_1.
+ass.
+apply union_in_2.
+apply union_in_1.
+ass.
+apply union_in_2.
+apply union_in_2.
+ass.
+Qed.
+
+Ltac eq_in :=
+let x := fresh "x" in
+let H := fresh "H" in
+apply eq_in; intros x H.
+
+(* Theorem 5.1 - 1' *)
+Lemma intersection_assoc: ∀A. ∀B. ∀C. (A ∩ (B ∩ C)) = ((A ∩ B) ∩ C). 
+intros A B C.
+eq_in.
+apply intersection_in.
+apply intersection_el in H.
+both_old H.
+apply intersection_el in H1.
+both_old H1.
+split.
+apply intersection_in.
+split; ass.
+ass.
+apply intersection_in.
+split.
+apply intersection_el in H.
+both_old H.
+apply intersection_el in H0.
+both_old H0.
+ass.
+apply intersection_el in H.
+both_old H.
+apply intersection_el in H0.
+both_old H0.
+apply intersection_in.
+split; ass.
+Qed.
+
+(* Theorem 5.1 - 2 *)
+Lemma union_comm: ∀A. ∀B. (A ∪ B) = (B ∪ A). 
+intros A B.
+eq_in.
+apply union_in.
+apply union_el in H.
+disj H.
+right.
+ass.
+left.
+ass.
+apply union_in.
+apply union_el in H.
+disj H.
+right.
+ass.
+left.
+ass.
+Qed.
+
+(* Theorem 5.1 - 2' *)
+Lemma intersection_comm: ∀A. ∀B. (A ∩ B) = (B ∩ A). 
+intros A B.
+eq_in.
+apply intersection_in.
+apply intersection_el in H.
+both_old H.
+split.
+ass.
+ass.
+apply intersection_in.
+split.
+apply intersection_el in H.
+both_old H.
+ass.
+apply intersection_el in H.
+both_old H.
+ass.
+Qed.
+
+(* Theorem 5.1 - 3 *)
+Lemma union_intersection_distr: ∀A. ∀B. ∀C. 
+(A ∪ (B ∩ C)) = ((A ∪ B) ∩ (A ∪ C)). 
+intros A B C.
+eq_in.
+apply intersection_in.
+split.
+apply union_in.
+apply union_el in H.
+disj H.
+left.
+ass.
+apply intersection_el in H0.
+both_old H0.
+right.
+ass.
+apply union_el in H.
+disj H.
+apply union_in.
+left.
+ass.
+apply intersection_el in H0.
+both_old H0.
+apply union_in.
+right.
+ass.
+apply union_in.
+apply intersection_el in H.
+both_old H.
+apply union_el in H0, H1.
+disj H0.
+left.
+ass.
+disj H1.
+left.
+ass.
+right.
+apply intersection_in.
+split; ass.
+Qed.
+
+Ltac both H := left H; right H; clear H.
+
+(* Theorem 5.1 - 3' *)
+(* exercise 5.1*)
+Lemma intersection_union_distr: ∀A. ∀B. ∀C. 
+(A ∩ (B ∪ C)) = ((A ∩ B) ∪ (A ∩ C)). 
+intros A B C.
+eq_in.
+apply intersection_el in H.
+both H.
+apply union_el in H1.
+disj H1.
+apply union_in.
+left.
+apply intersection_in.
+split; ass.
+apply union_in.
+right.
+apply intersection_in.
+split; ass.
+apply union_el in H.
+disj H.
+apply intersection_el in H0.
+both H0.
+apply intersection_in.
+split.
+ass.
+apply union_in.
+left.
+ass.
+apply intersection_el in H0.
+both H0.
+apply intersection_in.
+split.
+ass.
+apply union_in.
+right.
+ass.
+Qed.
+
+(* Theorem 5.1 - 4 *)
+Lemma empty_set_absorption: ∀A. ((A ∪ ∅) = A). 
+intro A.
+eq_in.
+apply union_el in H.
+disj H.
+ass.
+apply empty_set_el in H0.
+apply H0.
+apply union_in.
+left.
+ass.
+Qed.
+
+(* Theorem 5.1 - 4' *)
+(* exercise 5.1*)
+Lemma universal_set_absorption: ∀A. ∀U. (A ⊆ U) -> ((A ∩ U) = A). 
+intros A U.
+intro H.
+eq_in.
+apply intersection_el in H0.
+left H0.
+ass.
+apply intersection_in.
+split.
+ass.
+apply (H x).
+ass.
+Qed.
+
+Definition rc_el := relative_complement_el.
+Definition rc_in := relative_complement_in.
+
+(* Theorem 5.1 - 5 *)
+Lemma union_with_complement: ∀A. ∀U. ((A ⊆ U) -> ((A ∪ (U - A)) = U)). 
+intros A U H.
+eq_in.
+apply union_el in H0.
+disj H0.
+apply (H x).
+ass.
+apply rc_el in H1.
+both H1.
+ass.
+apply union_in.
+take exc_thrd (x ∈ A).
+disj H1.
+left.
+ass.
+right.
+apply rc_in.
+split; ass.
+Qed.
+
+(* Theorem 5.1 - 5' *)
+(* exercise 5.1 *)
+Lemma intersection_with_complement: ∀A. ∀U. ((A ⊆ U) -> ((A ∩ (U - A)) = ∅)). 
+intros A U H.
+eq_in.
+apply intersection_el in H0.
+both H0.
+apply rc_el in H2.
+both H2.
+apply abs_el.
+apply H3.
+ass.
+apply empty_set_el in H0.
+apply H0.
+Qed.
+
+(* Theorem 5.2 - 6 *)
+Lemma union_with_empty_set: ∀B. (∀A. ((A ∪ B) = A)) -> B = ∅.
+intros B H.
+eq_in.
+apply abs_el.
+take H ∅.
+apply eq_el_1 in H1.
+take H1 x.
+take empty_set_el x.
+apply H3.
+apply H2.
+apply union_in.
+right.
+ass.
+apply (empty_set_el x).
+ass.
+Qed.
+
+(* Theorem 5.2 - 6' *)
+Lemma intersection_with_universal_set: ∀U. 
+(∀B. (B ⊆ U) -> (∀A. ((A ∩ B) = A)) -> B = U).
+intros U B H H2.
+eq_in.
+apply (H x H0).
+take H2 {`x}.
+apply eq_el_2 in H1.
+take H1 x.
+take every_set_is_in_unit_set x.
+take H3 H4.
+apply intersection_el in H5.
+both H5.
+ass.
+Qed.
+
+(* Theorem 5.2 - 7 and 7' *)
+Lemma one_set_is_complement_of_another: ∀U. 
+∀A. ∀B. (A ⊆ U) -> (B ⊆ U) -> 
+((((A ∪ B) = U) ∧ ((A ∩ B) = ∅)) -> B = (U - A)).
+intros U A B u1 u2 H.
+both H.
+eq_in.
+apply rc_in.
+split.
+apply (u2 x H).
+intro.
+take conj_in _ _ H2 H.
+take intersection_in A B x H3.
+take eq_el_1 _ _ H1 x H4.
+apply empty_set_el in H5.
+ass.
+apply rc_el in H.
+both H.
+apply eq_el_2 in H0.
+take H0 x H2.
+apply union_el in H.
+disj H.
+apply abs_el.
+apply H3.
+ass.
+ass.
+Qed.
+
+Lemma rc_el_neg: ∀A. ∀B. ∀x. (x ∉ (A - B)) -> (x ∉ A) ∨ (x ∈ B).
+intros A B x H.
+extract_iota (A - B) H.
+take iota_prop x.
+right H0.
+take contrapositive H1 H.
+apply deMorganNotAnd in H2.
+disj H2.
+left.
+ass.
+right.
+apply DN_el.
+ass.
+Qed.
+
+Print Assumptions rc_el_neg. (* not constructive*)
+
+(* Theorem 5.2 - 8 and 8' *)
+Lemma double_complement: ∀U. ∀A. (A ⊆ U) -> (U - (U - A)) = A.
+intros U A H.
+eq_in.
+apply rc_el in H0.
+both H0.
+apply rc_el_neg in H2.
+disj H2.
+apply H0.
+ass.
+ass.
+apply rc_in.
+split.
+apply (H x H0).
+intro.
+apply rc_el in H1.
+both H1.
+apply (H3 H0).
+Qed.
+
+(* Theorem 5.2 - 9 *)
+Lemma complement_of_empty_set: 
+∀U. (U - ∅) = U.
+intro U.
+apply eq_in.
+intros x H.
+apply rc_el in H.
+left H.
+ass.
+intros x H.
+apply rc_in.
+split.
+ass.
+apply (empty_set_el x).
+Qed.
+
+(* Theorem 5.2 - 9' *)
+Lemma complement_of_universal_set: 
+∀U. (U - U) = ∅.
+intro U.
+apply eq_in.
+intros x H.
+apply abs_el.
+apply rc_el in H.
+both H.
+apply (H1 H0).
+intros x H.
+apply rc_in.
+split.
+apply (empty_set_el x).
+ass.
+apply (empty_set_el x).
+ass.
+Qed.
+
+(* Theorem 5.2 - 10 *)
+Lemma union_idempotent: ∀A. ((A ∪ A) = A).
+intros A.
+apply eq_in.
+intros x H.
+apply union_el in H.
+disj H.
+ass.
+ass.
+intros x H.
+apply union_in.
+left.
+ass.
+Qed.
+
+(* Theorem 5.2 - 10' *)
+Lemma intersection_idempotent: ∀A. ((A ∩ A) = A).
+intro A.
+apply eq_in.
+intros x H.
+apply intersection_el in H.
+left H.
+ass.
+intros x H.
+apply intersection_in.
+split; ass.
+Qed.
+
+(* Theorem 5.2 - 11 *)
+Lemma union_with_universal_set: ∀A. ∀U.
+(A ⊆ U) -> ((A ∪ U) = U).
+intros A U H.
+apply eq_in.
+intros x H2.
+apply union_el in H2.
+disj H2.
+apply (H x H0).
+ass.
+intros x H2.
+apply union_in.
+right.
+ass.
+Qed.
+
+(* Theorem 5.2 - 11' *)
+Lemma intersection_with_empty_set: ∀A. ((A ∩ ∅) = ∅).
+intros A.
+apply eq_in.
+intros x H.
+apply intersection_el in H.
+both H.
+ass.
+intros x H.
+apply (empty_set_el x).
+ass.
+Qed.
+
+
+(* Theorem 5.2 - 12 *)
+Lemma absorption_law_union_intersection: ∀A. ∀B. ((A ∪ (A ∩ B)) = A).
+intros A B.
+apply eq_in.
+intros x H.
+apply union_el in H.
+disj H.
+ass.
+apply intersection_el in H0.
+left H0.
+ass.
+intros x H.
+apply union_in.
+left.
+ass.
+Qed.
+
+(* Theorem 5.2 - 12' *)
+Lemma absorption_law_intersection_union: ∀A. ∀B. ((A ∩ (A ∪ B)) = A).
+intros A B.
+eq_in.
+apply intersection_el in H.
+left H.
+ass.
+apply intersection_in.
+split.
+ass.
+apply union_in.
+left.
+ass.
+Qed.
+
+Lemma union_el_neg: ∀A. ∀B. ∀x. (x ∉ (A ∪ B)) -> (x ∉ A) ∧ (x ∉ B).
+intros A B x H.
+split.
+intro.
+take union_in_1 A B x H0.
+apply (H H1).
+intro.
+take union_in_2 A B x H0.
+apply (H H1).
+Qed.
+
+Lemma union_in_neg: ∀A. ∀B. ∀x. ((x ∉ A) ∧ (x ∉ B)) -> (x ∉ (A ∪ B)).
+intros A B x H.
+both H.
+intro.
+apply union_el in H.
+disj H.
+apply (H0 H2).
+apply (H1 H2).
+Qed.
+
+Lemma intersection_el_neg: ∀A. ∀B. ∀x. (x ∉ (A ∩ B)) 
+-> (x ∉ A) ∨ (x ∉ B).
+intros A B x H.
+extract_iota (A ∩ B) H.
+take iota_prop x.
+right H0.
+take contrapositive H1 H.
+apply deMorganNotAnd in H2.
+ass.
+Qed.
+
+Lemma intersection_in_neg: ∀A. ∀B. ∀x. ((x ∉ A) ∨ (x ∉ B)) 
+-> (x ∉ (A ∩ B)).
+intros A B x H.
+extract_iota_from_goal (A ∩ B).
+take iota_prop x.
+left H0.
+take contrapositive H1.
+apply H2.
+intro.
+both H3.
+disj H.
+apply (H3 H4).
+apply (H3 H5).
+Qed.
+
+(* Theorem 5.2 - 13 *)
+Lemma deMorganNotUnion: ∀A. ∀B. ∀U. (A ⊆ U) -> (B ⊆ U) ->
+((U - (A ∪ B)) = ((U - A) ∩ (U - B))).
+intros A B U u1 u2.
+eq_in.
+apply rc_el in H.
+both H.
+apply union_el_neg in H1.
+both H1.
+apply intersection_in.
+split.
+apply rc_in.
+split.
+ass.
+ass.
+apply rc_in.
+split; ass.
+apply intersection_el in H.
+both H.
+apply rc_el in H0, H1.
+both H0.
+both H1.
+apply rc_in.
+split.
+ass.
+apply union_in_neg.
+split; ass.
+Qed.
+
+(* Theorem 5.2 - 13' *)
+Lemma deMorganNotIntersection: ∀A. ∀B. ∀U. (A ⊆ U) -> (B ⊆ U) ->
+((U - (A ∩ B)) = ((U - A) ∪ (U - B))).
+intros A B U u1 u2.
+eq_in.
+apply rc_el in H.
+both H.
+apply intersection_el_neg in H1.
+apply union_in.
+disj H1.
+left.
+apply rc_in.
+split; ass.
+right.
+apply rc_in.
+split; ass.
+apply union_el in H.
+apply rc_in.
+split.
+disj H.
+apply rc_el in H0.
+both H0.
+ass.
+apply rc_el in H0.
+both H0.
+ass.
+disj H.
+apply rc_el in H0.
+both H0.
+intro.
+apply intersection_el in H0.
+both H0.
+apply (H1 H2).
+apply rc_el in H0.
+both H0.
+intro.
+apply intersection_el in H0.
+both H0.
+apply (H1 H3).
+Qed.
+
+(* Theorem 5.3 (I) -> (II) *)
+Lemma subset_el_intersection: ∀A. ∀B. (A ⊆ B) -> ((A ∩ B) = A).
+intros A B H.
+eq_in.
+apply intersection_el in H0.
+left H0.
+ass.
+apply intersection_in.
+split.
+ass.
+apply (H x H0).
+Qed.
+
+(* Theorem 5.3 (I) -> (III) *)
+Lemma subset_el_union: ∀A. ∀B. (A ⊆ B) -> ((A ∪ B) = B).
+intros A B H.
+eq_in.
+apply union_el in H0.
+disj H0.
+apply (H x H1).
+ass.
+apply union_in.
+right.
+ass.
+Qed.
+
+(* Theorem 5.3 (II) -> (III) *)
+Goal ∀A. ∀B. ((A ∩ B) = A) -> ((A ∪ B) = B). 
+intros A B H.
+eq_in.
+apply union_el in H0.
+disj H0.
+apply eq_el_2 in H.
+take H x H1.
+apply intersection_el in H0.
+right H0.
+ass.
+ass.
+apply union_in.
+right.
+ass.
+Qed.
+
+(* Theorem 5.3 (III) -> (I) *)
+Lemma subset_in_union: ∀A. ∀B. ((A ∪ B) = B) -> (A ⊆ B).
+intros A B H.
+intros x H2.
+apply eq_el_1 in H.
+take union_in_1 A B x H2.
+take H x H0.
+ass.
+Qed.
+
+
+(* theory of equations for the algebra of sets *)
+Lemma eq_el_symm_diff: ∀A. ∀B. (A = B) -> ((A + B) = ∅).
+intros A B H.
+eq_in.
+repl H H0.
+take symmetric_difference_eq_to_empty_set A.
+apply eq_el_1 in H2.
+take H2 x H1.
+ass.
+apply empty_set_el in H0.
+apply H0.
+Qed.
+
+Lemma symmetric_difference_el_neg: ∀A. ∀B. ∀x. x ∉ (A + B) ->
+((x ∉ A) ∨ (x ∈ B)) ∧ ((x ∉ B) ∨ (x ∈ A)).
+intros A B x H.
+unfold symmetric_difference in H.
+apply union_el_neg in H.
+both H.
+apply rc_el_neg in H0, H1.
+disj H0.
+disj H1.
+split.
+left.
+ass.
+left.
+ass.
+apply (H H0).
+disj H1.
+apply (H0 H).
+split.
+right.
+ass.
+right.
+ass.
+Qed.
+
+Lemma symmetric_difference_symm: ∀A. ∀B. (A + B) = (B + A).
+intros A B.
+eq_in.
+apply symmetric_difference_el in H.
+apply disj_comm in H.
+apply symmetric_difference_in.
+apply H.
+apply symmetric_difference_el in H.
+apply disj_comm in H.
+apply symmetric_difference_in.
+apply H.
+Qed.
+
+Lemma eq_in_symm_diff: ∀A. ∀B. ((A + B) = ∅) -> (A = B).
+intros A B H.
+eq_in.
+apply eq_el_1 in H.
+take H x.
+take contrapositive H1.
+take (empty_set_el x).
+take H2 H3.
+apply symmetric_difference_el_neg in H4.
+both H4.
+disj H5.
+disj H6.
+apply (H4 H0).
+apply (H4 H0).
+disj H6.
+ass.
+ass.
+take symmetric_difference_symm A B.
+take eq_subs (fun g => g = ∅) _ _ H1 H.
+clear H1 H.
+rename H2 into H.
+apply eq_el_1 in H.
+take H x.
+take contrapositive H1.
+take (empty_set_el x).
+take H2 H3.
+apply symmetric_difference_el_neg in H4.
+both H4.
+disj H5.
+disj H6.
+apply (H4 H0).
+apply (H4 H0).
+disj H6.
+ass.
+ass.
+Qed.
+
+(* skipped equasion theory because I don't have structural induction yet
+https://en.wikipedia.org/wiki/Knaster%E2%80%93Tarski_theorem maybe this
+And good understanding of the relation theory
+Can also do in Coq, but for now it seems not very comfortable
+*)
+
+
+Ltac repl_forward eq_hyp target_hyp :=
+let symmetric_eq := fresh "symmetric_eq" in
+let target_hyp_repl := fresh target_hyp in
+match type of eq_hyp with
+| eq ?a ?b => match type of target_hyp with
+| context g[ a ] => let my_func := (context g [b]) in 
+pattern a in target_hyp;
+match type of target_hyp with
+|?func ?arg => pose proof (eq_subs func
+a b eq_hyp target_hyp):my_func as target_hyp_repl;
+move target_hyp_repl before target_hyp;
+clear target_hyp; 
+rename target_hyp_repl into target_hyp
+| _ => fail "error inside nested matches"
+end
+end
+end.
+
+Ltac repl_backward eq_hyp target_hyp :=
+swap_eq eq_hyp; repl_forward eq_hyp target_hyp; swap_eq eq_hyp.
+
+Ltac repl_in_goal eq_hyp :=
+let symmetric_eq := fresh "symmetric_eq" in
+let target_hyp_repl := fresh "target_hyp_repl" in
+match type of eq_hyp with
+| eq ?a ?b =>
+pattern a;
+match goal with
+|- ?func ?arg => 
+pose proof eq_symm _ _ eq_hyp as symmetric_eq;
+apply (eq_subs func b a symmetric_eq);
+clear symmetric_eq
+| _ => fail "error inside goal matching"
+end
+end.
+
+Tactic Notation "repl" constr(eq_hyp) "in" constr(target_hyp) 
+:= repl_forward eq_hyp target_hyp.
+
+Tactic Notation "repl" "<-" constr(eq_hyp) "in" constr(target_hyp) 
+:= repl_backward eq_hyp target_hyp.
+
+Tactic Notation "repl" constr(eq_hyp)
+:= repl_in_goal eq_hyp.
+
+(* Exercise 5.2 *)
+(* Theorem 5.2 - 6 - reusing*)
+Lemma union_with_empty_set_reusing: ∀B. (∀A. ((A ∪ B) = A)) -> B = ∅.
+intros B A.
+take A ∅.
+take empty_set_absorption B.
+take union_comm B ∅.
+repl H1 in H0.
+repl H0 in H.
+apply H.
+Qed.
+(* I skipped the rest 11 examples because seems boring and not very useful*)
+
+(* Exercise 5.3 - a *)
+
+Goal ∀A. ∀B. ∀C. ∀X. ∀Y. ∀U. (A ⊆ U) ->
+((A ∩ B ∩ X) ∪ (A ∩ B ∩ C ∩ X ∩ Y) ∪ (A ∩ X ∩ (U - A))) = (A ∩ B ∩ X).
+intros A B C X Y U u1.
+take intersection_with_complement A U u1.
+take intersection_comm A X.
+repl H0.
+
+
+
+
+(*
+(a) (A ∩ B ∩ X) ∪ (A ∩ B ∩ C ∩ X ∩ Y) ∪ (A ∩ X ∩ A̅) = A ∩ B ∩ X.
+
+(b) (A ∩ B ∩ C) ∪ (A̅ ∩ B ∩ C) ∪ B̅ ∪ C̅ = U.
+
+(c) (A ∩ B ∩ C ∩ X̅) ∪ (A̅ ∩ C) ∪ (B̅ ∩ C) ∪ (C ∩ X) = C.
+
+(d) [(A ∩ B) ∪ (A ∩ C) ∪ (A̅ ∩ X ∩ Y)]
+    ∩ [(A ∩ B̅ ∩ C) ∪ (A̅ ∩ X ∩ Y̅) ∪ (A̅ ∩ B ∩ Y)]
+  = (A ∩ B) ∪ (A̅ ∩ B̅ ∩ X ∩ Y).
+  
+  *)
