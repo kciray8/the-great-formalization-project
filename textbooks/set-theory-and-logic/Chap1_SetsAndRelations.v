@@ -1676,7 +1676,9 @@ Qed.
 
 End AbsoluteComplementation.
 
-Ltac disj H := apply (disj_el _ _ _ H); intro; clear H.
+Ltac disj H := 
+let H_name := fresh "H" in
+apply (disj_el _ _ _ H); intro H_name; move H_name before H; clear H.
 
 (* Theorem 5.1 - 1 *)
 Lemma union_assoc: ∀A. ∀B. ∀C. (A ∪ (B ∪ C)) = ((A ∪ B) ∪ C). 
@@ -2332,7 +2334,6 @@ ass.
 Qed.
 
 
-(* theory of equations for the algebra of sets *)
 Lemma eq_el_symm_diff: ∀A. ∀B. (A = B) -> ((A + B) = ∅).
 intros A B H.
 eq_in.
@@ -2462,6 +2463,18 @@ clear symmetric_eq
 end
 end.
 
+Ltac repl_in_goal_backward eq_hyp :=
+let target_hyp_repl := fresh "target_hyp_repl" in
+match type of eq_hyp with
+| eq ?a ?b =>
+pattern b;
+match goal with
+|- ?func ?arg => 
+apply (eq_subs func a b eq_hyp)
+| _ => fail "error inside goal matching"
+end
+end.
+
 Tactic Notation "repl" constr(eq_hyp) "in" constr(target_hyp) 
 := repl_forward eq_hyp target_hyp.
 
@@ -2470,6 +2483,9 @@ Tactic Notation "repl" "<-" constr(eq_hyp) "in" constr(target_hyp)
 
 Tactic Notation "repl" constr(eq_hyp)
 := repl_in_goal eq_hyp.
+
+Tactic Notation "repl" "<-" constr(eq_hyp)
+:= repl_in_goal_backward eq_hyp.
 
 (* Exercise 5.2 *)
 (* Theorem 5.2 - 6 - reusing*)
@@ -2492,19 +2508,392 @@ intros A B C X Y U u1.
 take intersection_with_complement A U u1.
 take intersection_comm A X.
 repl H0.
+take intersection_assoc X A (U - A).
+swap_eq H1.
+repl H1.
+repl H.
+take intersection_with_empty_set X.
+repl H2.
+take empty_set_absorption (A ∩ B ∩ X ∪ (A ∩ B ∩ C ∩ X ∩ Y)).
+repl H3.
+take absorption_law_union_intersection (A ∩ B ∩ X) (C ∩ Y).
+take intersection_assoc (A ∩ B) C X.
+swap_eq H5.
+repl H5.
+take intersection_comm C X.
+repl H6.
+take intersection_assoc (A ∩ B) X C.
+repl H7.
+take intersection_assoc (((A ∩ B) ∩ X)) C Y.
+repl <- H8.
+repl H4.
+apply eq_refl.
+Qed.
+
+Lemma get (x: Set): ∃g. g = x.
+apply (ex_in _ x).
+apply eq_refl.
+Qed.
+
+Ltac get_core s n :=
+let ex_hyp := fresh "ex_hyp" in
+let P := fresh "P" in
+pose proof get s as ex_hyp;
+apply (ex_el _ ex_hyp);
+intro n;
+intro P; 
+clear ex_hyp.
+
+Tactic Notation "get" uconstr(s) "as" ident(n) := get_core s n.
+
+(* Exercise 5.3 - b *)
+
+Goal ∀A. ∀B. ∀C. ∀U. (A ⊆ U) -> (B ⊆ U)->(C ⊆ U)->
+(((A ∩ B ∩ C) ∪ (((U - A) ∩ B ∩ C) ∪ (U - B) ∪ (U - C))) = U).
+intros A B C U u1 u2 u3.
+get (B ∩ C) as bc.
+take intersection_assoc A B C.
+repl <- H.
+take intersection_assoc (U - A) B C.
+repl <- H0.
+repl <- P. 
+clear H H0.
+take union_assoc ((U - A) ∩ bc) (U - B) (U - C).
+repl <- H.
+take union_assoc (A ∩ bc) (U - A ∩ bc) ((U - B) ∪ (U - C)). 
+repl H0.
+take intersection_union_distr bc A (U - A).
+take intersection_comm A bc.
+take intersection_comm (U - A) bc.
+repl H2.
+repl H3.
+repl <- H1.
+take union_with_complement A U u1.
+repl H4.
+take intersection_with_universal_set U bc.
+assert (bc ⊆ U).
+repl P.
+intros x G.
+apply intersection_el in G.
+left G.
+apply (u2 x H6).
+take H5 H6.
+take universal_set_absorption bc U H6.
+repl H8.
+take deMorganNotIntersection B C U u2 u3.
+repl <- H9.
+repl <- P.
+take union_with_complement bc U H6.
+apply H10.
+Qed.
+
+(* Exercise 5.3 - c *)
+Goal ∀A. ∀B. ∀C. ∀X. ∀U. (A ⊆ U) -> (B ⊆ U)-> (C ⊆ U) -> (X ⊆ U) ->
+(((A ∩ B ∩ C ∩ (U - X)) ∪ ((U - A) ∩ C) ∪ ((U - B) ∩ C) ∪ (C ∩ X)) = C).
+intros A B C X U u1 u2 u3 u4.
+take intersection_comm (A ∩ B) C.
+repl H.
+take intersection_assoc C (A ∩ B) (U - X).
+repl <- H0.
+take intersection_comm (U - A) C.
+repl H1.
+take intersection_union_distr C ((A ∩ B) ∩ (U - X)) (U - A).
+repl <- H2.
+take intersection_comm (U - B) C.
+repl H3.
+take intersection_union_distr C ((((A ∩ B) ∩ (U - X)) ∪ (U - A))) (U - B).
+repl <- H4.
+take intersection_union_distr C (((((A ∩ B) ∩ (U - X)) ∪ (U - A)) ∪ (U - B))) (X).
+repl <- H5.
+clear H0 H1 H2 H3 H4 H5.
+take intersection_with_universal_set.
+get (U - X) as nX.
+repl <- P.
+get (U - A) as nA.
+repl <- P0.
+clear H H0.
+get (U - B) as nB.
+repl <- P1.
+take union_assoc ((A ∩ B) ∩ nX) nA nB.
+repl <- H.
+repl P0.
+repl P1.
+take deMorganNotIntersection A B U u1 u2.
+repl <- H0.
+get ((A ∩ B)) as AuB.
+repl <- P2.
+take union_intersection_distr (U - AuB) AuB nX. 
+take union_comm (AuB ∩ nX) (U - AuB).
+repl H2.
+repl H1.
+take union_with_complement AuB U.
+assert (AuB ⊆ U).
+intros x HH.
+repl P2 in HH.
+apply intersection_el in HH.
+left HH.
+apply (u1 x H4).
+take H3 H4.
+take union_comm AuB (U - AuB).
+repl <- H6.
+repl H5.
+take universal_set_absorption ((U - AuB) ∪ nX) U.
+assert  (((U - AuB) ∪ nX) ⊆ U).
+intros x G1.
+apply union_el in G1.
+disj G1.
+apply rc_el in H8.
+left H8.
+ass.
+repl P in H8.
+apply rc_el in H8.
+left H8.
+ass.
+take H7 H8.
+take intersection_comm U ((U - AuB) ∪ nX).
+repl H10.
+repl H9.
+take union_assoc (U - AuB) nX X.
+repl <- H11.
+repl P.
+take union_with_complement X U u4.
+take union_comm X (U - X).
+repl <- H13.
+repl H12.
+take union_with_universal_set (U - AuB) U.
+assert ((U - AuB) ⊆ U).
+intros k G2.
+apply rc_el in G2.
+left G2.
+ass.
+take H14 H15.
+repl H16.
+take universal_set_absorption C U u3.
+ass.
+Qed.
+
+Lemma intersection_in_subset: ∀A. ∀B. ∀U.
+(A ⊆ U) -> (B ⊆ U) -> (A ∩ B) ⊆ U.
+intros A B U u1 u2.
+intros x H.
+apply intersection_el in H.
+left H.
+apply (u1 x H0).
+Qed.
+
+Lemma rc_in_subset: ∀A. ∀U.
+(A ⊆ U) -> ((U - A) ⊆ U).
+intros A U u1.
+intros x H.
+apply rc_el in H.
+left H.
+ass.
+Qed.
+
+(* Exercise 5.3 - d 
+Too complex and boring -- skipped for later
+Should do on paper first?
+Maybe this exercise is with a typo -
+unable to solve it with membership relation
+*)
+Goal ∀A. ∀B. ∀C. ∀X. ∀Y. ∀U. (A ⊆ U) -> (B ⊆ U)-> (C ⊆ U) -> (X ⊆ U) -> (Y ⊆ U) ->
+ (((A ∩ B) ∪ (A ∩ C) ∪ ((U - A) ∩ (U - X) ∩ Y))
+    ∩ (U - ((A ∩ (U - B) ∩ C) ∪ ((U - A) ∩ (U - X) ∩ (U - Y)) ∪ ((U - A) ∩ B ∩ Y))))
+  = ((A ∩ B) ∪ ((U - A) ∩ (U - B) ∩ (U - X) ∩ Y)).
+intros A B C X Y U aU bU cU xU yU.
+get (U - B) as uB.
+get (U - A) as uA.
+get (U - C) as uC.
+get (U - X) as uX.
+get (U - Y) as uY.
+repl <- P.
+repl <- P0.
+repl <- P1.
+repl <- P2.
+repl <- P3.
+take intersection_union_distr A B C.
+repl <- H.
+take deMorganNotIntersection ((A ∩ uB) ∩ C)
+((uA ∩ uX) ∩ uY) U.
+clear H.
+take rc_in_subset B U bU.
+repl <- P in H.
+take intersection_in_subset _ _ _ aU H.
+take intersection_in_subset _ _ _ H1 cU.
+take H0 H2.
+clear H0.
+Admitted.
 
 
+(* Exercise 5.4 -- Rework Exercise 4.9 b 
+Skipped symmetric_difference_assoc because seems extremely complicated
+*)
+Lemma symmetric_difference_comm: ∀A. ∀B. (A + B) = (B + A).
+intros A B.
+unfold symmetric_difference.
+take union_comm (A - B) (B - A).
+apply H.
+Qed.
 
 
-(*
-(a) (A ∩ B ∩ X) ∪ (A ∩ B ∩ C ∩ X ∩ Y) ∪ (A ∩ X ∩ A̅) = A ∩ B ∩ X.
+Lemma symmetric_difference_assoc: ∀A. ∀B. ∀C.
+ ((A + B) + C) = (A + (B + C)).
+intros A B C.
+unfold symmetric_difference.
+Admitted.
 
-(b) (A ∩ B ∩ C) ∪ (A̅ ∩ B ∩ C) ∪ B̅ ∪ C̅ = U.
+(* Exercise 5.5, 5.6 
+Skipped because I need lists
+ *)
 
-(c) (A ∩ B ∩ C ∩ X̅) ∪ (A̅ ∩ C) ∪ (B̅ ∩ C) ∪ (C ∩ X) = C.
+(* Exercise 5.7 - a*)
+Goal ∀A. ∀B. (A = B) ⇔ ((A + B) = ∅).
+intros A B.
+split.
+intros H.
+apply (eq_el_symm_diff A B).
+apply H.
+intros H.
+apply (eq_in_symm_diff A B).
+apply H.
+Qed.
 
-(d) [(A ∩ B) ∪ (A ∩ C) ∪ (A̅ ∩ X ∩ Y)]
-    ∩ [(A ∩ B̅ ∩ C) ∪ (A̅ ∩ X ∩ Y̅) ∪ (A̅ ∩ B ∩ Y)]
-  = (A ∩ B) ∪ (A̅ ∩ B̅ ∩ X ∩ Y).
-  
-  *)
+(* Exercise 5.7 - b - Skipped, need type theory inside sets*)
+
+(* Exercise 5.7 - c *)
+Goal ∀A. ∀B. ((A = B) ∧ (A = ∅)) ⇔ ((A ∪ B) = ∅).
+intros A B.
+split.
+intros H.
+both H.
+eq_in.
+apply union_el in H.
+disj H.
+repl H1 in H2.
+apply H2.
+repl H1 in H0.
+repl <- H0 in H2.
+apply H2.
+apply (abs_el).
+apply (empty_set_el x).
+ass.
+intros H.
+split.
+apply eq_in.
+intros x H2.
+apply eq_el_1 in H.
+take H x.
+apply abs_el.
+apply (empty_set_el x).
+apply H0.
+apply union_in.
+left.
+ass.
+intros x H2.
+apply eq_el_1 in H.
+take H x.
+apply abs_el.
+apply (empty_set_el x).
+apply H0.
+apply union_in.
+right.
+ass.
+eq_in.
+apply eq_el_1 in H.
+take H x.
+apply H1.
+apply union_in.
+left.
+ass.
+apply abs_el.
+apply (empty_set_el x).
+ass.
+Qed.
+
+(* Exercise 5.7 - d, e - Skipped, need type theory inside sets*)
+
+(* Exercise 5.8 - a b c - TYPOS TYPOS SKIPPED*)
+
+Goal ∀A. ∀B. ∀X. ∀U. (A ⊆ U) -> (B ⊆ U)-> (X ⊆ U) ->
+(U - ((A ∩ X) ∪ (B ∩ (U - X)))) = (((U - A) ∩ X) ∪ ((U - B) ∩ (U - X))).
+intros A B X U aU bU xU.
+eq_in.
+apply rc_el in H.
+both H.
+apply union_el_neg in H1.
+both H1.
+apply intersection_el_neg in H.
+apply intersection_el_neg in H2.
+apply union_in.
+disj H.
+disj H2.
+Admitted.
+
+(* Exercise 5.9 - Skipped, need type theory inside sets*)
+
+Definition relation_from_x_to_y (p X Y: Set):= (relation p) ∧ (p ⊆ (X × Y)).
+Definition relation_from_z_to_z (p Z: Set):= ∃X. ∃Y.
+(relation_from_x_to_y p X Y) ∧ ((X ∪ Y) ⊆ Z).
+Definition relation_in_z (p Z: Set) := relation_from_x_to_y p Z Z.
+
+Definition universal_relation_in_x (X: Set) := (X × X).
+Definition void_relation := ∅.
+
+Definition identity_relation_exists (X: Set): ∃1i.
+(∀p. ((p ∈ i) ⇔ (∃x:: X. p = <x, x>))).
+split.
+take cartesian_product_exists X X.
+left H.
+clear H.
+cbv beta in H0.
+change (∃ s1. (∀ w . ((w ∈ s1) ⇔ 
+(∃ x :: X . (∃ y :: X . (w = (< x, y >))))))) in H0.
+apply (ex_el _ H0).
+intros s1 P.
+clear H0.
+take ZF2_subsets (fun g => (∃ z :: X . (g = (< z, z >)))) s1.
+apply (ex_el _ H).
+intros s2.
+intros P0.
+2:{
+  apply any_biimpl_set_is_no_more_than_one.
+}
+change (∃ s. (∀ p . ((p ∈ s) ⇔ 
+(∃ x :: X . (p = (< x, x >)))))).
+apply (ex_in _ s2).
+intros k.
+split.
+intro.
+take P0 k.
+left H1.
+take H2 H0.
+right H3.
+apply H4.
+intro.
+take P0 k.
+right H1.
+apply H2.
+split.
+take P k.
+right H3.
+apply H4.
+apply (ex_el _ H0).
+intro.
+intro.
+both H5.
+apply (ex_in _ x).
+split.
+ass.
+apply (ex_in _ x).
+split.
+ass.
+ass.
+apply H0.
+Qed.
+
+Definition identity_relation (X: Set): Set := ι _ (identity_relation_exists X).
+Definition id (X: Set): Set := ι _ (identity_relation_exists X).
+
+Theorem identity_relation_prop(X: Set): ∀x::X. ∀y::X. 
+(<x,y> ∈ (id X)) ⇔ (x = y).
+
