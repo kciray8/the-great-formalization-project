@@ -220,6 +220,15 @@ pose proof abs_el A H1.
 apply H2.
 Defined.
 
+Definition contrapositive {A B: Prop}: (A -> B) -> ((¬ B) -> (¬ A)).
+intro.
+intro.
+intro.
+pose proof H H1.
+apply (H0 H2).
+Defined.
+
+
 Definition all {T: Type} (P: T->Prop) := forall x: T, P x.
 
 Declare Scope type_scope.
@@ -266,7 +275,6 @@ pose proof u A.
 apply H.
 apply v.
 Defined.
-
 
 (* Figure 11.26 Example: ¬∃ implies ∀¬ *)
 Definition not_ex_implies_all_not (P: Set->Prop) 
@@ -318,14 +326,6 @@ unfold all in H0.
 unfold imp in H0.
 apply H0.
 exact H.
-Defined.
-
-Definition contrapositive {A B: Prop}: (A -> B) -> ((¬ B) -> (¬ A)).
-intro.
-intro.
-intro.
-pose proof H H1.
-apply (H0 H2).
 Defined.
 
 Definition Exercise_11_7 (A B: Prop): (A ∨ B) ⇒ (B ∨ A).
@@ -653,12 +653,6 @@ exact H.
 Defined.
 
 Definition Least (R: Set-> Set-> Prop) (m : Set) := ∀n : Set. (R m n).
-  
-Definition ex_more (P: Set-> Prop) := ex P.
-
-Notation "'∃≥1' x . p" := (ex_more (fun x => p))
-  (at level 200, x binder, right associativity,
-   format "'[' '∃≥1' '/ ' x . '/ ' p ']'").
 
 Definition ex_less (P: Set-> Prop) := 
 ∀y. ∀z: Set. (P y ⇒ P z ⇒ (y = z)).
@@ -691,7 +685,7 @@ pose proof conj_el_2 _ _ H2.
 apply H3.
 Qed.
 
-Definition ex_unique (P: Set-> Prop) := (∃≥1 x. P x) ∧ (∃≤1 x. P x).
+Definition ex_unique (P: Set-> Prop) := (∃ x. P x) ∧ (∃≤1 x. P x).
 
 Notation "'∃1' x . p" := (ex_unique (fun x => p))
   (at level 200, x binder, right associativity,
@@ -742,7 +736,6 @@ Definition lemma_12_1_2 (R: Set-> Set-> Prop)
 (u: part_ord R) : (∃ l. Least R l) -> (∃1 l. Least R l).
 intro.
 unfold ex_unique.
-unfold ex_more.
 refine (conj_in _ _ H _).
 unfold ex_less.
 intro x.
@@ -791,14 +784,14 @@ exact H2.
 Defined.
 
 Definition Min (R: Set-> Set-> Prop) (r: part_ord R) 
-(w : ∃≥1 x. (Least R x)): Set.
+(w : ∃ x. (Least R x)): Set.
 pose proof lemma_12_1_2 R r w.
 pose proof ι (fun l => Least R l) H.
 exact X.
 Defined.
 
 Definition Min_Prop (R: Set-> Set-> Prop) 
-(r: part_ord R) (w : ∃≥1 x. (Least R x))
+(r: part_ord R) (w : ∃ x. (Least R x))
 : (∀x . ((Least R x)) ⇒ (x = (Min R r w))).
 intro.
 intro.
@@ -898,6 +891,8 @@ exact H.
 Defined.
 
 Ltac left_core x := pose proof conj_el_1 _ _ x.
+
+
 Ltac right_core x := pose proof conj_el_2 _ _ x.
 
 Tactic Notation "left" uconstr(x) := left_core x.
@@ -984,7 +979,7 @@ Definition exercise_12_5_a (P: Set-> Prop)
 (n: Set) (u: (P n)) (v: (∀x. (P(x) ⇒ (x = n))))
 : ∃1 x. (P(x)).
 unfold ex_unique.
-pose proof (ex_in P n u):∃≥1 x. P x.
+pose proof (ex_in P n u):∃ x. P x.
 refine (conj_in _ _ H _).
 unfold ex_less.
 intro y.
@@ -1139,16 +1134,15 @@ pose proof eq_trans y (op e z) z H9 H11.
 exact H12.
 Defined.
 
+
 Definition exercise_12_8 (R: Set-> Set-> Prop) 
-(r: part_ord R) (w : ∃≥1 x. (Least R x))
+(r: part_ord R) (w : ∃ x. (Least R x))
 : (∀x . (x = (Min R r w)) ⇒ ((Least R x))).
 intro.
 intro.
 intro y.
 unfold Min in H.
 unfold Least in w.
-unfold ex_more in w.
-unfold ex in w.
 pose proof w (R x y).
 apply H0.
 intro z.
