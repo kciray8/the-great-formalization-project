@@ -25,6 +25,12 @@ Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) :=
 Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) uconstr(f) :=
   take_core (a b c d e f).
 
+Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) uconstr(f) uconstr(g) :=
+  take_core (a b c d e f g).
+
+Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) uconstr(f) uconstr(g) uconstr(h) :=
+  take_core (a b c d e f g h).
+
 Axiom intuitive_abstraction: forall A: (Set -> Prop), 
 ∃b. ∀ x. ((x ∈ b) ⇔ (A x)).
 
@@ -2016,6 +2022,21 @@ apply DN_el.
 ass.
 Qed.
 
+Lemma rc_in_neg: ∀A. ∀B. ∀x. ((x ∉ A) ∨ (x ∈ B)) -> x ∉ (A - B).
+intros A B X H.
+disj H.
+intro.
+apply rc_el in H.
+left H.
+apply (H0 H1).
+intro.
+apply rc_el in H.
+right H.
+apply (H1 H0).
+Qed.
+
+
+
 Print Assumptions rc_el_neg. (* not constructive*)
 
 (* Theorem 5.2 - 8 and 8' *)
@@ -2690,39 +2711,245 @@ left H.
 ass.
 Qed.
 
-(* Exercise 5.3 - d 
-Too complex and boring -- skipped for later
-Should do on paper first?
-Maybe this exercise is with a typo -
-unable to solve it with membership relation
+(* Exercise 5.3 - d - SUPER LONG
+I did it with membership relation --- PERFECTLY GOOD
+Skipped doing using identities
 *)
+
 Goal ∀A. ∀B. ∀C. ∀X. ∀Y. ∀U. (A ⊆ U) -> (B ⊆ U)-> (C ⊆ U) -> (X ⊆ U) -> (Y ⊆ U) ->
  (((A ∩ B) ∪ (A ∩ C) ∪ ((U - A) ∩ (U - X) ∩ Y))
     ∩ (U - ((A ∩ (U - B) ∩ C) ∪ ((U - A) ∩ (U - X) ∩ (U - Y)) ∪ ((U - A) ∩ B ∩ Y))))
   = ((A ∩ B) ∪ ((U - A) ∩ (U - B) ∩ (U - X) ∩ Y)).
 intros A B C X Y U aU bU cU xU yU.
-get (U - B) as uB.
-get (U - A) as uA.
-get (U - C) as uC.
-get (U - X) as uX.
-get (U - Y) as uY.
-repl <- P.
-repl <- P0.
-repl <- P1.
-repl <- P2.
-repl <- P3.
-take intersection_union_distr A B C.
-repl <- H.
-take deMorganNotIntersection ((A ∩ uB) ∩ C)
-((uA ∩ uX) ∩ uY) U.
-clear H.
-take rc_in_subset B U bU.
-repl <- P in H.
-take intersection_in_subset _ _ _ aU H.
-take intersection_in_subset _ _ _ H1 cU.
-take H0 H2.
+eq_in.
+apply union_in.
+apply intersection_el in H.
+both H.
+apply rc_el in H1.
+both H1.
+apply union_el in H0.
+disj H0.
+apply union_el in H1.
+disj H1.
+left.
+ass.
+take exc_thrd (x ∈ B).
+disj H1.
+apply intersection_el in H0.
+both H0.
+left.
+apply intersection_in.
+split.
+ass.
+ass.
+right.
+apply intersection_in.
+split.
+apply intersection_in.
+split.
+apply intersection_in.
+split.
+take exc_thrd (x ∈ A).
+disj H1.
+apply rc_in.
+split.
+ass.
+apply intersection_el in H0.
+both H0.
+clear H4.
+apply abs_el.
+apply H2.
+apply union_in.
+left.
+apply union_in.
+left.
+apply intersection_in.
+split.
+apply intersection_in.
+split.
+ass.
+apply rc_in.
+split.
+ass.
+ass.
+ass.
+apply rc_in.
+split.
+ass.
+ass.
+apply rc_in.
+split; ass.
+apply rc_in.
+split.
+ass.
+intro.
+apply intersection_el in H0.
+both H0.
+apply H2.
+apply union_in.
+left.
+apply union_in.
+left.
+apply intersection_in.
+split.
+apply intersection_in.
+split.
+ass.
+apply rc_in.
+split; ass.
+ass.
+take exc_thrd (x ∈ Y).
+disj H1.
+ass.
+apply abs_el.
+apply H2.
+apply union_in.
+left.
+apply union_in.
+left.
+apply intersection_el in H0.
+both H0.
+apply intersection_in.
+split.
+apply intersection_in.
+split.
+ass.
+apply rc_in.
+split.
+ass.
+ass.
+ass.
+apply intersection_el in H1.
+both H1.
+apply intersection_el in H0.
+both H0.
+apply rc_el in H1, H4.
+both H1.
+both H4.
 clear H0.
-Admitted.
+right.
+apply intersection_in.
+split.
+apply intersection_in.
+split.
+apply intersection_in.
+split.
+apply rc_in.
+split; ass.
+apply rc_in.
+split.
+ass.
+intro.
+apply H2.
+apply union_in.
+right.
+apply intersection_in.
+split.
+apply intersection_in.
+split.
+apply rc_in.
+split.
+ass.
+ass.
+ass.
+ass.
+apply rc_in.
+split; ass.
+ass.
+apply union_el in H.
+disj H.
+apply intersection_el in H0.
+both H0.
+apply intersection_in.
+split.
+apply union_in.
+left.
+apply union_in.
+left.
+apply intersection_in.
+split; ass.
+apply rc_in.
+split.
+take aU x H.
+ass.
+intro.
+apply union_el in H0.
+disj H0.
+apply union_el in H2.
+disj H2.
+apply intersection_el in H0.
+both H0.
+apply intersection_el in H2.
+both H2.
+apply rc_el in H4.
+both H4.
+apply H5.
+ass.
+apply intersection_el in H0.
+both H0.
+apply intersection_el in H2.
+both H2.
+apply rc_el in H0.
+both H0.
+apply H5.
+ass.
+apply intersection_el in H2.
+both H2.
+apply intersection_el in H0.
+both H0.
+apply rc_el in H2.
+both H2.
+apply H5.
+ass.
+apply intersection_el in H0.
+both H0.
+apply intersection_el in H.
+both H.
+apply intersection_el in H0.
+both H0.
+apply rc_el in H2.
+both H2.
+apply rc_el in H.
+both H.
+apply rc_el in H3.
+both H3.
+clear H2 H.
+apply intersection_in.
+split.
+apply union_in.
+right.
+apply intersection_in.
+split.
+apply intersection_in.
+split.
+apply rc_in.
+split; ass.
+apply rc_in.
+split; ass.
+ass.
+apply rc_in.
+split.
+ass.
+apply union_in_neg.
+split.
+apply union_in_neg.
+split.
+apply intersection_in_neg.
+left.
+apply intersection_in_neg.
+left.
+ass.
+apply intersection_in_neg.
+right.
+apply rc_in_neg.
+right.
+ass.
+apply intersection_in_neg.
+left.
+apply intersection_in_neg.
+right.
+ass.
+Qed.
 
 
 (* Exercise 5.4 -- Rework Exercise 4.9 b 
@@ -2812,7 +3039,7 @@ Qed.
 
 (* Exercise 5.7 - d, e - Skipped, need type theory inside sets*)
 
-(* Exercise 5.8 - a b c - TYPOS TYPOS SKIPPED*)
+(* Exercise 5.8 - a b c - boring, can redo later with joy*)
 
 Goal ∀A. ∀B. ∀X. ∀U. (A ⊆ U) -> (B ⊆ U)-> (X ⊆ U) ->
 (U - ((A ∩ X) ∪ (B ∩ (U - X)))) = (((U - A) ∩ X) ∪ ((U - B) ∩ (U - X))).
@@ -2896,4 +3123,752 @@ Definition id (X: Set): Set := ι _ (identity_relation_exists X).
 
 Theorem identity_relation_prop(X: Set): ∀x::X. ∀y::X. 
 (<x,y> ∈ (id X)) ⇔ (x = y).
+intros x x_in_X y y_in_Y.
+split.
+intro.
+extract_iota (id X) H.
+take iota_prop (< x, y >).
+left H0.
+take H1 H.
+apply (ex_el _ H2).
+intro k.
+intro.
+both H3.
+take pair_property H5.
+both H3.
+swap_eq H7.
+take eq_trans _ _ _ H6 H7.
+apply H3.
+intro.
+extract_iota_from_goal  (id X).
+take iota_prop (< x, y >).
+right H0.
+apply H1.
+apply (ex_in _ x).
+split.
+ass.
+repl_in_goal H.
+apply eq_refl.
+Qed.
+
+Definition identity_relation_p(X i: Set) := (∀p. ((p ∈ i) ⇔ (∃x:: X. p = <x, x>))).
+
+
+Theorem identity_relation_prop_iota_free(X: Set): ∃1i. (identity_relation_p X i) 
+∧ (∀x::X. ∀y::X. (<x,y> ∈ i) ⇔ (x = y)).
+apply ex_unique_in.
+apply identity_relation_exists.
+intro i.
+intro.
+intros x x_in_X y y_in_Y.
+split.
+intro.
+take H  (< x, y >).
+left H1.
+take H2 H0.
+apply (ex_el _ H3).
+intros x0.
+intro.
+right H4.
+take pair_property H5.
+both H6.
+swap_eq H8.
+take eq_trans _ _ _ H7 H8.
+ass.
+intro.
+repl_in_goal H0.
+take H (< y, y >).
+right H1.
+apply H2.
+apply (ex_in _ y).
+split.
+ass.
+apply eq_refl.
+Qed.
+
+Ltac ex_el H :=
+match type of H with
+|∃≥1 x. _ =>
+let V := fresh x in
+let H2 := fresh "H2" in
+apply (ex_el _ H);
+intros V H2;
+move V before H;
+move H2 before V;
+clear H;
+rename H2 into H
+|∃ x. _ =>
+let V := fresh x in
+let H2 := fresh "H2" in
+apply (ex_el _ H);
+intros V H2;
+move V before H;
+move H2 before V;
+clear H;
+rename H2 into H
+|∃1 x. _ =>
+let V := fresh x in
+let H2 := fresh "H2" in
+let H3 := fresh "H3" in
+let U := fresh "U" in
+pose proof conj_el_1 _ _ H as H3;
+pose proof conj_el_2 _ _ H as U;
+apply (ex_el _ H3);
+intros V H2;
+move V before H;
+move H2 before V;
+move H3 before H2;
+move U before H3;
+cbv beta in H3;
+cbv beta in U;
+clear H H3;
+rename H2 into H
+end.
+
+
+Definition p_relatives_ex(A p: Set) (p_is_rel: relation p) : 
+∃1s. (∀y. (y ∈ s) ⇔ ∃x::A. <x, y> ∈ p).
+split; try apply any_biimpl_set_is_no_more_than_one.
+take range_exists p p_is_rel.
+left H.
+clear H.
+cbv beta in H0.
+ex_el H0.
+take ZF2_subsets (fun g=> (∃ x1 :: A . < x1, g > ∈ p)) x.
+ex_el H.
+apply (ex_in _ b).
+intro y.
+split.
+intro.
+take H y.
+left H2.
+take H3 H1.
+right H4.
+apply H5.
+(*part 2*)
+intro.
+ex_el H1.
+both H1.
+take H y.
+right H1.
+apply H4.
+split.
+take H0 y.
+right H5.
+apply H6.
+apply (ex_in _ x0).
+apply H3.
+apply (ex_in _ x0).
+split;ass.
+Qed.
+
+Definition p_relatives(A p: Set) (p_is_rel: relation p) 
+:= ι _ (p_relatives_ex A p p_is_rel).
+
+Ltac grab P :=
+  lazymatch goal with
+  | H : P |- _ => exact H
+  | _ => fail "No hypothesis of type" P "in context"
+  end.
+
+Notation "p [ A ]" := 
+(p_relatives A p (ltac:(grab (relation p))))(at level 60, left associativity, only parsing).
+
+Notation "p [ A ]" := 
+(p_relatives A p _)(at level 60, left associativity, only printing).
+
+Notation "'D' X" := (domain X (ltac:(grab (relation X))))(at level 60, only parsing).
+Notation "'D' X" := (domain X _)(only printing).
+
+Notation "'R' X" := (range X (ltac:(grab (relation X))))(at level 60, only parsing).
+Notation "'R' X" := (range X _)(only printing).
+
+Theorem p_relatives_of_domain_is_range(A p: Set) (p_is_rel: relation p): 
+(* -> *)
+(p[D p]) = (R p).
+apply eq_in.
+intros x H.
+extract_iota_from_goal (R p).
+take iota_prop x.
+right H0.
+apply H1.
+extract_iota (p [D p]) H.
+take iota_prop0 x.
+take H2.
+left H2.
+take H4 H.
+ex_el H5.
+both H5.
+apply (ex_in _ x0).
+apply H7.
+intros x H.
+(* <- *)
+extract_iota (R p) H.
+rename s into range_of_p.
+rename iota_prop into range_prop.
+extract_iota_from_goal (p [D p]).
+rename s into relatives_of_domain.
+rename iota_prop into relatives_of_domain_prop.
+take relatives_of_domain_prop x.
+right H0.
+apply H1.
+clear H0 H1.
+take range_prop x.
+left H0.
+take H1 H.
+clear H0 H1.
+ex_el H2.
+rename x0 into z.
+apply (ex_in _ z).
+split.
+extract_iota_from_goal (D p).
+right (iota_prop z).
+apply H0.
+apply (ex_in _ x).
+apply H2.
+apply H2.
+Qed.
+
+Theorem p_relatives_of_any_set_are_subset_of_raange(A p: Set) (p_is_rel: relation p): 
+(p[A] ⊆ (R p)).
+intros x H.
+extract_iota (p [A]) H.
+extract_iota_from_goal (R p).
+take iota_prop0 x.
+right H0.
+apply H1.
+take iota_prop x.
+left H2.
+take H3 H.
+ex_el H4.
+both H4.
+apply (ex_in _ x0).
+ass.
+Qed.
+
+Theorem cartesian_is_relation(X Y: Set): relation(X × Y).
+intros z H.
+extract_iota (X × Y) H.
+take iota_prop z.
+left H0.
+take H1 H.
+ex_el H2.
+both H2.
+ex_el H4.
+both H4.
+apply (ex_in _ x).
+apply (ex_in _ y).
+ass.
+Qed.
+
+
+Theorem domain_of_cartesian(X Y: Set) (H: Y ≠ ∅) 
+(CR: relation(X × Y)): (D (X × Y)) = X.
+extract_iota_from_goal (D (X × Y)).
+rename s into domain.
+extract_iota (X × Y) iota_prop.
+rename s into cartesian.
+eq_in.
+take iota_prop x.
+left H1.
+take H2 H0.
+ex_el H3.
+take iota_prop0 (< x, y >).
+left H4.
+take H5 H3.
+ex_el H6.
+both H6.
+ex_el H8.
+both H8.
+take pair_property H9.
+both H8.
+repl H10.
+apply H7.
+take iota_prop x.
+right H1.
+apply H2.
+take non_empty_set_has_element _ H.
+ex_el H3.
+rename a into y.
+take iota_prop0 (< x, y >).
+apply (ex_in _ y).
+right H4.
+apply H5.
+apply (ex_in _ x).
+split.
+ass.
+apply (ex_in _ y).
+split.
+ass.
+apply eq_refl.
+Qed.
+
+Ltac ex_unique_in H := 
+match goal with 
+|- ∃1 e. _ =>
+let P := fresh "P" in  
+let ee := fresh e in  
+apply (ex_unique_in _ _ H);
+intros ee P
+end.
+
+Definition non_empty_set_has_element2: ∃1e. (empty_set_p e) ∧ 
+∀c. c ≠ e -> ∃a. a ∈ c.
+ex_unique_in empty_set_exists.
+intros c H.
+take non_empty_set_has_element c.
+assert (c ≠ ∅).
+extract_iota_from_goal ∅.
+assert (s = e).
+eq_in.
+apply abs_el.
+apply (iota_prop x).
+apply H1.
+apply abs_el.
+apply (P x).
+intro.
+take H2 H1.
+apply H3.
+repl H1.
+apply H.
+take H0 H1.
+apply H2.
+Defined.
+
+Theorem range_of_cartesian: ∃1e. (empty_set_p e) ∧ ∀X. ∀Y. 
+∃1c. (cartesian_product_p X Y c) ∧ 
+∃1r. (range_p c r) ∧ ((X ≠ e) -> (r = Y)).
+ex_unique_in empty_set_exists.
+intros X Y.
+ex_unique_in (cartesian_product_exists X Y).
+assert (relation c).
+unfold relation.
+intros x x_in_c.
+take P0 x.
+left H.
+take H0 x_in_c.
+ex_el H1.
+both H1.
+ex_el H3.
+both H3.
+apply (ex_in _ x0).
+apply (ex_in _ y).
+apply H4.
+ex_unique_in (range_exists c H).
+intro.
+eq_in.
+take P1 x.
+left H2.
+take H3 H1.
+ex_el H4.
+take P0 (< x0, x >).
+left H5.
+take H6 H4.
+ex_el H7.
+both H7.
+ex_el H9.
+both H9.
+take pair_property H10.
+both H9.
+repl H12.
+apply H7.
+take P1 x.
+right H2.
+apply H3.
+clear H2 H3.
+rename x into y.
+take non_empty_set_has_element2.
+left H2.
+clear H2.
+ex_el H3.
+both H3.
+take H4 X.
+clear H4.
+assert (X ≠ x).
+intro.
+repl H4 in H0.
+apply H0.
+eq_in.
+take H2 x0.
+left H6.
+apply (H7 H5).
+take P x0.
+left H6.
+apply (H7 H5).
+take H3 H4.
+change (∃ x . x ∈ X) in H5.
+ex_el H5.
+take P0 (< x0, y >).
+apply (ex_in _ x0).
+right H6.
+apply H7.
+apply (ex_in _ x0).
+split.
+ass.
+apply (ex_in _ y).
+split.
+ass.
+apply eq_refl.
+Qed.
+
+Lemma ex_less_ex_more_el (P Q: Set -> Prop):
+(∃1x. P x) -> (∃≤1 x. ∃≥1 y. (P x ∧ P y)).
+intro.
+intros q w H1 H2.
+right H.
+take H0 q w.
+apply H3.
+ex_el H1.
+left H1.
+apply H4.
+ex_el H2.
+left H2.
+ass.
+Qed.
+
+Lemma ex_less_ex_more_el_2 (P: Set -> Prop) :
+(∃1x. P x) -> (∃≤1 x. ∃≥1 y. (P y ∧ P x)).
+intro.
+intros q w H1 H2.
+right H.
+take H0 q w.
+apply H3.
+ex_el H1.
+right H1.
+apply H4.
+ex_el H2.
+right H2.
+ass.
+Qed.
+
+Definition extension_trans (a b: Set) (P: Set->Prop) 
+(H1: ∀x. (x ∈ a) ⇔ P x) 
+(H2: ∀x. (x ∈ b) ⇔ P x): a = b.
+apply ZF1_extension.
+intros g.
+take H1 g.
+take H2 g.
+swap_biimpl H0.
+take biimpl_trans _ _ _ H H0.
+ass.
+Qed.
+
+Definition unit_set_p_join(a u1 u2: Set):
+(unit_set_p a u1) -> (unit_set_p a u2) -> u1 = u2.
+intros.
+take extension_trans _ _ _ H H0.
+apply H1.
+Qed.
+
+
+Definition pair_p_definitions_equivalent(a b s: Set): 
+(pair_p_traditional a b s) ⇔ (pair_p a b s).
+unfold pair_p_traditional, pair_p.
+apply conj_in.
+intro.
+intro x.
+apply conj_in.
+intro.
+ex_el H.
+both H.
+ex_el H2.
+both H2.
+split.
+apply (ex_in _ u).
+split.
+ass.
+split.
+apply (ex_in _ ab).
+split.
+ass.
+take H3 x.
+left H2.
+take H4 H0.
+apply H5.
+apply ex_less_conj_in.
+take pair_unord_exists a b.
+right H2.
+apply H4.
+apply ex_less_conj_in.
+take unit_set_exists a.
+right H2.
+apply H4.
+intro.
+ex_el H.
+clear U.
+both H.
+ex_el H0.
+clear U.
+both H0.
+take extension_trans _ _ _ H1 H.
+repl H0 in H1.
+repl H0 in H2.
+clear H0 H.
+ex_el H2.
+ex_el H3.
+clear U U0.
+both H2.
+both H3.
+take H0 x.
+right H3.
+take extension_trans _ _ _ H H2.
+repl H6 in H5.
+apply H5.
+apply H4.
+intro.
+take unit_set_exists a.
+ex_el H0.
+rename p into u.
+split.
+apply (ex_in _ u).
+split.
+apply H0.
+split.
+take pair_unord_exists a b.
+ex_el H1.
+rename p into ab.
+apply (ex_in _ ab).
+split.
+apply H1.
+intro k.
+split.
+intro.
+take H k.
+left H3.
+take H4 H2.
+ex_el H5.
+both H5.
+take extension_trans _ _ _ H0 H6.
+repl_in_goal H5.
+ex_el H7.
+both H7.
+take extension_trans _ _ _ H1 H8.
+repl_in_goal H7.
+apply H9.
+intro.
+take H k.
+right H3.
+apply H4.
+split.
+apply (ex_in _ u).
+split.
+apply H0.
+split.
+apply (ex_in _ ab).
+split.
+apply H1.
+apply H2.
+apply ex_less_conj_in.
+apply U0.
+apply ex_less_conj_in.
+apply U.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+apply ex_less_conj_in.
+apply U.
+Qed.
+
+Definition bridge_pair_p(a b: Set): (∃p. (pair_p_traditional a b p)) 
+-> (∃p. (pair_p a b p)).
+intro.
+ex_el H.
+apply (ex_in _ p).
+take pair_p_definitions_equivalent a b p.
+left H0.
+apply H1.
+apply H.
+Qed.
+
+Definition pair_exists(a b: Set) : ∃1p. (pair_p a b p).
+split.
+apply bridge_pair_p.
+change (∃≥1 x. pair_p_traditional a b x).
+pose proof biimpl_trans as p.
+unfold pair_p.
+take unit_set_exists a.
+right H.
+rename H0 into l2.
+ex_el H.
+take pair_unord_exists a b.
+right H0.
+rename H1 into l3.
+ex_el H0.
+take pair_unord_exists p0 p1.
+right H1.
+rename H2 into l1.
+ex_el H1.
+apply (ex_in _ p2).
+split.
+apply (ex_in _ p0).
+split.
+apply H.
+split.
+apply (ex_in _ p1).
+split.
+apply H0.
+apply H1.
+apply ex_less_conj_in.
+apply l3.
+apply ex_less_conj_in.
+apply l2.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Notation "p := < a , b >" := (pair_p a b p)(at level 81, left associativity).
+
+Definition pair_property_p (x y u v: Set): 
+∃1p1. pair_p x y p1 ∧
+∃1p2. pair_p u v p2 ∧
+((p1 = p2) -> (x = u) ∧ (y = v)).
+ex_unique_in (pair_exists x y).
+ex_unique_in (pair_exists u v).
+take pair_p_definitions_equivalent x y p1.
+right H.
+take H0 P.
+clear P H H0.
+rename H1 into P.
+take pair_p_definitions_equivalent u v p2.
+right H.
+take H0 P0.
+clear P0 H H0.
+rename H1 into P0.
+intro.
+unfold pair_p_traditional in P.
+ex_el P.
+both P.
+unfold pair_p_traditional in P0.
+ex_el P0.
+both P0.
+ex_el H1.
+both H1.
+ex_el H3.
+both H3.
+rename ab into xy.
+rename ab0 into uv.
+take pair_property_naked x y u v.
+left H3.
+apply H7.
+clear H3 H7.
+extract_iota_from_goal ({`x}).
+take extension_trans _ _ _ H0 iota_prop.
+swap_eq H3.
+repl H3.
+extract_iota_from_goal ({x, y}).
+take extension_trans _ _ _ H4 iota_prop0.
+swap_eq H7.
+repl H7.
+extract_iota_from_goal ({u0, xy}).
+take extension_trans _ _ _ H5 iota_prop1.
+swap_eq H8.
+repl H8.
+extract_iota_from_goal ({`u}).
+take extension_trans _ _ _ H2 iota_prop2.
+swap_eq H9.
+repl H9.
+extract_iota_from_goal ({u, v}).
+take extension_trans _ _ _ H1 iota_prop3.
+swap_eq H10.
+repl H10.
+extract_iota_from_goal ({u1, uv}).
+take extension_trans _ _ _ H6 iota_prop4.
+swap_eq H11.
+repl H11.
+apply H.
+Qed.
+
+Definition ex_less_ex_unique_el (P: Set -> Prop):
+∃≤1 x. ∃1 y. P x.
+intros q w H1 H2.
+ex_el H1.
+ex_el H2.
+take U q w.
+take H H1 H1.
+ass.
+Qed.
+
+
+Definition triple_exists(a b c: Set) : ∃1t. (triple_p a b c t).
+unfold triple_p.
+take pair_exists a b.
+ex_el H.
+rename p into ab.
+take pair_exists ab c.
+ex_el H0.
+rename p into t.
+split.
+apply (ex_in _ t).
+split.
+apply (ex_in _ ab).
+split; ass.
+apply ex_less_conj_in.
+apply U.
+intros q w R1 R2.
+ex_el R1.
+ex_el R2.
+clear U1 U2.
+both R1.
+both R2.
+take extension_trans _ _ _ H1 H3.
+repl H5 in H2.
+take extension_trans _ _ _ H2 H4.
+apply H6.
+Qed.
+
+(* Exercise 6.1 *)
+Theorem triple_prop (x y z u v w: Set):
+∃1t1. triple_p x y z t1 ∧
+∃1t2. (triple_p u v w t2) ∧
+((t1 = t2) -> ((x = u) ∧ (y = v) ∧ (z = w))).
+ex_unique_in (triple_exists x y z).
+ex_unique_in (triple_exists u v w).
+intros H.
+repl H in P.
+rename H into G.
+unfold triple_p in P, P0.
+ex_el P.
+ex_el P0.
+both P.
+both P0.
+take pair_property_p x y u v.
+ex_el H3.
+clear U1.
+both H3.
+ex_el H5.
+clear U1.
+both H5.
+take pair_property_p ab z ab0 w.
+ex_el H5.
+clear U1.
+both H5.
+ex_el H8.
+clear U1.
+both H8.
+take extension_trans _ _ _ H0 H7.
+take extension_trans _ _ _ H2 H5.
+swap_eq H8.
+take eq_trans _ _ _ H8 H10.
+take H9 H11.
+both H12.
+swap_eq H13.
+repl H13 in H1.
+take extension_trans _ _ _ H H4.
+take extension_trans _ _ _ H1 H3.
+swap_eq H12.
+take eq_trans _ _ _ H12 H15.
+take H6 H16.
+split.
+apply H17.
+apply H14.
+Qed.
+
+
+(* Exercise 6.2 
+{1,2} X {2,3,4} = {(1,2), (1,3), (1,4), (2,2), (2,3), (2,4)}
+{1,2} - domain
+{2,3,4} - range
+graph - rectangle, 6 points
+*)
+
+
+(* Exercise 6.3, 6.4 - Calculus, skipped, requires R*)
 

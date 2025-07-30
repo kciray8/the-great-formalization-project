@@ -898,6 +898,8 @@ exact H.
 Defined.
 
 Ltac left_core x := pose proof conj_el_1 _ _ x.
+
+
 Ltac right_core x := pose proof conj_el_2 _ _ x.
 
 Tactic Notation "left" uconstr(x) := left_core x.

@@ -216,6 +216,8 @@ pose proof biimpl_trans _ _ _ H2 H4.
 apply H5.
 Defined.
 
+Definition pair_unord_p (a b s: Set):= ∀ x. ((x ∈ s) ⇔ ((x = a) ∨ (x = b))).
+
 Definition pair_unord_exists (a b: Set): ∃1p. ∀ x. ((x ∈ p) ⇔ ((x = a) ∨ (x = b))).
 unfold ex_unique.
 apply (conj_in _ _).
@@ -240,6 +242,8 @@ Defined.
 Definition pair_unord (a b: Set): Set := ι _ (pair_unord_exists a b).
 
 Notation "{ a , b }" := (pair_unord a b).
+
+Definition unit_set_p (a s: Set) :=  ∀ x. ((x ∈ s) ⇔ ((x = a))).
 
 Definition unit_set_exists (a: Set): ∃1p. ∀ x. ((x ∈ p) ⇔ ((x = a))).
 pose proof pair_unord_exists a a.
@@ -314,6 +318,8 @@ Defined.
 Ltac destruct_subset H := 
 let x := fresh in
 pose proof (destruct_subset_def _ _ _ H) as x; clear H; cbv beta in x.
+
+Definition union_p(c u: Set) :=  ∀ x. ((x ∈ u) ⇔ ((∃y. (x ∈ y) ∧ (y ∈ c)))).
 
 Definition union_exists (c: Set): ∃1u. ∀ x. ((x ∈ u) ⇔ ((∃y. (x ∈ y) ∧ (y ∈ c)))).
 apply (conj_in _ _).
@@ -430,6 +436,10 @@ Notation " a ∪ b " := (union2 a b)(at level 81, left associativity).
 Axiom ZF6_infinity: ∃a. ((∃e.  (∀ x . ¬(x ∈ e)) ∧ (e ∈ a))
 ∧ (∀ x . (x ∈ a) -> (x ∪ (unit_set x)) ∈ a)).
 
+Definition empty_set_p_traditional (e: Set) := (∀ x . ¬(x ∈ e)).
+Definition empty_set_p (e: Set) := (∀ x . (x ∈ e) ⇔ ⊥).
+
+(* deprecated *)
 Definition empty_set_unique: ∃1e.  (∀ x . ¬(x ∈ e)).
 apply (conj_in _ _).
 pose proof ZF6_infinity.
@@ -452,6 +462,25 @@ intro.
 pose proof H0 x H1.
 apply (abs_el (x ∈ a) H2).
 Defined.
+
+Definition empty_set_exists: ∃1e.  (∀ x . (x ∈ e) ⇔ ⊥).
+pose proof empty_set_unique.
+left H.
+cbv beta in H0.
+apply (ex_el _ H0).
+intros x H1.
+apply (conj_in).
+apply (ex_in _ x).
+intro k.
+apply (conj_in).
+intro.
+pose proof H1 k.
+apply H3.
+apply H2.
+intro.
+apply H2.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
 
 Definition empty_set: Set := ι _ (empty_set_unique).
 Notation " ∅ " := (empty_set).
@@ -525,6 +554,8 @@ Defined.
 
 Definition intersection (c: Set) (not_empty: ¬(c = ∅)): Set 
 := ι _ (intersection_exists c not_empty).
+
+Definition intersection2_p(a b i: Set):= ∀ x. ((x ∈ i) ⇔ (x ∈ a ∧ x ∈ b)).
 
 Definition intersection2_exists (a b: Set): 
 ∃1i. ∀ x. ((x ∈ i) ⇔ (x ∈ a ∧ x ∈ b)).
@@ -724,9 +755,24 @@ Definition symmetric_difference (a b: Set) :=
 
 Notation "a + b" := (symmetric_difference a b)(at level 81, left associativity).
 
+Definition pair_p_traditional (a b s: Set) := 
+∃1u. unit_set_p a u ∧
+∃1ab. pair_unord_p a b ab ∧
+pair_unord_p u ab s.
+
+Definition pair_p (a b s: Set) := 
+∀x. (x∈s) ⇔ (∃1u. unit_set_p a u ∧
+∃1ab. pair_unord_p a b ab ∧
+(x = u ∨ x = ab)).
+
+
 Definition pair (a b: Set) := { (unit_set a) , { a, b } }. 
 
 Notation "< a , b >" := (pair a b)(at level 81, left associativity).
+
+Definition triple_p (a b c s: Set) := 
+∃1ab. pair_p a b ab ∧ 
+pair_p ab c s. 
 
 Definition triple (a b c: Set) := <<a, b>, c>.
 
@@ -1227,6 +1273,7 @@ intro.
 apply H27.
 Defined.
 
+
 Axiom ZF6_power_set: ∀a. ∃b. ∀x. (x ⊆ a) -> x ∈ b.
 
 Definition power_set_exists: ∀a. ∃1b. 
@@ -1264,6 +1311,9 @@ Defined.
 Definition power_set (a: Set) := ι _ (power_set_exists a).
 
 Notation "'𝒫' a " := (power_set a)(at level 69, left associativity).
+
+Definition cartesian_product_p (a b c: Set):= 
+(∀ w. ((w ∈ c) ⇔ ((∃x. (x ∈ a) ∧ (∃y. (y ∈ b) ∧ w = <x,y>))))).
 
 Definition cartesian_product_exists (a b: Set): ∃1c. 
 (∀ w. ((w ∈ c) ⇔ ((∃x. (x ∈ a) ∧ (∃y. (y ∈ b) ∧ w = <x,y>))))).
@@ -1783,6 +1833,8 @@ apply H0.
 apply H6.
 Defined.
 
+Definition domain_p (r: Set) (d: Set) := (∀ x. (x ∈ d) ⇔ ((∃y. <x,y> ∈ r ))).
+
 Definition domain_exists (r: Set) (is_relation: relation r): ∃1d. 
 (∀ x. ((x ∈ d) ⇔ ((∃y. <x,y> ∈ r )))).
 unfold relation in is_relation .
@@ -1857,6 +1909,8 @@ Defined.
 
 Definition domain (r: Set) (is_relation: relation r):= ι _ (domain_exists r is_relation).
 
+Definition range_p (r: Set) (d: Set) := (∀ y. ((y ∈ d) ⇔ ((∃x. <x,y> ∈ r )))).
+
 Definition range_exists (r: Set) (is_relation: relation r): ∃1d. 
 (∀ y. ((y ∈ d) ⇔ ((∃x. <x,y> ∈ r )))).
 unfold relation in is_relation .
@@ -1928,6 +1982,8 @@ apply H9.
 apply H2.
 apply (any_biimpl_set_is_no_more_than_one _).
 Defined.
+
+Definition range (r: Set) (is_relation: relation r):= ι _ (range_exists r is_relation).
 
 Definition S (x: Set) := x ∪ {`x}.
 
