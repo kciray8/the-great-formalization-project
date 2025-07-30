@@ -71,7 +71,7 @@ Defined.
 
 Ltac iota_in H := pose proof ι _ H.
 
-Ltac destruct_ex H c := apply (H _); intro c; intro.
+Ltac destruct_ex H c := apply ex_classical_to_tt in H; apply (H _); intro c; intro.
 
 Definition unique_subset (A: (Set -> Prop)) (a: Set): Set 
 := ι _ (unique_subset_exists A a).
@@ -274,7 +274,6 @@ Definition unit_set (a: Set): Set := (ι _ (unit_set_exists a)).
 
 (* '`' is used to prevent collision with coq { } *)
 Notation "{` a }" := (unit_set a).
-
 
 Definition every_set_is_in_unit_set: ∀m. m ∈ {`m}.
 intro.
