@@ -1311,10 +1311,10 @@ Definition power_set (a: Set) := ι _ (power_set_exists a).
 
 Notation "'𝒫' a " := (power_set a)(at level 69, left associativity).
 
-Definition cartesian_product_p (a b c: Set):= 
+Definition cartesian_old_p (a b c: Set):= 
 (∀ w. ((w ∈ c) ⇔ ((∃x. (x ∈ a) ∧ (∃y. (y ∈ b) ∧ w = <x,y>))))).
 
-Definition cartesian_product_exists (a b: Set): ∃1c. 
+Definition cartesian_exists_old (a b: Set): ∃1c. 
 (∀ w. ((w ∈ c) ⇔ ((∃x. (x ∈ a) ∧ (∃y. (y ∈ b) ∧ w = <x,y>))))).
 pose proof ZF2_subsets (
     fun w => (∃x. ∃y. ((¬(x = y)) ∧ (x ∈ a) ∧ (y ∈ b) ∧ (∀z. (z ∈ w) ⇔ 
@@ -1720,7 +1720,7 @@ pose proof eq_subs (fun g => ∀ x . x ∈ p_p_a_b ⇔ x ⊆ g)
  apply H20.
  Defined.
 
-Definition cartesian_product (a b: Set) := ι _ (cartesian_product_exists a b).
+Definition cartesian_product (a b: Set) := ι _ (cartesian_exists_old a b).
 
 Notation "a × b" := (cartesian_product a b)(at level 70).
 
@@ -2927,7 +2927,7 @@ Notation "f [ x ] ≔ y" := (f_x_eq_y f x y)(at level 70).
 
 Definition inc_set_ex: ∃1f. (is_function f N N) ∧ 
 (∀x :: N. (f [x] ≔ (S x))).
-pose proof cartesian_product_exists N N as NN_ex.
+pose proof cartesian_exists_old N N as NN_ex.
 left NN_ex.
 destruct_ex H NN.
 clear H.
@@ -4129,7 +4129,7 @@ Defined.
 Definition subset_of_cartesian_exists (A B: Set)(P: Set -> Prop): 
 ∃1 c. ∀ w . w ∈ c ⇔ ((∃ x :: A . ∃ y :: B . (w = (< x, y >))) ∧ (P w)).
 apply conj_in.
-pose proof cartesian_product_exists A B.
+pose proof cartesian_exists_old A B.
 left H.
 destruct_ex H0 cartesian.
 pose proof ZF2_subsets (fun w => P w) cartesian.
@@ -4176,19 +4176,19 @@ Definition subset_of_cartesian5_for_2_args_exists (X Y A B C: Set)(P: Set -> Pro
 ∃1 c. ∀ w . w ∈ c ⇔ ((∃ x :: X . ∃ y :: Y . ∃ a :: A . 
 ∃ b :: B . ∃ c :: C . (w = (<< x, y >, < a, b, c >>))) ∧ (P w)).
 apply conj_in.
-pose proof cartesian_product_exists X Y as x_y_exists.
+pose proof cartesian_exists_old X Y as x_y_exists.
 left x_y_exists.
 destruct_ex H x_y.
 rename H0 into x_y_prop. 
-pose proof cartesian_product_exists A B as a_b_exists.
+pose proof cartesian_exists_old A B as a_b_exists.
 left a_b_exists.
 destruct_ex H0 a_b.
 rename H1 into a_b_prop.
-pose proof cartesian_product_exists a_b C as a_b_c_exists.
+pose proof cartesian_exists_old a_b C as a_b_c_exists.
 left a_b_c_exists.
 destruct_ex H1 a_b_c.
 rename H2 into a_b_c_prop.
-pose proof cartesian_product_exists x_y a_b_c as x_y_a_b_c_exists.
+pose proof cartesian_exists_old x_y a_b_c as x_y_a_b_c_exists.
 left x_y_a_b_c_exists.
 destruct_ex H2 x_y_a_b_c.
 rename H3 into x_y_a_b_c_prop.

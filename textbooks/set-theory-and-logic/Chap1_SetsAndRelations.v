@@ -3069,7 +3069,7 @@ Definition void_relation := ∅.
 Definition identity_relation_exists (X: Set): ∃1i.
 (∀p. ((p ∈ i) ⇔ (∃x:: X. p = <x, x>))).
 split.
-take cartesian_product_exists X X.
+take cartesian_exists_old X X.
 left H.
 clear H.
 cbv beta in H0.
@@ -3188,15 +3188,6 @@ Qed.
 
 Ltac ex_el H :=
 match type of H with
-|∃≥1 x. _ =>
-let V := fresh x in
-let H2 := fresh "H2" in
-apply (ex_el _ H);
-intros V H2;
-move V before H;
-move H2 before V;
-clear H;
-rename H2 into H
 |∃ x. _ =>
 let V := fresh x in
 let H2 := fresh "H2" in
@@ -3436,11 +3427,11 @@ apply H2.
 Defined.
 
 Theorem range_of_cartesian: ∃1e. (empty_set_p e) ∧ ∀X. ∀Y. 
-∃1c. (cartesian_product_p X Y c) ∧ 
+∃1c. (cartesian_old_p X Y c) ∧ 
 ∃1r. (range_p c r) ∧ ((X ≠ e) -> (r = Y)).
 ex_unique_in empty_set_exists.
 intros X Y.
-ex_unique_in (cartesian_product_exists X Y).
+ex_unique_in (cartesian_exists_old X Y).
 assert (relation c).
 unfold relation.
 intros x x_in_c.
@@ -3512,7 +3503,7 @@ apply eq_refl.
 Qed.
 
 Lemma ex_less_ex_more_el (P Q: Set -> Prop):
-(∃1x. P x) -> (∃≤1 x. ∃≥1 y. (P x ∧ P y)).
+(∃1x. P x) -> (∃≤1 x. ∃ y. (P x ∧ P y)).
 intro.
 intros q w H1 H2.
 right H.
@@ -3527,7 +3518,7 @@ ass.
 Qed.
 
 Lemma ex_less_ex_more_el_2 (P: Set -> Prop) :
-(∃1x. P x) -> (∃≤1 x. ∃≥1 y. (P y ∧ P x)).
+(∃1x. P x) -> (∃≤1 x. ∃ y. (P y ∧ P x)).
 intro.
 intros q w H1 H2.
 right H.
@@ -3682,7 +3673,7 @@ Qed.
 Definition pair_exists(a b: Set) : ∃1p. (pair_p a b p).
 split.
 apply bridge_pair_p.
-change (∃≥1 x. pair_p_traditional a b x).
+change (∃ x. pair_p_traditional a b x).
 pose proof biimpl_trans as p.
 unfold pair_p.
 take unit_set_exists a.
@@ -3871,4 +3862,173 @@ graph - rectangle, 6 points
 
 
 (* Exercise 6.3, 6.4 - Calculus, skipped, requires R*)
+
+Definition cartesian_p (a b c: Set):= 
+(∀ w. ((w ∈ c) ⇔ ((∃x. (x ∈ a) ∧ (∃y. (y ∈ b) ∧ ∃1p. pair_p x y p ∧ w = p ))))).
+
+Definition bridge_pair_iota_to_p(w x y: Set): (w = (< x, y >)) -> ∃1 p.
+(p := < x, y >) ∧ w = p.
+intro.
+unfold pair in H.
+extract_iota ({`x}) H.
+extract_iota ({x, y}) H.
+extract_iota ({s, s0}) H.
+split.
+apply (ex_in _ s1).
+split.
+intro g.
+split.
+intro.
+split.
+apply (ex_in _ s).
+split.
+apply iota_prop.
+split.
+apply (ex_in _ s0).
+split.
+apply iota_prop0.
+take iota_prop1 g.
+left H1.
+take H2 H0.
+ass.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+intro.
+ex_el H0.
+both H0.
+ex_el H2.
+both H2.
+take iota_prop1 g.
+right H2.
+apply H4.
+take extension_trans _ _ _ iota_prop H1.
+repl H5.
+take extension_trans _ _ _ iota_prop0 H0.
+repl H6.
+apply H3.
+apply H.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Definition bridge_pair_p_to_iota(w x y: Set): (∃1 p.
+(p := < x, y >) ∧ w = p) -> (w = (< x, y >)).
+intro.
+ex_el H.
+both H.
+repl H1.
+clear H1.
+unfold pair_p in H0.
+unfold pair.
+extract_iota_from_goal ({`x}).
+extract_iota_from_goal ({x, y}).
+extract_iota_from_goal ({s, s0}).
+eq_in.
+take H0 x0.
+left H1.
+take H2 H.
+clear H1 H2.
+rename s into u.
+rename s0 into xy.
+rename s1 into p1.
+take iota_prop1 x0.
+right H1.
+apply H2.
+clear H1 H2.
+ex_el H3.
+both H3.
+ex_el H2.
+both H2.
+clear U0 U1.
+take extension_trans _ _ _ iota_prop H1.
+take extension_trans _ _ _ iota_prop0 H3.
+repl H2.
+repl H5.
+apply H4.
+take H0 x0.
+right H1.
+apply H2.
+clear H1 H2.
+split.
+apply (ex_in _ s).
+split.
+apply iota_prop.
+split.
+apply (ex_in _ s0).
+split.
+apply iota_prop0.
+take iota_prop1 x0.
+left H1.
+take H2 H.
+ass.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+
+Definition cartesian_exists (a b: Set): ∃1c. 
+(∀ w. ((w ∈ c) ⇔ ((∃x. (x ∈ a) ∧ (∃y. (y ∈ b) ∧ (∃1p. pair_p x y p ∧ w = p) ))))).
+take cartesian_exists_old a b.
+ex_el H.
+split.
+apply (ex_in _ c).
+intro w.
+split.
+intro.
+take H w.
+left H1.
+take H2 H0.
+ex_el H3.
+both H3.
+ex_el H5.
+both H5.
+apply bridge_pair_iota_to_p in H6.
+ex_el H6.
+both H6.
+apply (ex_in _ x).
+split.
+ass.
+apply (ex_in _ y).
+split.
+ass.
+split.
+apply (ex_in _ p).
+split.
+ass.
+apply H7.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+intro.
+ex_el H0.
+both H0.
+ex_el H2.
+both H2.
+ex_el H3.
+both H3.
+take H w.
+right H3.
+apply H5.
+apply (ex_in _ x).
+split.
+ass.
+apply (ex_in _ y).
+split.
+ass.
+repl H4.
+pose proof H2.
+take bridge_pair_p_to_iota p x y.
+apply H7.
+split.
+apply (ex_in _ p).
+split.
+apply H6.
+apply eq_refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
 
