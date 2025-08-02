@@ -2110,7 +2110,7 @@ ass.
 Qed.
 
 (* Theorem 5.2 - 10' *)
-Lemma intersection_idempotent: ∀A. ((A ∩ A) = A).
+Lemma intersection_idempotent_old: ∀A. ((A ∩ A) = A).
 intro A.
 apply eq_in.
 intros x H.
@@ -3209,7 +3209,7 @@ intros V H2;
 move V before H;
 move H2 before V;
 move H3 before H2;
-move U before H3;
+move U before V;
 cbv beta in H3;
 cbv beta in U;
 clear H H3;
@@ -3256,34 +3256,34 @@ Qed.
 Definition p_relatives(A p: Set) (p_is_rel: relation p) 
 := ι _ (p_relatives_ex A p p_is_rel).
 
-Ltac grab P :=
+Ltac grab_from_context P :=
   lazymatch goal with
   | H : P |- _ => exact H
   | _ => fail "No hypothesis of type" P "in context"
   end.
 
 Notation "p [ A ]" := 
-(p_relatives A p (ltac:(grab (relation p))))(at level 60, left associativity, only parsing).
+(p_relatives A p (ltac:(grab_from_context (relation p))))(at level 60, left associativity, only parsing).
 
 Notation "p [ A ]" := 
 (p_relatives A p _)(at level 60, left associativity, only printing).
 
-Notation "'D' X" := (domain X (ltac:(grab (relation X))))(at level 60, only parsing).
-Notation "'D' X" := (domain X _)(only printing).
+Notation "'Dom' X" := (domain X (ltac:(grab_from_context (relation X))))(at level 60, only parsing).
+Notation "'Dom' X" := (domain X _)(only printing).
 
-Notation "'R' X" := (range X (ltac:(grab (relation X))))(at level 60, only parsing).
-Notation "'R' X" := (range X _)(only printing).
+Notation "'Ran' X" := (range X (ltac:(grab_from_context (relation X))))(at level 60, only parsing).
+Notation "'Ran' X" := (range X _)(only printing).
 
 Theorem p_relatives_of_domain_is_range(A p: Set) (p_is_rel: relation p): 
 (* -> *)
-(p[D p]) = (R p).
+(p[Dom p]) = (Ran p).
 apply eq_in.
 intros x H.
-extract_iota_from_goal (R p).
+extract_iota_from_goal (Ran p).
 take iota_prop x.
 right H0.
 apply H1.
-extract_iota (p [D p]) H.
+extract_iota (p [Dom p]) H.
 take iota_prop0 x.
 take H2.
 left H2.
@@ -3294,10 +3294,10 @@ apply (ex_in _ x0).
 apply H7.
 intros x H.
 (* <- *)
-extract_iota (R p) H.
+extract_iota (Ran p) H.
 rename s into range_of_p.
 rename iota_prop into range_prop.
-extract_iota_from_goal (p [D p]).
+extract_iota_from_goal (p [Dom p]).
 rename s into relatives_of_domain.
 rename iota_prop into relatives_of_domain_prop.
 take relatives_of_domain_prop x.
@@ -3312,7 +3312,7 @@ ex_el H2.
 rename x0 into z.
 apply (ex_in _ z).
 split.
-extract_iota_from_goal (D p).
+extract_iota_from_goal (Dom p).
 right (iota_prop z).
 apply H0.
 apply (ex_in _ x).
@@ -3321,10 +3321,10 @@ apply H2.
 Qed.
 
 Theorem p_relatives_of_any_set_are_subset_of_raange(A p: Set) (p_is_rel: relation p): 
-(p[A] ⊆ (R p)).
+(p[A] ⊆ (Ran p)).
 intros x H.
 extract_iota (p [A]) H.
-extract_iota_from_goal (R p).
+extract_iota_from_goal (Ran p).
 take iota_prop0 x.
 right H0.
 apply H1.
@@ -3354,8 +3354,8 @@ Qed.
 
 
 Theorem domain_of_cartesian(X Y: Set) (H: Y ≠ ∅) 
-(CR: relation(X × Y)): (D (X × Y)) = X.
-extract_iota_from_goal (D (X × Y)).
+(CR: relation(X × Y)): (Dom (X × Y)) = X.
+extract_iota_from_goal (Dom (X × Y)).
 rename s into domain.
 extract_iota (X × Y) iota_prop.
 rename s into cartesian.
@@ -3969,9 +3969,8 @@ apply ex_less_conj_in.
 apply any_biimpl_set_is_no_more_than_one.
 Qed.
 
-
-Definition cartesian_exists (a b: Set): ∃1c. 
-(∀ w. ((w ∈ c) ⇔ ((∃x. (x ∈ a) ∧ (∃y. (y ∈ b) ∧ (∃1p. pair_p x y p ∧ w = p) ))))).
+Definition cartesian_exists (a b: Set): ∃1c. cartesian_p a b c.
+unfold cartesian_p.
 take cartesian_exists_old a b.
 ex_el H.
 split.
@@ -4031,4 +4030,391 @@ apply ex_less_conj_in.
 apply any_biimpl_set_is_no_more_than_one.
 apply any_biimpl_set_is_no_more_than_one.
 Qed.
+
+Notation "i := a ∩ b" := (intersection2_p a b i)(at level 81, left associativity).
+Notation "c := a × b" := (cartesian_p a b c)(at level 81, left associativity).
+
+(* Exercise 6.5 *)
+Theorem cartesian_not_commutative: ¬(∀a. ∀b. ∃1q. 
+(cartesian_p a b q) ∧ ∃1w.  (cartesian_p b a q) ∧ q = w).
+intro.
+take empty_set_exists.
+ex_el H0.
+clear U.
+take H 
+
+(* 6.6, 6.7 - skipped but will be back SOOOOOON*)
+
+Ltac get_left B H := 
+let K := fresh "K" in
+let G := fresh "G" in
+match type of H with
+|?x ∈ _ =>
+pose proof conj_el_1 _ _ (B x) as K;
+pose proof K H as G;
+clear K
+end.
+
+Ltac get_right B H := 
+let K := fresh "K" in
+let G := fresh "G" in
+match type of H with
+|?x ∈ _ =>
+pose proof conj_el_2 _ _ (B x) as K;
+pose proof K H as G;
+clear K
+end.
+
+Ltac grab B H := get_left B H || get_right B H.
+
+Ltac apply_b H :=
+let K := fresh "K" in
+pose proof conj_el_2 _ _ H as K;
+apply K;
+clear H K.
+
+Ltac ex_in x := apply (ex_in _ x).
+
+(* Exercise 6.8 *)
+Theorem cartesian_of_intersections (A B C D: Set): 
+∃1ab. intersection2_p A B ab ∧
+∃1cd. intersection2_p C D cd ∧
+∃1abcd. cartesian_p ab cd abcd ∧
+∃1ac. cartesian_p A C ac ∧
+∃1bd. cartesian_p B D bd ∧
+∃1acbd. intersection2_p ac bd acbd ∧
+abcd = acbd.
+ex_unique_in (intersection2_exists A B).
+ex_unique_in (intersection2_exists C D).
+ex_unique_in (cartesian_exists ab cd).
+ex_unique_in (cartesian_exists A C).
+ex_unique_in (cartesian_exists B D).
+ex_unique_in (intersection2_exists ac bd).
+eq_in.
+grab P1 H.
+take P4 x.
+right H0.
+apply H1.
+clear H0 H1.
+change (∃ el_ab :: ab. ∃ el_cd :: cd. ∃1 p. p := < el_ab, el_cd > ∧ x = p) in G.
+ex_el G.
+both G.
+ex_el H1.
+both H1.
+ex_el H3.
+clear U.
+both H3.
+swap_eq H4.
+repl H4 in H1.
+clear H4 p.
+grab P H0.
+both G.
+grab P0 H2.
+both G.
+split.
+take P2 x.
+apply_b H7.
+apply (ex_in _ el_ab).
+split.
+ass.
+apply (ex_in _ el_cd).
+split.
+ass.
+split.
+ex_in x.
+split.
+apply H1.
+apply eq_refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+take P3 x.
+apply_b H7.
+apply (ex_in _ el_ab).
+split.
+ass.
+apply (ex_in _ el_cd).
+split.
+ass.
+split.
+ex_in x.
+split.
+apply H1.
+apply eq_refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+(*part 2*)
+grab P4 H.
+both G.
+grab P2 H0.
+ex_el G.
+both G.
+rename x0 into a_el.
+ex_el H3.
+both H3.
+rename y into c_el.
+ex_el H5.
+both H5.
+grab P3 H1.
+ex_el G.
+both G.
+rename x0 into b_el.
+ex_el H7.
+both H7.
+rename y into d_el.
+ex_el H9.
+both H9.
+clear U U0.
+repl <- H10 in H7.
+repl <- H6 in H3.
+take pair_property_p a_el c_el b_el d_el.
+ex_el H9.
+clear U.
+both H9.
+ex_el H12.
+clear U.
+both H12.
+take extension_trans _ _ _ H7 H9.
+take extension_trans _ _ _ H3 H11.
+swap_eq H14.
+take eq_trans _ _ _ H14 H12.
+take H13 H15.
+both H16.
+repl <- H17 in H5.
+repl <- H18 in H8.
+repl <- H17 in H7.
+repl <- H18 in H7.
+clear H17 H18 H12 H14 H15 H13.
+pose proof H3.
+rename a_el into ab_el.
+rename c_el into cd_el.
+(* good*)
+take P1 x.
+apply_b H13.
+ex_in ab_el.
+split.
+take P ab_el.
+apply_b H13.
+split.
+ass.
+ass.
+ex_in cd_el.
+split.
+take P0 cd_el.
+apply_b H13.
+split.
+ass.
+ass.
+split.
+ex_in x.
+split.
+apply H7.
+apply eq_refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Ltac ex_conj_chain_el H :=
+let K := fresh "K" in
+let L := fresh "P" in
+let R := fresh "F" in
+let I := fresh "I" in
+match type of H with
+|∃1 s. _ =>
+let s' := fresh s in
+pose proof conj_el_1 _ _ H as K;
+apply (ex_el _ K);
+intros s' I;
+pose proof conj_el_1 _ _ I as L;
+pose proof conj_el_2 _ _ I as R;
+clear H K I;
+ex_conj_chain_el R
+|_ => idtac
+end.
+
+Lemma intersection_idempotent: ∀A. ∃1i. intersection2_p A A i ∧ i = A.
+intro A.
+ex_unique_in (intersection2_exists A A).
+eq_in.
+grab P H.
+left G.
+apply H0.
+take P x.
+apply_b H0.
+split; ass.
+Qed.
+
+Ltac join H1 H2 := take extension_trans _ _ _ H1 H2.
+
+Theorem cartesian_distributes_1 (A B C: Set): 
+∃1ab. intersection2_p A B ab ∧
+∃1abc. cartesian_p ab C abc ∧
+∃1ac. cartesian_p A C ac ∧
+∃1bc. cartesian_p B C bc ∧
+∃1acbc. intersection2_p ac bc acbc ∧
+abc = acbc.
+ex_unique_in (intersection2_exists A B).
+ex_unique_in (cartesian_exists ab C).
+ex_unique_in (cartesian_exists A C).
+ex_unique_in (cartesian_exists B C).
+ex_unique_in (intersection2_exists ac bc).
+take cartesian_of_intersections A B C C.
+ex_conj_chain_el H.
+take intersection_idempotent C.
+ex_conj_chain_el H.
+take extension_trans _ _ _ P10 P5.
+swap_eq H.
+take eq_trans _ _ _ H F.
+repl H0 in P5.
+repl H0 in P6.
+clear F H H0 cd i P10.
+(* seems ok *)
+eq_in.
+grab P0 H.
+ex_el G.
+both G.
+ex_el H1.
+both H1.
+ex_conj_chain_el H3.
+repl <- F in P10.
+clear F.
+take P3 x.
+apply_b H1.
+split.
+take P1 x.
+apply_b H1.
+ex_in x0.
+split.
+grab P H0.
+left G.
+apply H1.
+ex_in y.
+split.
+apply H2.
+split.
+ex_in x.
+split.
+ass.
+apply eq_refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+take P2 x.
+apply_b H1.
+ex_in x0.
+split.
+grab P H0.
+right G.
+apply H1.
+ex_in y.
+split.
+apply H2.
+split.
+ex_in x.
+split.
+ass.
+apply eq_refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+take extension_trans _ _ _ P P4.
+repl <- H0 in P6.
+clear P4 H0 ab0.
+take extension_trans _ _ _ P1 P7.
+repl <- H0 in P9.
+clear P7 H0 ac0.
+(* move on *)
+take P0 x.
+apply_b H0.
+grab P3 H.
+both G.
+grab P1 H0.
+ex_el G.
+both G.
+ex_el H3.
+both H3.
+ex_conj_chain_el H5.
+repl <- F in P4.
+clear F.
+rename x0 into q.
+rename y into w.
+grab P2 H1.
+ex_el G.
+both G.
+ex_el H5.
+both H5.
+ex_conj_chain_el H7.
+repl <- F in P7.
+take pair_property_p q w x0 y.
+ex_conj_chain_el H5.
+join P7 P11.
+join P4 P10.
+swap_eq H7.
+take eq_trans _ _ _ H7 H5.
+take F2 H8.
+both H9.
+repl <- H10 in H3.
+repl <- H11 in H6.
+ex_in q.
+split.
+take P q.
+apply_b H9.
+split.
+apply H2.
+apply H3.
+ex_in w.
+split.
+apply H6.
+split.
+ex_in x.
+split.
+apply P4.
+apply eq_refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Theorem cartesian_distributes_2 (A B C: Set): 
+∃1bc. intersection2_p B C bc ∧
+∃1abc. cartesian_p A bc abc ∧
+∃1ab. cartesian_p A B ab ∧
+∃1ac. cartesian_p A C ac ∧
+∃1abac. intersection2_p ab ac abac ∧
+abc = abac.
+ex_unique_in (intersection2_exists B C).
+ex_unique_in (cartesian_exists A bc).
+ex_unique_in (cartesian_exists A B).
+ex_unique_in (cartesian_exists A C).
+ex_unique_in (intersection2_exists ab ac).
+take cartesian_of_intersections A A B C.
+ex_conj_chain_el H.
+rename ab0 into aa.
+join P P5.
+repl <- H in P5.
+repl <- H in P6.
+clear H.
+join P1 P7.
+repl <- H in P9.
+clear H P7.
+take intersection_idempotent A.
+ex_conj_chain_el H.
+repl F in P7.
+clear F.
+join P7 P4.
+repl <- H in P6.
+clear i P7 H P4.
+join P6 P0.
+repl H in F0.
+repl H in P6.
+clear H abcd.
+join P2 P8.
+repl <- H in P8.
+repl <- H in P9.
+clear H bd.
+join P9 P3.
+repl H in P9.
+repl H in F0.
+clear H acbd.
+apply F0.
+Qed.
+
+
+
 

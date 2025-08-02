@@ -71,7 +71,7 @@ Defined.
 
 Ltac iota_in H := pose proof ι _ H.
 
-Ltac destruct_ex H c := apply ex_classical_to_tt in H; apply (H _); intro c; intro.
+Ltac destruct_ex H c := apply (H _); intro c; intro.
 
 Definition unique_subset (A: (Set -> Prop)) (a: Set): Set 
 := ι _ (unique_subset_exists A a).
@@ -557,7 +557,7 @@ Definition intersection (c: Set) (not_empty: ¬(c = ∅)): Set
 Definition intersection2_p(a b i: Set):= ∀ x. ((x ∈ i) ⇔ (x ∈ a ∧ x ∈ b)).
 
 Definition intersection2_exists (a b: Set): 
-∃1i. ∀ x. ((x ∈ i) ⇔ (x ∈ a ∧ x ∈ b)).
+∃1i. intersection2_p a b i.
 pose proof unique_subset_exists (fun x=>x ∈ b) a.
 cbv beta in H.
 apply H.
@@ -3751,6 +3751,9 @@ apply (disj_in_2).
 apply H5.
 apply H4.
 Defined.
+
+Print Assumptions functional_application_works_for_equality.
+(* issue: exc_thrd *)
 
 Definition zero_in_every_natual_number (n:Set) (n_in_N: n ∈ N ): (¬(n = 0)) -> 0 ∈ n.
 pose proof PN5_induction (fun k => (¬(k = 0)) -> 0 ∈ k).

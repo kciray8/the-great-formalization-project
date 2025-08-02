@@ -249,7 +249,7 @@ exact H.
 Defined.
 
 
-Definition ex {T: Type} (P: T->Prop) := ¬ all (fun x => ¬ (P x)).
+Definition ex {T: Type} (P: T->Prop) := forall A: Prop,  (∀ x. (P x ⇒ A)) ⇒ A.
 
 Declare Scope type_scope.
 
@@ -258,24 +258,23 @@ Notation "'∃' x . p" := (ex (fun x => p))
 
 Definition ex_in {T: Type} (P: T->Prop) (u: T) (v: P u): ∃ x . P x.
 unfold ex.
-intro.
-pose proof H u.
-pose proof H0 v.
-apply H1.
-Qed.
+intros.
+unfold imp.
+intros.
+unfold all in H.
+apply (H u).
+apply v.
+Defined.
 
 Definition ex_el (P: Set->Prop) (u: (∃ x . P x)) 
 (A: Prop) (v : ∀x. (P x ⇒ A)): A.
+unfold ex.
+intros.
 unfold ex in u.
-apply DN_el.
-intro.
-apply u.
-intro x.
-pose proof v x.
-pose proof contrapositive H0.
-apply H1.
+pose proof u A.
 apply H.
-Qed.
+apply v.
+Defined.
 
 (* Figure 11.26 Example: ¬∃ implies ∀¬ *)
 Definition not_ex_implies_all_not (P: Set->Prop) 
@@ -1135,39 +1134,15 @@ pose proof eq_trans y (op e z) z H9 H11.
 exact H12.
 Defined.
 
-Definition ex_classical (T: Type) (P: T->Prop) := 
-forall A: Prop,  (∀ x. (P x ⇒ A)) ⇒ A.
 
-Definition ex_classical_to_tt (T: Type) (P: T->Prop): 
-(ex (fun x => (P x)))
-->
-(ex_classical T P).
-intros.
-intro.
-intro.
-unfold ex in H.
-apply DN_el.
-intro.
-apply H.
-intro.
-intro.
-pose proof H0 x.
-apply H1.
-apply H3.
-apply H2.
-Qed.
-
-(*
 Definition exercise_12_8 (R: Set-> Set-> Prop) 
-(r: part_ord R) (w : ∃≥1 x. (Least R x))
+(r: part_ord R) (w : ∃ x. (Least R x))
 : (∀x . (x = (Min R r w)) ⇒ ((Least R x))).
 intro.
 intro.
 intro y.
 unfold Min in H.
 unfold Least in w.
-unfold ex_more in w.
-apply ex_classical_to_tt in w.
 pose proof w (R x y).
 apply H0.
 intro z.
@@ -1183,7 +1158,7 @@ pose proof eq_trans _ _ _ H H6.
 pose proof eq_symm _ _ H7.
 pose proof eq_subs (fun q => R q y) z x H8 H2.
 exact H9.
-Defined.*)
+Defined.
 
 Definition deMorganNotAnd (A B:Prop):  ¬(A ∧ B) ⇒ (¬A ∨ ¬B).
 intro.
@@ -1438,7 +1413,6 @@ match eval unfold t in obj with
 | context [ι ?P ?u] => 
 pose proof u as uniqueness_proof; 
 pose proof conj_el_1 _ _ uniqueness_proof as ex_proof;
-apply ex_classical_to_tt in ex_proof;
 clear uniqueness_proof;
 apply (ex_proof  _); 
 intro s; 
@@ -1490,7 +1464,6 @@ match eval unfold t in obj with
 | ι ?P ?u => 
 pose proof u as uniqueness_proof; 
 pose proof conj_el_1 _ _ uniqueness_proof as ex_proof;
-apply ex_classical_to_tt in ex_proof;
 clear uniqueness_proof;
 apply (ex_proof  _); 
 intro s; 
