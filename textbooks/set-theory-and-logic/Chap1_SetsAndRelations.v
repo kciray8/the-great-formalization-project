@@ -31,6 +31,9 @@ Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) uc
 Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) uconstr(f) uconstr(g) uconstr(h) :=
   take_core (a b c d e f g h).
 
+Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) uconstr(f) uconstr(g) uconstr(h) uconstr(i) :=
+  take_core (a b c d e f g h i).
+
 Axiom intuitive_abstraction: forall A: (Set -> Prop), 
 ∃b. ∀ x. ((x ∈ b) ⇔ (A x)).
 
@@ -3201,6 +3204,23 @@ rename H2 into H
 let V := fresh x in
 let H2 := fresh "H2" in
 let H3 := fresh "H3" in
+pose proof conj_el_1 _ _ H as H3;
+apply (ex_el _ H3);
+intros V H2;
+move V before H;
+move H2 before V;
+move H3 before H2;
+cbv beta in H3;
+clear H H3;
+rename H2 into H
+end.
+
+Ltac ex_unique_el H :=
+match type of H with
+|∃1 x. _ =>
+let V := fresh x in
+let H2 := fresh "H2" in
+let H3 := fresh "H3" in
 let U := fresh "U" in
 pose proof conj_el_1 _ _ H as H3;
 pose proof conj_el_2 _ _ H as U;
@@ -3215,7 +3235,6 @@ cbv beta in U;
 clear H H3;
 rename H2 into H
 end.
-
 
 Definition p_relatives_ex(A p: Set) (p_is_rel: relation p) : 
 ∃1s. (∀y. (y ∈ s) ⇔ ∃x::A. <x, y> ∈ p).
@@ -3586,10 +3605,8 @@ right H2.
 apply H4.
 intro.
 ex_el H.
-clear U.
 both H.
 ex_el H0.
-clear U.
 both H0.
 take extension_trans _ _ _ H1 H.
 repl H0 in H1.
@@ -3597,7 +3614,6 @@ repl H0 in H2.
 clear H0 H.
 ex_el H2.
 ex_el H3.
-clear U U0.
 both H2.
 both H3.
 take H0 x.
@@ -3608,7 +3624,7 @@ apply H5.
 apply H4.
 intro.
 take unit_set_exists a.
-ex_el H0.
+ex_unique_el H0.
 rename p into u.
 split.
 apply (ex_in _ u).
@@ -3616,7 +3632,7 @@ split.
 apply H0.
 split.
 take pair_unord_exists a b.
-ex_el H1.
+ex_unique_el H1.
 rename p into ab.
 apply (ex_in _ ab).
 split.
@@ -3627,11 +3643,11 @@ intro.
 take H k.
 left H3.
 take H4 H2.
-ex_el H5.
+ex_unique_el H5.
 both H5.
 take extension_trans _ _ _ H0 H6.
 repl_in_goal H5.
-ex_el H7.
+ex_unique_el H7.
 both H7.
 take extension_trans _ _ _ H1 H8.
 repl_in_goal H7.
@@ -3707,7 +3723,7 @@ Qed.
 
 Notation "p := < a , b >" := (pair_p a b p)(at level 81, left associativity).
 
-Definition pair_property_p (x y u v: Set): 
+Definition pair_property_p_hard (x y u v: Set): 
 ∃1p1. pair_p x y p1 ∧
 ∃1p2. pair_p u v p2 ∧
 ((p1 = p2) -> (x = u) ∧ (y = v)).
@@ -3767,11 +3783,12 @@ repl H11.
 apply H.
 Qed.
 
+
 Definition ex_less_ex_unique_el (P: Set -> Prop):
 ∃≤1 x. ∃1 y. P x.
 intros q w H1 H2.
-ex_el H1.
-ex_el H2.
+ex_unique_el H1.
+ex_unique_el H2.
 take U q w.
 take H H1 H1.
 ass.
@@ -3781,10 +3798,10 @@ Qed.
 Definition triple_exists(a b c: Set) : ∃1t. (triple_p a b c t).
 unfold triple_p.
 take pair_exists a b.
-ex_el H.
+ex_unique_el H.
 rename p into ab.
 take pair_exists ab c.
-ex_el H0.
+ex_unique_el H0.
 rename p into t.
 split.
 apply (ex_in _ t).
@@ -3794,8 +3811,8 @@ split; ass.
 apply ex_less_conj_in.
 apply U.
 intros q w R1 R2.
-ex_el R1.
-ex_el R2.
+ex_unique_el R1.
+ex_unique_el R2.
 clear U1 U2.
 both R1.
 both R2.
@@ -3820,19 +3837,15 @@ ex_el P.
 ex_el P0.
 both P.
 both P0.
-take pair_property_p x y u v.
+take pair_property_p_hard x y u v.
 ex_el H3.
-clear U1.
 both H3.
 ex_el H5.
-clear U1.
 both H5.
-take pair_property_p ab z ab0 w.
+take pair_property_p_hard ab z ab0 w.
 ex_el H5.
-clear U1.
 both H5.
 ex_el H8.
-clear U1.
 both H8.
 take extension_trans _ _ _ H0 H7.
 take extension_trans _ _ _ H2 H5.
@@ -3941,7 +3954,6 @@ ex_el H3.
 both H3.
 ex_el H2.
 both H2.
-clear U0 U1.
 take extension_trans _ _ _ iota_prop H1.
 take extension_trans _ _ _ iota_prop0 H3.
 repl H2.
@@ -4034,15 +4046,6 @@ Qed.
 Notation "i := a ∩ b" := (intersection2_p a b i)(at level 81, left associativity).
 Notation "c := a × b" := (cartesian_p a b c)(at level 81, left associativity).
 
-(* Exercise 6.5 *)
-Theorem cartesian_not_commutative: ¬(∀a. ∀b. ∃1q. 
-(cartesian_p a b q) ∧ ∃1w.  (cartesian_p b a q) ∧ q = w).
-intro.
-take empty_set_exists.
-ex_el H0.
-clear U.
-take H 
-
 (* 6.6, 6.7 - skipped but will be back SOOOOOON*)
 
 Ltac get_left B H := 
@@ -4102,7 +4105,6 @@ both G.
 ex_el H1.
 both H1.
 ex_el H3.
-clear U.
 both H3.
 swap_eq H4.
 repl H4 in H1.
@@ -4163,15 +4165,12 @@ both H7.
 rename y into d_el.
 ex_el H9.
 both H9.
-clear U U0.
 repl <- H10 in H7.
 repl <- H6 in H3.
-take pair_property_p a_el c_el b_el d_el.
+take pair_property_p_hard a_el c_el b_el d_el.
 ex_el H9.
-clear U.
 both H9.
 ex_el H12.
-clear U.
 both H12.
 take extension_trans _ _ _ H7 H9.
 take extension_trans _ _ _ H3 H11.
@@ -4342,7 +4341,7 @@ ex_el H5.
 both H5.
 ex_conj_chain_el H7.
 repl <- F in P7.
-take pair_property_p q w x0 y.
+take pair_property_p_hard q w x0 y.
 ex_conj_chain_el H5.
 join P7 P11.
 join P4 P10.
@@ -4415,6 +4414,202 @@ clear H acbd.
 apply F0.
 Qed.
 
+Theorem switch_premises(A B C: Prop): (A -> B -> C) -> (B -> A -> C).
+intro.
+intros.
+take H H1 H0.
+apply H2.
+Qed.
+
+Ltac refl := apply eq_refl.
+
+Definition pair_property_p (x y u v p: Set): 
+(pair_p x y p) ->
+(pair_p u v p) ->
+((x = u) ∧ (y = v)).
+intros Q H.
+take pair_property_p_hard x y u v.
+ex_conj_chain_el H0.
+join Q P.
+join H P0.
+swap_eq H0.
+take eq_trans _ _ _ H0 H1.
+take F0 H2.
+apply H3.
+Qed.
+
+(* Exercise 6.5 - part 1 *)
+Theorem cartesian_not_commutative: ¬(∀a. ∀b. ∃1q. 
+(cartesian_p a b q) ∧ ∃1w.  (cartesian_p b a w) ∧ q = w).
+intro.
+take empty_set_exists.
+ex_el H0.
+take unit_set_exists e.
+ex_el H1.
+rename p into u_e.
+take unit_set_exists u_e.
+ex_el H2.
+rename p into u_u_e.
+take H u_e u_u_e.
+ex_conj_chain_el H3.
+apply extension_backwards in F0.
+take pair_exists e u_e.
+ex_el H3.
+take F0 p.
+left H4.
+take contrapositive H5.
+change (p ∉ w -> p ∈ q -> ⊥) in H6.
+take (switch_premises (p ∉ w) (p ∈ q) ⊥) H6.
+apply H7.
+take P p.
+apply_b H8.
+ex_in e.
+split.
+take H1 e.
+apply_b H8.
+apply eq_refl.
+ex_in u_e.
+split.
+take H2 u_e.
+apply_b H8.
+apply eq_refl.
+split.
+ex_in p.
+split.
+apply H3.
+refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+clear H4 H5 H6 H7.
+intro.
+grab P0 H4.
+ex_el G.
+both G.
+ex_el H6.
+both H6.
+ex_el H8.
+both H8.
+repl <- H9 in H6.
+clear H9.
+take pair_property_p_hard e u_e x y.
+ex_conj_chain_el H8.
+join H6 P2.
+join P1 H3.
+take eq_trans _ _ _ H9 H8.
+take F1 H10.
+both H11.
+repl <- H13 in H7.
+grab H1 H7.
+apply extension_backwards in G.
+take G e.
+take H0 e.
+left H14.
+apply H15.
+left H11.
+apply H16.
+take H1 e.
+right H17.
+apply H18.
+refl.
+Qed.
 
 
-
+(* Exercise 6.5 - part 2 *)
+Theorem cartesian_not_associative: ¬(∀a. ∀b. ∀c. 
+∃1ab. (cartesian_p a b ab) ∧ 
+∃1bc. (cartesian_p b c bc) ∧
+∃1ab_c. (cartesian_p ab c ab_c) ∧ 
+∃1a_bc. (cartesian_p a bc a_bc) ∧ 
+ ab_c = a_bc).
+intro.
+take empty_set_exists.
+ex_el H0.
+take unit_set_exists e.
+ex_el H1.
+rename p into u_e.
+take H u_e u_e u_e.
+clear H.
+ex_conj_chain_el H2.
+take pair_exists e e.
+ex_el H.
+take pair_exists p e.
+ex_el H2.
+rename p0 into t.
+apply extension_backwards in F0.
+take F0 t.
+clear F0.
+left H3.
+clear H3.
+assert ((t ∈ ab_c)).
+take P1 t.
+apply_b H3.
+ex_in p.
+split.
+take P p.
+apply_b H3.
+ex_in e.
+split.
+take H1 e.
+apply_b H3.
+refl.
+ex_in e.
+split.
+take H1 e.
+apply_b H3.
+refl.
+split.
+ex_in p.
+split.
+apply H.
+refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+ex_in e.
+split.
+take H1 e.
+apply_b H3.
+refl.
+split.
+ex_in t.
+split.
+ass.
+refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+take H4 H3.
+clear H4 H3.
+grab P2 H5.
+ex_el G.
+both G.
+ex_el H4.
+both H4.
+ex_conj_chain_el H7.
+repl <- F in P3.
+clear F.
+assert (x = e).
+take H1 x.
+left H4.
+apply H7.
+apply H3.
+take pair_property_p _ _ _ _ _ H2 P3.
+both H7.
+take eq_trans _ _ _ H8 H4.
+apply extension_backwards in H7.
+take H7 u_e.
+left H10.
+take H0 u_e.
+left H12.
+apply H13.
+apply H11.
+take H u_e.
+apply_b H14.
+split.
+ex_in u_e.
+split.
+apply H1.
+ex_unique_in (pair_unord_exists e e).
+left.
+refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
