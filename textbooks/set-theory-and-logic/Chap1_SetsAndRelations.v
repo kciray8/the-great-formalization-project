@@ -4045,6 +4045,7 @@ Qed.
 
 Notation "i := a ∩ b" := (intersection2_p a b i)(at level 81, left associativity).
 Notation "c := a × b" := (cartesian_p a b c)(at level 81, left associativity).
+Notation "i := a ∪ b" := (union2_p a b i)(at level 81, left associativity).
 
 (* 6.6, 6.7 - skipped but will be back SOOOOOON*)
 
@@ -4612,4 +4613,702 @@ left.
 refl.
 apply ex_less_conj_in.
 apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+(* Exercise 6.6
+beta = X a brother of Y, (me, my_brother)
+
+beta ∪ sigma = is a brother or a sister of
+beta ∩ sigma = empty set (is a brother AND a sister of)
+beta - sigma = is a brother but not a sister of, relation is equal to beta
+
+Exercise 6.7
+beta[A] - brothers of students in school
+beta ∪ sigma [A] - brothers and sisters of students in school
+ *)
+
+(* Exercise 6.9 *)
+Theorem exercise_4_9: 
+∃A. ∃B. ∃C. ∃D. 
+∃1AuB. union2_p A B AuB ∧
+∃1CuD. union2_p C D CuD ∧
+∃1ABCD. cartesian_p AuB CuD ABCD ∧
+∃1AxC. cartesian_p A C AxC ∧
+∃1BxD. cartesian_p B D BxD ∧
+∃1ACBD. union2_p AxC BxD ACBD ∧
+¬(ABCD = ACBD).
+take empty_set_exists.
+ex_el H.
+take unit_set_exists e.
+ex_el H0.
+rename p into u_e.
+(*
+A = { e }
+B = e 
+C = e 
+D = { e }
+A ∪ B = { e }
+C ∪ D = { e }
+A ∪ B X C ∪ D = { (e,e) } 
+A x C = e
+B x D = e
+... = e
+*)
+ex_in u_e.
+ex_in e.
+ex_in e.
+ex_in u_e.
+ex_unique_in (union2_exists u_e e).
+ex_unique_in (union2_exists e u_e).
+ex_unique_in (cartesian_exists AuB CuD).
+ex_unique_in (cartesian_exists u_e e).
+ex_unique_in (cartesian_exists e u_e).
+ex_unique_in (union2_exists AxC BxD).
+intro.
+apply extension_backwards in H1.
+take pair_exists e e.
+ex_el H2.
+take H1 p.
+left H3.
+clear H3.
+assert ((p ∈ ABCD) ⇒ ((p ∉ ACBD) -> ⊥)).
+intro.
+intro.
+take H4 H3.
+apply (H5 H6).
+apply H3.
+clear H4 H3 H1.
+take P1 p.
+apply_b H1.
+ex_in e.
+split.
+take P e.
+apply_b H1.
+left.
+take H0 e.
+right H1.
+apply H3.
+apply eq_refl.
+ex_in e.
+split.
+take P0 e.
+apply_b H1.
+right.
+take H0 e.
+right H1.
+apply H3.
+apply eq_refl.  
+ex_unique_in (pair_exists e e).
+join H2 P5.
+apply H1.
+intro.
+take P4 p.
+left H6.
+take H7 H5.
+apply (disj_el _ _ _ H8).
+intro.
+take P2 p.
+left H10.
+take H11 H9.
+ex_el H12.
+right H12.
+ex_el H13.
+left H13.
+take H y.
+left H15.
+apply H16.
+apply H14.
+intro.
+take P3 p.
+left H10.
+take H11 H9.
+ex_el H12.
+left H12.
+take H x.
+left H14.
+apply (H15 H13).
+Qed.
+
+Ltac left_and_take x y := 
+let K := fresh "K" in
+pose proof conj_el_1 _ _ x as K;
+pose proof K y;
+clear K.
+
+Tactic Notation "left" uconstr(x) uconstr(y) := left_and_take x y.
+
+(* Exercise 6.10 
+ A x (B ∪ C) = (A x B) ∪ (A x C)
+*)
+Theorem cartesian_distributes_over_union: 
+∀A. ∀B. ∀C.
+∃1BuC. union2_p B C BuC ∧
+∃1AxBuC. cartesian_p A BuC AxBuC ∧
+∃1AxB. cartesian_p A B AxB ∧
+∃1AxC. cartesian_p A C AxC ∧
+∃1AxBuAxC. union2_p AxB AxC AxBuAxC ∧
+(AxBuC = AxBuAxC).
+intros A B C.
+ex_unique_in (union2_exists B C).
+ex_unique_in (cartesian_exists A BuC).
+ex_unique_in (cartesian_exists A B).
+ex_unique_in (cartesian_exists A C).
+ex_unique_in (union2_exists AxB AxC).
+eq_in.
+take P3 x.
+apply_b H0.
+take P0 x.
+left H0.
+take H1 H.
+clear H0 H1.
+ex_el H2.
+both H2.
+ex_el H1.
+both H1.
+ex_el H3.
+both H3.
+repl <- H4 in H1.
+clear H4 p.
+take P y.
+left H3 H2.
+apply (disj_el _ _ _ H4).
+intro.
+left.
+take P1 x.
+apply_b H6.
+ex_in x0.
+split.
+apply H0.
+ex_in y.
+split.
+apply H5.
+ex_unique_in (pair_exists x0 y).
+join H1 P4.
+ass.
+intro.
+right.
+take P2 x.
+apply_b H6.
+ex_in x0.
+split.
+apply H0.
+ex_in y.
+split.
+apply H5.
+ex_unique_in (pair_exists x0 y).
+join H1 P4.
+ass.
+take P0 x.
+apply_b H0.
+take P3 x.
+left H0.
+take H1 H.
+apply (disj_el _ _ _ H2).
+intro.
+take P1 x.
+left H4.
+take H5 H3.
+ex_el H6.
+both H6.
+ex_el H8.
+both H8.
+ex_el H9.
+both H9.
+ex_in x0.
+split.
+ass.
+repl <- H10 in H8.
+ex_in y.
+split.
+take P y.
+apply_b H9.
+left.
+apply H6.
+ex_unique_in (pair_exists x0 y).
+join H8 P4.
+apply H9.
+intro.
+take P2 x.
+left H4.
+take H5 H3.
+ex_el H6.
+both H6.
+ex_el H8.
+both H8.
+ex_el H9.
+both H9.
+ex_in x0.
+split.
+apply H7.
+ex_in y.
+split.
+take P y.
+apply_b H9.
+right.
+ass.
+ex_unique_in (pair_exists x0 y).
+repl <- H10 in H8.
+join H8 P4.
+ass.
+Qed.
+
+(* Exercise 6.11 *)
+Theorem union_not_distributes_over_cartesian: 
+¬(∀A. ∀B. ∀C.
+∃1BxC. cartesian_p B C BxC ∧
+∃1AuBxC. union2_p A BxC AuBxC ∧
+∃1AuB. union2_p A B AuB ∧
+∃1AuC. union2_p A C AuC ∧
+∃1AuBxAuC. cartesian_p AuB AuC AuBxAuC ∧
+(AuBxC = AuBxAuC)).
+intro.
+take empty_set_exists.
+ex_el H0.
+take unit_set_exists e.
+ex_el H1.
+rename p into u_e.
+specialize (H u_e e e).
+cbv beta in H.
+ex_conj_chain_el H.
+apply extension_backwards in F.
+take F e.
+left H.
+assert ((e ∈ AuBxC)).
+take P0 e.
+apply_b H3.
+left.
+take H1 e.
+apply_b H3.
+apply eq_refl.
+take H2 H3.
+take P3 e.
+left H5 H4.
+ex_el H6.
+both H6.
+ex_el H8.
+both H8.
+ex_el H9.
+both H9.
+repl <- H10 in H8.
+clear H10.
+take unit_set_exists x.
+ex_el H9.
+rename p0 into u_x.
+take H8 u_x.
+right H10.
+take H0 u_x.
+left H12.
+apply H13.
+apply H11.
+ex_unique_in (unit_set_exists x).
+ex_unique_in (pair_unord_exists x y).
+join H9 P4.
+left.
+apply H14.
+Qed.
+
+Theorem intersection_not_distributes_over_cartesian: 
+¬(∀A. ∀B. ∀C.
+∃1BxC. cartesian_p B C BxC ∧
+∃1AiBxC. intersection2_p A BxC AiBxC ∧
+∃1AiB. intersection2_p A B AiB ∧
+∃1AiC. intersection2_p A C AiC ∧
+∃1AiBxAiC. cartesian_p AiB AiC AiBxAiC ∧
+(AiBxC = AiBxAiC)).
+intro.
+take empty_set_exists.
+ex_el H0.
+take pair_exists e e.
+ex_el H1.
+take unit_set_exists e.
+ex_el H2.
+rename p0 into u_e.
+take unit_set_exists p.
+ex_el H3.
+rename p0 into u_p.
+take H u_p u_e u_e.
+clear H.
+ex_conj_chain_el H4.
+apply extension_backwards in F.
+take F p.
+left H.
+assert ((p ∈ AiBxC) ⇒ ((p ∉ AiBxAiC) -> ⊥)).
+intro.
+intro.
+take H4 H5.
+apply (H6 H7).
+apply H5.
+take P0 p.
+apply_b H6.
+split.
+take H3 p.
+apply_b H6.
+apply eq_refl.
+take P p.
+apply_b H6.
+ex_in e.
+split.
+take H2 e.
+apply_b H6.
+apply eq_refl.
+ex_in e.
+split.
+take H2 e.
+apply_b H6.
+apply eq_refl.
+ex_unique_in (pair_exists e e).
+join P4 H1.
+swap_eq H6.
+apply H6.
+intro.
+take P3 p.
+left H7 H6.
+ex_el H8.
+both H8.
+ex_el H10.
+both H10.
+ex_conj_chain_el H11.
+repl <- F0 in P4.
+clear F0.
+take P1 x.
+left H10 H9.
+both H11.
+left (H3 x) H12.
+left (H2 x) H13.
+swap_eq H11.
+take eq_trans _ _ _ H11 H14.
+apply extension_backwards in H15.
+take H15 u_e.
+left H16.
+take H0 u_e.
+left H18.
+apply H19.
+apply H17.
+take H1 u_e.
+apply_b H20.
+ex_unique_in (unit_set_exists e).
+ex_unique_in (pair_unord_exists e e).
+left.
+join P5 H2.
+swap_eq H20.
+ass.
+Qed.
+
+Definition non_empty_set_has_element: ∀e. (empty_set_p e) ->
+∀c. c ≠ e -> ∃a. a ∈ c.
+intro.
+take non_empty_set_has_element2.
+ex_conj_chain_el H.
+intro.
+join P H.
+intro.
+intro.
+take F x0.
+repl <- H0 in H1.
+take H2 H1.
+apply H3.
+Qed.
+
+Theorem element_of_first_component_of_cartesian:
+∀x. ∀A. ∀B. ∀e. ∀AxB. 
+(empty_set_p e) ->
+(cartesian_p A B AxB) ->
+(B ≠ e) ->
+(x ∈ A) ->
+∃y. (y ∈ B) ∧ ∃1p. pair_p x y p ∧ p ∈ AxB.
+intros x A B e AxB.
+intros.
+take non_empty_set_has_element e H B H1.
+ex_el H3.
+rename a into y.
+ex_in y.
+split.
+ass.
+ex_unique_in (pair_exists x y).
+take H0 p.
+apply_b H4.
+ex_in x.
+apply (conj_in _ _ H2).
+ex_in y.
+apply (conj_in _ _ H3).
+ex_unique_in (pair_exists x y).
+join P P0.
+ass.
+Qed.
+
+Theorem element_of_both_components_of_cartesian:
+∀C. ∀e. ∀CxC. 
+(empty_set_p e) ->
+(cartesian_p C C CxC) ->
+(C ≠ e) ->
+∃x. (x ∈ C) ∧
+∃y. (y ∈ C) ∧ 
+∃1p. pair_p x y p ∧ p ∈ CxC.
+intros C e CxC.
+intros.
+take non_empty_set_has_element e H C H1.
+ex_el H2.
+take pair_exists a a.
+ex_el H3.
+take H0 p.
+ex_in a.
+split.
+ass.
+ex_in a.
+split.
+ass.
+ex_unique_in (pair_exists a a).
+join H3 P.
+repl <- H5.
+apply_b H4.
+ex_in a.
+split.
+ass.
+ex_in a.
+split.
+ass.
+ex_unique_in (pair_exists a a).
+join H3 P0.
+ass.
+Qed.
+
+Theorem element_of_cartesian_square:
+∀x. ∀C. ∀CxC. 
+(cartesian_p C C CxC) ->
+(x ∈ C) ->
+∃1p. pair_p x x p ∧ p ∈ CxC.
+intros x C CxC.
+intros.
+ex_unique_in (pair_exists x x).
+take H p.
+apply_b H1.
+ex_in x.
+split.
+ass.
+ex_in x.
+split.
+ass.
+ex_unique_in (pair_exists x x).
+join P P0.
+ass.
+Qed.
+
+Theorem cartesian_of_nonempty_sets_is_not_empty:
+∀A. ∀B. ∀e. ∀AxB. 
+(empty_set_p e) ->
+(cartesian_p A B AxB) ->
+(A ≠ e) ->
+(B ≠ e) ->
+(AxB ≠ e).
+intros A B e AxB.
+intros.
+take non_empty_set_has_element e H A H1.
+take non_empty_set_has_element e H B H2.
+ex_el H3.
+ex_el H4.
+take pair_exists a a0.
+ex_el H5.
+take H0 p.
+intro.
+apply extension_backwards in H7.
+take H7 p.
+take H p.
+left H9.
+apply H10.
+left H8.
+apply H11.
+right H6.
+apply H12.
+ex_in a.
+split.
+ass.
+ex_in a0.
+split.
+ass.
+ex_unique_in (pair_exists a a0).
+join H5 P.
+ass.
+Qed.
+
+Theorem union_of_nonempty_sets_is_not_empty:
+∀A. ∀B. ∀e. ∀AuB. 
+(empty_set_p e) ->
+(union2_p A B AuB) ->
+(A ≠ e) ->
+(B ≠ e) ->
+(AuB ≠ e).
+intros A B e AuB.
+intros.
+take non_empty_set_has_element e H A H1.
+ex_el H3.
+take H0 a.
+intro.
+apply extension_backwards in H5.
+take H5 a.
+take H a.
+left H7.
+apply H8.
+left H6.
+apply H9.
+apply_b H4.
+left.
+apply H3.
+Qed.
+
+
+(* Exercise 6.12 *)
+Theorem exercise_6_12: 
+∃1e. empty_set_p e ∧
+∀A. ∀B. ∀C.
+∃1AxB. cartesian_p A B AxB ∧
+∃1BxA. cartesian_p B A BxA ∧
+∃1CxC. cartesian_p C C CxC ∧
+∃1AxBuBxA. (union2_p AxB BxA AxBuBxA) ∧
+((A ≠ e) -> (B ≠ e) -> AxBuBxA = CxC ->
+((A = B) ∧ (B = C))).
+ex_unique_in (empty_set_exists).
+intros A B C.
+ex_unique_in (cartesian_exists A B).
+ex_unique_in (cartesian_exists B A).
+ex_unique_in (cartesian_exists C C).
+ex_unique_in (union2_exists AxB BxA).
+intros.
+assert ((A = C ∧ B = C) -> (A = B ∧ B = C)).
+intro.
+both H2.
+swap_eq H4.
+take eq_trans _ _ _ H3 H4.
+split.
+ass.
+swap_eq H4.
+ass.
+apply H2.
+clear H2.
+split.
+eq_in.
+take element_of_first_component_of_cartesian x A B e AxB P P0.
+take H3 H0 H2.
+ex_el H4.
+both H4.
+ex_el H6.
+both H6.
+assert (p ∈ AxBuBxA).
+take P3 p.
+apply_b H6.
+left.
+ass.
+apply eq_el_1 in H1.
+take H1 p.
+take H8 H6.
+take P2 p.
+left H10 H9.
+ex_el H11.
+both H11.
+ex_el H13.
+both H13.
+ex_el H14.
+both H14.
+repl <- H15 in H13.
+take pair_property_p x y x0 y0 p H4 H13.
+left H14.
+repl <- H16 in H12.
+apply H12.
+take element_of_cartesian_square x C CxC P2 H2.
+ex_conj_chain_el H3.
+apply eq_el_2 in H1.
+take H1 p F.
+take P3 p.
+left H4 H3.
+apply (disj_el _ _ _ H5).
+intro.
+take P0 p.
+left H7 H6.
+ex_el H8.
+both H8.
+ex_el H10.
+both H10.
+ex_el H11.
+both H11.
+repl <- H12 in H10.
+take pair_property_p x x x0 y p P4 H10.
+left H11.
+repl <- H13 in H9.
+ass.
+intro.
+take P1 p.
+left H7 H6.
+ex_el H8.
+both H8.
+ex_el H10.
+both H10.
+ex_el H11.
+both H11.
+repl <- H12 in H10.
+take pair_property_p x x x0 y p P4 H10.
+right H11.
+repl <- H13 in H8.
+apply H8.
+eq_in.
+take element_of_first_component_of_cartesian x B A e BxA P.
+take H3 P1 H H2.
+ex_el H4.
+both H4.
+ex_el H6.
+both H6.
+assert (p ∈ AxBuBxA).
+take P3 p.
+apply_b H6.
+right.
+ass.
+apply eq_el_1 in H1.
+take H1 p H6.
+take P2 p.
+left H9 H8.
+ex_el H10.
+both H10.
+ex_el H12.
+both H12.
+ex_el H13.
+both H13.
+repl <- H14 in H12.
+take pair_property_p x y x0 y0 p H4 H12.
+left H13.
+repl <- H15 in H11.
+apply H11.
+take element_of_cartesian_square x C CxC P2 H2.
+ex_el H3.
+both H3.
+apply eq_el_2 in H1.
+take H1 p H5.
+take P3 p.
+left H6 H3.
+apply (disj_el _ _ _ H7).
+intro.
+take P0 p.
+left H9 H8.
+ex_el H10.
+both H10.
+ex_el H12.
+both H12.
+ex_el H13.
+both H13.
+repl <- H14 in H12.
+take pair_property_p x x x0 y p H4 H12.
+right H13.
+repl H15.
+apply H10.
+intro.
+take P1 p.
+left H9 H8.
+ex_el H10.
+both H10.
+ex_el H12.
+both H12.
+ex_el H13.
+both H13.
+repl <- H14 in H12.
+take pair_property_p x x x0 y p H4 H12.
+left H13.
+repl H15.
+apply H11.
 Qed.

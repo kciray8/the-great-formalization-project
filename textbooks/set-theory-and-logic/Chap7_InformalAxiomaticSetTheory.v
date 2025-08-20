@@ -372,7 +372,9 @@ Defined.
 
 Definition union (c: Set): Set := ι _ (union_exists c).
 
-Definition union2_exists (a b: Set): ∃1u. (∀ x. ((x ∈ u) ⇔ ((x ∈ a) ∨ (x ∈ b)))).
+Definition union2_p(a b u: Set) :=  (∀ x. ((x ∈ u) ⇔ ((x ∈ a) ∨ (x ∈ b)))).
+
+Definition union2_exists (a b: Set): ∃1u. union2_p a b u.
 pose proof pair_unord_exists a b.
 left H.
 destruct_ex H0 p.

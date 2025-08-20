@@ -50,3 +50,6 @@ reflexivity  proved by eq_refl
      symmetry     proved by eq_symm
      transitivity proved by eq_trans
  as set_eq_rel.
+
+=Plan=
+-extract_iota: "i" + "in" + "as"
