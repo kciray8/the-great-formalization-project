@@ -684,13 +684,28 @@ Skipped prove this is the only power set. Maybe cardinality needed
 An = {∅, {∅}, {{∅}, ∅}, {{{∅}, ∅}, ∅, {∅}} etc... }
 *)
 
-Definition disjoint (A B: Set) := ((A ∩ B) = ∅).
-Definition intersect (A B: Set) := ((A ∩ B) ≠ ∅).
+Definition disjoint (A B: Set) := 
+∃1e. empty_set_p e ∧
+∃1i. intersection2_p A B i ∧
+(i = e).
+
+Definition intersect (A B: Set) := 
+∃1e. empty_set_p e ∧
+∃1i. intersection2_p A B i ∧
+(i ≠ e).
+
 Definition disjoint_collection (A: Set) := 
 ∀x::A. ∀y::A. (x ≠ y) -> disjoint x y.
 
-Definition partition (X P: Set) := (disjoint_collection P) ∧ 
-(∀s. (s ⊆ X) -> (s ≠ ∅) -> s ∈ P) ∧ (∀x::X. ∃p::P. x ∈ p).
+Definition collection_of_nonempty_sets (A: Set) := 
+∀x::A. ¬ empty_set_p x.
+
+Definition partition_p (P X: Set) := 
+∃1e. empty_set_p e ∧
+((disjoint_collection P) ∧ 
+(collection_of_nonempty_sets P) ∧
+(∀s. s ∈ P -> (s ⊆ X)) ∧
+(∀x::X. ∃p::P. x ∈ p)).
 
 Tactic Notation "left" := apply (disj_in_1).
 Tactic Notation "right" := apply (disj_in_2).
@@ -3236,7 +3251,7 @@ clear H H3;
 rename H2 into H
 end.
 
-Definition p_relatives_ex(A p: Set) (p_is_rel: relation p) : 
+Definition p_relatives_ex_iota(A p: Set) (p_is_rel: relation p) : 
 ∃1s. (∀y. (y ∈ s) ⇔ ∃x::A. <x, y> ∈ p).
 split; try apply any_biimpl_set_is_no_more_than_one.
 take range_exists p p_is_rel.
@@ -3272,8 +3287,8 @@ apply (ex_in _ x0).
 split;ass.
 Qed.
 
-Definition p_relatives(A p: Set) (p_is_rel: relation p) 
-:= ι _ (p_relatives_ex A p p_is_rel).
+Definition p_relatives_iota(A p: Set) (p_is_rel: relation p) 
+:= ι _ (p_relatives_ex_iota A p p_is_rel).
 
 Ltac grab_from_context P :=
   lazymatch goal with
@@ -3282,10 +3297,10 @@ Ltac grab_from_context P :=
   end.
 
 Notation "p [ A ]" := 
-(p_relatives A p (ltac:(grab_from_context (relation p))))(at level 60, left associativity, only parsing).
+(p_relatives_iota A p (ltac:(grab_from_context (relation p))))(at level 60, left associativity, only parsing).
 
 Notation "p [ A ]" := 
-(p_relatives A p _)(at level 60, left associativity, only printing).
+(p_relatives_iota A p _)(at level 60, left associativity, only printing).
 
 Notation "'Dom' X" := (domain X (ltac:(grab_from_context (relation X))))(at level 60, only parsing).
 Notation "'Dom' X" := (domain X _)(only printing).
@@ -5312,3 +5327,654 @@ left H13.
 repl H15.
 apply H11.
 Qed.
+
+Theorem pred_exists: ∀ x :: N. (0 < x) -> ∃px::N. (S px) = x.
+intro.
+intro.
+take PN5_induction (fun x=> 0 < x -> ∃ px::N . S px = x).
+intro.
+assert ((0 < 0 -> (∃ px::N . S px = 0))).
+intro.
+take set_in_zero_causes_contradiction H2.
+apply H3.
+take H0 H2.
+clear H0 H2.
+assert ((∀ x :: N
+. (0 < x -> (∃ px::N . S px = x)) ->
+0 < S x -> (∃ px::N . S px = S x))).
+intro.
+intros.
+ex_in x0.
+split.
+apply H0.
+apply eq_refl.
+take H3 H0.
+take H2 x H H1.
+apply H4.
+Qed.
+
+
+Theorem induction_starts_at_one: forall P : Set -> Prop, P 1 ->
+(∀ x :: N . P x -> P (S x)) ->
+(∀ x :: N . (0 < x) -> P x).
+intros.
+intro.
+intros.
+take PN5_induction (fun x => P (S x)).
+take H3 H.
+clear H3.
+assert ((∀ x :: N . P (S x) -> P (S (S x)))).
+intros y.
+intros.
+take H0 (S y).
+take PN2_succ y.
+take H7 H3.
+take H6 H8 H5.
+apply H9.
+take H4 H3.
+take pred_exists x.
+take H6 H1 H2.
+ex_el H7.
+both H7.
+take H5 px.
+take H7 H8.
+repl H9 in H10.
+apply H10.
+Qed.
+
+(* notion xpy *)
+Definition related x p y := ∃1xpy. (pair_p x y xpy) ∧ (xpy ∈ p).
+
+Definition relation_p (a: Set) := ∀x. (x ∈ a) -> ∃m. ∃n. pair_p m n x.
+
+Definition relation_from_x_to_y_p (p X Y: Set):= 
+∃1c. cartesian_p X Y c ∧
+(relation_p p) ∧ (p ⊆ c).
+
+Definition relation_from_z_to_z_p (p Z: Set):= ∃X. ∃Y.
+∃1u. union2_p X Y u ∧
+(relation_from_x_to_y_p p X Y) ∧ (u ⊆ Z).
+
+Definition relation_in_z_p (p Z: Set) := relation_from_x_to_y_p p Z Z.
+
+Definition p_relatives_p(A p s: Set) (p_is_rel: relation_p p) := 
+(∀y. (y ∈ s) ⇔ ∃x::A. related x p y).
+
+Definition p_relatives_ex(A p: Set) (p_is_rel: relation_p p) : 
+∃1s. p_relatives_p A p s p_is_rel.
+split.
+assert (relation p).
+unfold relation.
+intro.
+intro.
+take p_is_rel x H.
+ex_el H0.
+ex_el H0.
+take bridge_pair_p_to_iota x m n.
+ex_in m.
+ex_in n.
+apply H1.
+split.
+ex_in x.
+split.
+apply H0.
+apply eq_refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+take p_relatives_ex_iota A p H.
+ex_el H0.
+ex_in s.
+intro.
+split.
+intro.
+take H0 x.
+left H2 H1.
+unfold p_relatives_p.
+ex_el H3.
+both H3.
+ex_in x0.
+split.
+apply H4.
+unfold related.
+split.
+take bridge_pair_iota_to_p (< x0, x >) x0 x.
+assert ((< x0, x >) = (< x0, x >)).
+apply eq_refl.
+take H3 H6.
+ex_el H7.
+both H7.
+ex_in p0.
+split.
+apply H8.
+repl H9 in H5.
+apply H5.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+unfold p_relatives_p.
+intro.
+take H0 x.
+right H2.
+apply H3.
+ex_el H1.
+both H1.
+ex_in x0.
+split.
+apply H4.
+unfold related in H5.
+ex_el H5.
+both H5.
+take bridge_pair_p_to_iota xpy x0 x.
+assert ((∃1 p. p := < x0, x > ∧ xpy = p)).
+split.
+ex_in xpy.
+split.
+apply H1.
+apply eq_refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+take H5 H7.
+repl H8 in H6.
+apply H6.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+
+Definition reflective p X := ∀x::X. related x p x.
+
+Definition symmetric p := ∀x. ∀y. (related x p y) -> (related y p x).
+
+Definition transitive p := ∀x. ∀y. ∀z. (related x p y) -> (related y p z) -> (related x p z).
+
+Definition equivalence_relation p X := 
+(relation_in_z_p p X) ∧ (reflective p X) ∧ (symmetric p) ∧ (transitive p).
+
+Definition equiv_class_gen_by_x_p(p x: Set) (p_is_rel: relation_p p) (s: Set) := 
+(∀y. (y ∈ s) ⇔ related x p y).
+
+Definition equiv_class_gen_by_x_ex(p x: Set) (p_is_rel: relation_p p) :
+∃1s. equiv_class_gen_by_x_p p x p_is_rel s.
+take unit_set_exists x.
+ex_el H.
+rename p0 into u_x.
+take p_relatives_ex u_x p p_is_rel.
+split.
+ex_el H0.
+ex_in s.
+intro.
+take H0 x0.
+split.
+intro.
+left H1 H2.
+ex_el H3.
+both H3.
+take H x1.
+left H3 H4.
+repl H6 in H5.
+apply H5.
+intro.
+right H1.
+apply H3.
+take H x0.
+ex_in x.
+split.
+take H x.
+right H5.
+apply H6.
+apply eq_refl.
+apply H2.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Definition to_rel 
+(p X: Set) (H: equivalence_relation p X): relation_p p.
+left H.
+left H0.
+left H1.
+unfold relation_in_z_p in H2.
+unfold relation_from_x_to_y_p in H2.
+left H2.
+ex_el H3.
+left H3.
+right H4.
+apply H5.
+Qed.
+
+(* property (I) *)
+Definition any_element_is_in_equivalence_class 
+(p: Set) (X: Set) (H: equivalence_relation p X) : 
+∀x::X. ∃1c. (equiv_class_gen_by_x_p p x 
+(to_rel p X H) c) ∧ x ∈ c.
+intro.
+intro.
+ex_unique_in (equiv_class_gen_by_x_ex p x 
+(to_rel p X H)).
+unfold equiv_class_gen_by_x_p in P.
+take P x.
+apply_b H1.
+left H.
+left H1.
+unfold reflective in H2.
+both H2.
+take H4 x H0.
+apply H2.
+Qed.
+
+(* property (II) *)
+Theorem related_elements_are_in_the_same_class (p R: Set)
+(ER: equivalence_relation p R):
+∀x. ∀y. related x p y -> 
+∃1class_x. equiv_class_gen_by_x_p p x (to_rel p R ER) class_x ∧
+∃1class_y. equiv_class_gen_by_x_p p y (to_rel p R ER) class_y ∧
+class_x = class_y.
+intro x.
+intro y.
+intros.
+ex_unique_in (equiv_class_gen_by_x_ex p x 
+(to_rel p R ER)).
+ex_unique_in (equiv_class_gen_by_x_ex p y 
+(to_rel p R ER)).
+apply eq_in.
+intro z.
+intro.
+unfold equiv_class_gen_by_x_p in P, P0.
+take P0 z.
+apply_b H1.
+take P z.
+left H1 H0.
+left ER.
+right H3.
+take H4 x y H.
+right ER.
+take H6 y x z.
+take H7 H5 H2.
+apply H8.
+intro z.
+intro.
+unfold equiv_class_gen_by_x_p in P, P0.
+take P z.
+apply_b H1.
+take P0 z.
+left H1 H0.
+right ER.
+take H3 x y z.
+take H4 H H2.
+apply H5.
+Qed.
+
+
+Definition equivalence_class_p p X A 
+(ER: equivalence_relation p X) := 
+(A ⊆ X) ∧ 
+∃x::A. (∀y. (y∈A) ⇔ related x p y). 
+
+Definition equivalence_class_p_alt p X A 
+(ER: equivalence_relation p X) := 
+(A ⊆ X) ∧ 
+∃x::A. ∃1u_x. unit_set_p x u_x ∧ p_relatives_p u_x p A (to_rel p X ER). 
+
+Theorem simplify_empty_set(e: Set): 
+(∀ x . x ∉ e) -> (∀ x . (x ∈ e ⇔ ⊥)).
+intro.
+intro.
+split.
+intro.
+take H x H0.
+apply H1.
+intro.
+apply H0.
+Defined.
+
+Theorem get_symmetric (p X: Set) (ER: equivalence_relation p X): symmetric p.
+left ER.
+right H.
+apply H0.
+Qed.
+
+Theorem get_transitive (p X: Set) (ER: equivalence_relation p X): transitive p.
+right ER.
+apply H.
+Qed.
+
+Theorem get_reflective (p X: Set) (ER: equivalence_relation p X): reflective p X.
+left ER.
+left H.
+right H0.
+apply H1.
+Qed.
+
+Theorem conj_symmetric (A B: Prop): (A ∧ B) -> (B ∧ A).
+intro.
+both H.
+split.
+ass.
+ass.
+Qed.
+
+(* Theorem 7.1 - part 1*)
+Theorem collection_of_equiv_classes_is_a_partition:
+∀p. ∀X. forall ER: equivalence_relation p X,
+∀c. (∀z. z ∈ c ⇔ equivalence_class_p p X z ER) ->
+partition_p c X.
+intro p.
+intro X.
+intro.
+intros c H.
+unfold partition_p.
+ex_unique_in (empty_set_exists).
+split.
+split.
+split.
+unfold disjoint_collection.
+intros x.
+intro.
+intros y y_in_C NE.
+unfold disjoint.
+ex_unique_in (empty_set_exists).
+join P P0.
+repl <- H1.
+clear P0 H1.
+ex_unique_in (intersection2_exists x y).
+assert ((∀ x . (x ∈ i ⇔ ⊥)) -> i = e).
+intro.
+join H1 P.
+apply H2.
+apply H1.
+clear H1.
+apply (simplify_empty_set i).
+take H x.
+take H y.
+left H1 H0.
+left H2 y_in_C.
+clear H1 H2.
+intro z.
+intro.
+take P0 z.
+left H2.
+take H5 H1.
+both H6.
+clear H1 H2 H5.
+apply NE.
+apply eq_in.
+intro k.
+intro.
+left H3.
+take H2 z H7.
+left H4.
+take H6 z H8.
+take H2 k H1.
+clear H2 H6 H9.
+unfold equivalence_class_p in H3.
+right H3.
+right H4.
+ex_el H2.
+both H2.
+rename x0 into u.
+ex_el H6.
+both H6.
+rename x0 into v.
+take H11 k.
+left H6 H1.
+take H12 k.
+right H14.
+apply H15.
+clear H14 H15.
+take H11 z.
+take H12 z.
+left H14 H7.
+left H15 H8.
+take get_symmetric _ _ ER.
+unfold symmetric in H18.
+take H18 u z H16.
+take get_transitive _ _ ER.
+take H20 v z u H17 H19.
+take H20 v u k H21 H13.
+apply H22.
+intro k.
+intro.
+left H3.
+left H4.
+take H2 z H7.
+take H5 k H1.
+clear H2 H5.
+right H3.
+right H4.
+ex_el H2.
+ex_el H5.
+rename x0 into u.
+rename x1 into v.
+both H2.
+both H5.
+take H11 k.
+right H5.
+apply H13.
+take H12 k.
+left H14 H1.
+take get_symmetric _ _ ER.
+apply H16 in H15.
+assert ((related v p u) -> (related u p k)).
+intro.
+take get_transitive _ _ ER.
+take H18 k v u H15 H17.
+take get_symmetric _ _ ER.
+apply H20.
+apply H19.
+apply H17.
+clear H16 H17.
+take H11 z.
+take H12 z.
+left H16 H7.
+left H17 H8.
+take get_symmetric _ _ ER.
+apply H20 in H18.
+take get_transitive _ _ ER.
+take H21 v z u H19 H18.
+apply H22.
+unfold collection_of_nonempty_sets.
+intro.
+intro.
+intro.
+unfold empty_set_p in H1.
+join H1 P.
+repl H2 in H0.
+clear H1 H2.
+take H e.
+left H1 H0.
+unfold equivalence_class_p in H2.
+right H2.
+ex_el H3.
+left H3.
+take P x0.
+left H5 H4.
+apply H6.
+intro.
+intro.
+take H x.
+left H1 H0.
+left H2.
+apply H3.
+intro.
+intro.
+take equiv_class_gen_by_x_ex p x (to_rel p X ER).
+ex_el H1.
+unfold equiv_class_gen_by_x_p in H1.
+take H1 x.
+ex_in s.
+apply conj_symmetric.
+split.
+apply_b H2.
+left ER.
+left H2.
+right H3.
+take H4 x H0.
+apply H5.
+take H s.
+apply_b H3.
+unfold equivalence_class_p.
+split.
+intro g.
+intro.
+take H1 g.
+unfold  equivalence_relation in ER.
+take get_symmetric _ _ ER.
+take H5 g.
+left H4 H3.
+unfold related in H7.
+left ER.
+left H8.
+left H9.
+unfold relation_p in H10.
+unfold relation_in_z_p in H10.
+unfold relation_from_x_to_y_p in H10.
+ex_el H7.
+both H7.
+right H9.
+unfold reflective in H7.
+left H10.
+ex_el H13.
+right H13.
+take H14 xpy H12.
+left H13.
+left H16.
+take H17 xpy.
+left H18 H15.
+ex_el H19.
+both H19.
+ex_el H21.
+both H21.
+ex_conj_chain_el H22.
+repl <- F in P0.
+take pair_property_p x1 y x g xpy P0 H11.
+right H21.
+repl H22 in H19.
+apply H19.
+ex_in x.
+split.
+take get_reflective _ _ ER.
+take H3 x H0.
+apply_b H2.
+apply H4.
+apply H1.
+Qed.
+
+Ltac conj_chain_el H :=
+let L := fresh "C" in
+let R := fresh "C" in
+match type of H with
+|_ ∧ _ =>
+pose proof conj_el_1 _ _ H as L;
+pose proof conj_el_2 _ _ H as R;
+clear H;
+conj_chain_el L;
+conj_chain_el R
+|_ => idtac
+end.
+
+Theorem elements_of_pair_in_relation_in_z_belongs_to_z:
+∀p. ∀X.
+∀p_is_rel: relation_in_z_p p X.
+∀a. ∀b. ∀k. pair_p a b k -> (k ∈ p) -> (a ∈ X) ∧ (b ∈ X). 
+intros p X p_is_rel a b k H U.
+left p_is_rel.
+ex_el H0.
+both H0.
+both H1.
+split.
+take H0 k.
+rename x into C.
+take H2 k U.
+left H1 H4.
+ex_el H5.
+both H5.
+ex_el H7.
+both H7.
+ex_el H8.
+both H8.
+repl <- H9 in H7.
+take pair_property_p _ _ _ _ _ H7 H.
+left H8.
+repl H10 in H6.
+apply H6.
+take H0 k.
+rename x into C.
+take H2 k U.
+left H1 H4.
+ex_el H5.
+both H5.
+ex_el H7.
+both H7.
+ex_el H8.
+both H8.
+repl <- H9 in H7.
+take pair_property_p _ _ _ _ _ H7 H.
+right H8.
+repl H10 in H5.
+apply H5.
+Qed.
+
+
+(* Theorem 7.1 - part 2*)
+Theorem partition_defines_equivalence_relation:
+∀p. ∀X.
+∀p_is_rel: relation_in_z_p p X.
+∀PAR. ((partition_p PAR X) ∧ (∀a. ∀b. (∀z. (z ∈ p) ⇔ (pair_p a b z)) ⇔ 
+∃A::PAR. (a ∈ A) ∧ (b ∈ A)))
+-> equivalence_relation p X .
+intros p X p_is_rel PAR.
+intro.
+both H.
+split.
+split.
+split.
+apply p_is_rel.
+unfold partition_p in H0.
+ex_conj_chain_el H0.
+both F.
+both H.
+both H2.
+intro g.
+intro.
+unfold related.
+ex_unique_in (pair_exists g g).
+rename xpy into gpg.
+take H1 g g.
+assert ((∀ z . z ∈ p ⇔ z := < g, g >) -> gpg ∈ p).
+intro.
+take H6 gpg.
+apply_b H7.
+apply P0.
+apply H6.
+apply_b H5.
+take H0 g H2.
+ex_el H5.
+both H5.
+ex_in p0.
+split.
+ass.
+split; ass.
+intros u v.
+intro.
+unfold related.
+ex_unique_in (pair_exists v u).
+unfold related in H.
+ex_el H.
+rename xpy into v_u.
+rename xpy0 into u_v.
+both H.
+unfold partition_p in H0.
+ex_el H0.
+conj_chain_el H0.
+take C2 u.
+take elements_of_pair_in_relation_in_z_belongs_to_z
+p X p_is_rel u v u_v H2 H3.
+both H0.
+take H H4.
+ex_el H0.
+both H0.
+rename p0 into u_v_class.
+take H1 u v.
+Admitted.
+
+(* NOT ENOUGH HIGH-LEVEL UNDERSTANDING  *)
+
+
+(* after eq relations --- switch gears into paper*)
