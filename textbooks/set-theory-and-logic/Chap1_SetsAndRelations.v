@@ -74,6 +74,18 @@ clear H;
 rename temp into H
 end.
 
+Definition extension_trans (a b: Set) (P: Set->Prop) 
+(H1: ∀x. (x ∈ a) ⇔ P x) 
+(H2: ∀x. (x ∈ b) ⇔ P x): a = b.
+apply ZF1_extension.
+intros g.
+take H1 g.
+take H2 g.
+swap_biimpl H0.
+take biimpl_trans _ _ _ H H0.
+assumption.
+Qed.
+
 (* Exercise 2.2 *)
 Theorem simple_in_2: ¬({1,2} ∈ {{1, 2, 3}, {1, 3}, 1, 2}).
 intro.
@@ -3254,7 +3266,7 @@ end.
 Definition p_relatives_ex_iota(A p: Set) (p_is_rel: relation p) : 
 ∃1s. (∀y. (y ∈ s) ⇔ ∃x::A. <x, y> ∈ p).
 split; try apply any_biimpl_set_is_no_more_than_one.
-take range_exists p p_is_rel.
+take range_exists_iota p p_is_rel.
 left H.
 clear H.
 cbv beta in H0.
@@ -3460,132 +3472,6 @@ take H0 H1.
 apply H2.
 Defined.
 
-Theorem range_of_cartesian: ∃1e. (empty_set_p e) ∧ ∀X. ∀Y. 
-∃1c. (cartesian_old_p X Y c) ∧ 
-∃1r. (range_p c r) ∧ ((X ≠ e) -> (r = Y)).
-ex_unique_in empty_set_exists.
-intros X Y.
-ex_unique_in (cartesian_exists_old X Y).
-assert (relation c).
-unfold relation.
-intros x x_in_c.
-take P0 x.
-left H.
-take H0 x_in_c.
-ex_el H1.
-both H1.
-ex_el H3.
-both H3.
-apply (ex_in _ x0).
-apply (ex_in _ y).
-apply H4.
-ex_unique_in (range_exists c H).
-intro.
-eq_in.
-take P1 x.
-left H2.
-take H3 H1.
-ex_el H4.
-take P0 (< x0, x >).
-left H5.
-take H6 H4.
-ex_el H7.
-both H7.
-ex_el H9.
-both H9.
-take pair_property H10.
-both H9.
-repl H12.
-apply H7.
-take P1 x.
-right H2.
-apply H3.
-clear H2 H3.
-rename x into y.
-take non_empty_set_has_element2.
-left H2.
-clear H2.
-ex_el H3.
-both H3.
-take H4 X.
-clear H4.
-assert (X ≠ x).
-intro.
-repl H4 in H0.
-apply H0.
-eq_in.
-take H2 x0.
-left H6.
-apply (H7 H5).
-take P x0.
-left H6.
-apply (H7 H5).
-take H3 H4.
-change (∃ x . x ∈ X) in H5.
-ex_el H5.
-take P0 (< x0, y >).
-apply (ex_in _ x0).
-right H6.
-apply H7.
-apply (ex_in _ x0).
-split.
-ass.
-apply (ex_in _ y).
-split.
-ass.
-apply eq_refl.
-Qed.
-
-Lemma ex_less_ex_more_el (P Q: Set -> Prop):
-(∃1x. P x) -> (∃≤1 x. ∃ y. (P x ∧ P y)).
-intro.
-intros q w H1 H2.
-right H.
-take H0 q w.
-apply H3.
-ex_el H1.
-left H1.
-apply H4.
-ex_el H2.
-left H2.
-ass.
-Qed.
-
-Lemma ex_less_ex_more_el_2 (P: Set -> Prop) :
-(∃1x. P x) -> (∃≤1 x. ∃ y. (P y ∧ P x)).
-intro.
-intros q w H1 H2.
-right H.
-take H0 q w.
-apply H3.
-ex_el H1.
-right H1.
-apply H4.
-ex_el H2.
-right H2.
-ass.
-Qed.
-
-Definition extension_trans (a b: Set) (P: Set->Prop) 
-(H1: ∀x. (x ∈ a) ⇔ P x) 
-(H2: ∀x. (x ∈ b) ⇔ P x): a = b.
-apply ZF1_extension.
-intros g.
-take H1 g.
-take H2 g.
-swap_biimpl H0.
-take biimpl_trans _ _ _ H H0.
-ass.
-Qed.
-
-Definition unit_set_p_join(a u1 u2: Set):
-(unit_set_p a u1) -> (unit_set_p a u2) -> u1 = u2.
-intros.
-take extension_trans _ _ _ H H0.
-apply H1.
-Qed.
-
-
 Definition pair_p_definitions_equivalent(a b s: Set): 
 (pair_p_traditional a b s) ⇔ (pair_p a b s).
 unfold pair_p_traditional, pair_p.
@@ -3700,6 +3586,158 @@ left H0.
 apply H1.
 apply H.
 Qed.
+
+Definition domain_exists(r: Set) (is_relation: relation r): ∃1domain. 
+(∀ x. ((x ∈ domain) ⇔ ((∃y. ∃1xy. pair_p x y xy ∧ xy ∈ r )))).
+take ZF4_union r.
+ex_el H.
+rename a into u_r.
+take ZF4_union u_r.
+ex_el H0.
+rename a into u_u_r.
+split.
+take ZF2_subsets 
+(fun x0 => (∃ y . ∃1 xy. pair_p x0 y xy ∧ xy ∈ r)) u_u_r.
+ex_el H1.
+apply (ex_in _ b).
+intro.
+split.
+intro.
+take H1 x.
+left H3.
+take H4 H2.
+right H5.
+apply H6.
+intro.
+take H1 x.
+right H3.
+apply H4.
+split.
+ex_el H2.
+ex_el H2.
+both H2.
+(* xy = {x, y} *)
+take H xy H6.
+take pair_unord_exists x y.
+ex_el H7.
+take H2 p.
+assert (p ∈ xy).
+take H5 p.
+right H9.
+apply H10.
+ex_unique_in (unit_set_exists x).
+ex_unique_in (pair_unord_exists x y).
+take extension_trans _ _ _  H7 P0.
+right.
+apply H11.
+take H8 H9.
+take H0 p H10.
+apply H11.
+take H7 x.
+right H12.
+apply H13.
+left.
+apply eq_refl.
+apply H2.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+
+Definition range_exists(r: Set) (is_relation: relation r): ∃1range. 
+(∀ y. ((y ∈ range) ⇔ ((∃x. ∃1xy. pair_p x y xy ∧ xy ∈ r )))).
+take ZF4_union r.
+ex_el H.
+rename a into u_r.
+take ZF4_union u_r.
+ex_el H0.
+rename a into u_u_r.
+split.
+take ZF2_subsets 
+(fun y => (∃ x . ∃1 xy. pair_p x y xy ∧ xy ∈ r)) u_u_r.
+ex_el H1.
+apply (ex_in _ b).
+intro.
+split.
+intro.
+take H1 x.
+left H3.
+take H4 H2.
+right H5.
+apply H6.
+intro.
+take H1 x.
+right H3.
+apply H4.
+split.
+ex_el H2.
+ex_el H2.
+both H2.
+(* xy = {x, y} *)
+take H xy H6.
+rename x into y.
+rename x0 into x.
+take pair_unord_exists x y.
+ex_el H7.
+take H2 p.
+assert (p ∈ xy).
+take H5 p.
+right H9.
+apply H10.
+ex_unique_in (unit_set_exists x).
+ex_unique_in (pair_unord_exists x y).
+take extension_trans _ _ _  H7 P0.
+right.
+apply H11.
+take H8 H9.
+take H0 p H10.
+apply H11.
+take H7 y.
+right H12.
+apply H13.
+right.
+apply eq_refl.
+apply H2.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Lemma ex_less_ex_more_el (P Q: Set -> Prop):
+(∃1x. P x) -> (∃≤1 x. ∃ y. (P x ∧ P y)).
+intro.
+intros q w H1 H2.
+right H.
+take H0 q w.
+apply H3.
+ex_el H1.
+left H1.
+apply H4.
+ex_el H2.
+left H2.
+ass.
+Qed.
+
+Lemma ex_less_ex_more_el_2 (P: Set -> Prop) :
+(∃1x. P x) -> (∃≤1 x. ∃ y. (P y ∧ P x)).
+intro.
+intros q w H1 H2.
+right H.
+take H0 q w.
+apply H3.
+ex_el H1.
+right H1.
+apply H4.
+ex_el H2.
+right H2.
+ass.
+Qed.
+
+
+Definition unit_set_p_join(a u1 u2: Set):
+(unit_set_p a u1) -> (unit_set_p a u2) -> u1 = u2.
+intros.
+take extension_trans _ _ _ H H0.
+apply H1.
+Qed.
+
 
 Definition pair_exists(a b: Set) : ∃1p. (pair_p a b p).
 split.
@@ -5974,7 +6012,16 @@ rename p0 into u_v_class.
 take H1 u v.
 Admitted.
 
-(* NOT ENOUGH HIGH-LEVEL UNDERSTANDING  *)
+(* Skipped all exercises for chapter 7  *)
+
+(* Section 8: Functions*)
+Definition ordered_pair (s: Set) := ∃a. ∃b. pair_p a b s.
+
+Definition function (s: Set) := 
+(* I *) ∀x. x ∈ s ⇔ ordered_pair x ∧
+(* II *) ∀x. ∀y. ∀z. ∃1xy. pair_p x y xy ∧ ∃1xz. pair_p x z xz ∧ 
+(xy ∈ s ∧ xz ∈ s) -> y = z.
 
 
-(* after eq relations --- switch gears into paper*)
+Definition into(s X Y: Set) := (function s) ∧ ∀
+
