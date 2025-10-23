@@ -1373,7 +1373,7 @@ apply unit_set_in.
 apply eq_refl.
 Qed.
 
-Lemma impl_in (H: Prop): H ⇒ H.
+Lemma impl_in_tauto (H: Prop): H ⇒ H.
 intro.
 apply H0.
 Qed.
@@ -1391,7 +1391,7 @@ apply (disj_el _ _ _ H1).
 intro.
 apply H2.
 ass.
-apply impl_in.
+apply impl_in_tauto.
 Qed.
 
 Goal ∀A. ∀B. (ac A ⊆ B) -> (ac B ⊆ A).
@@ -1688,7 +1688,7 @@ take empty_set_el x H2.
 ass.
 Qed. 
 
-Lemma empty_set_is_subset_of_any: ∀A. (∅ ⊆ A).
+Lemma empty_set_is_subset_of_any_iota: ∀A. (∅ ⊆ A).
 intros A x H.
 apply abs_el.
 apply (any_set_in_empty_set_causes_contradiction H).
@@ -1701,7 +1701,7 @@ take (H ∅ {`∅} ∅).
 apply (unit_set_never_equals_to_empty_set ∅).
 apply H0.
 split.
-apply empty_set_is_subset_of_any.
+apply empty_set_is_subset_of_any_iota.
 intros x H1.
 apply element_of_unit_set in H1.
 apply union_in.
@@ -3587,7 +3587,9 @@ apply H1.
 apply H.
 Qed.
 
-Definition domain_exists(r: Set) (is_relation: relation r): ∃1domain. 
+Definition relation_p (a: Set) := ∀x. (x ∈ a) -> ∃m. ∃n. pair_p m n x.
+
+Definition domain_exists(r: Set) : ∃1domain. 
 (∀ x. ((x ∈ domain) ⇔ ((∃y. ∃1xy. pair_p x y xy ∧ xy ∈ r )))).
 take ZF4_union r.
 ex_el H.
@@ -3642,8 +3644,7 @@ apply H2.
 apply any_biimpl_set_is_no_more_than_one.
 Qed.
 
-
-Definition range_exists(r: Set) (is_relation: relation r): ∃1range. 
+Definition range_exists(r: Set): ∃1range. 
 (∀ y. ((y ∈ range) ⇔ ((∃x. ∃1xy. pair_p x y xy ∧ xy ∈ r )))).
 take ZF4_union r.
 ex_el H.
@@ -5423,8 +5424,6 @@ Qed.
 (* notion xpy *)
 Definition related x p y := ∃1xpy. (pair_p x y xpy) ∧ (xpy ∈ p).
 
-Definition relation_p (a: Set) := ∀x. (x ∈ a) -> ∃m. ∃n. pair_p m n x.
-
 Definition relation_from_x_to_y_p (p X Y: Set):= 
 ∃1c. cartesian_p X Y c ∧
 (relation_p p) ∧ (p ⊆ c).
@@ -6014,14 +6013,1066 @@ Admitted.
 
 (* Skipped all exercises for chapter 7  *)
 
+Definition any_set_is_empty_or_non_empty (s: Set) : 
+(empty_set_p s) ∨ (∃e. e ∈ s).
+take exc_thrd (empty_set_p s).
+apply (disj_el _ _ _ H).
+intro.
+left.
+ass.
+intro.
+right.
+apply ex_in_alt.
+intro.
+unfold empty_set_p in H0.
+apply H0.
+intro.
+split.
+intro.
+take H1 x.
+apply (H3 H2).
+intro.
+apply H2.
+Qed.
+
+Lemma empty_set_is_subset_of_any: ∀A. ∃1e. empty_set_p e ∧ (e ⊆ A).
+intro A.
+ex_unique_in (empty_set_exists).
+intro.
+intro.
+take P x.
+left H0.
+take H1 H.
+apply H2.
+Qed.
+
+
 (* Section 8: Functions*)
 Definition ordered_pair (s: Set) := ∃a. ∃b. pair_p a b s.
 
 Definition function (s: Set) := 
-(* I *) ∀x. x ∈ s ⇔ ordered_pair x ∧
-(* II *) ∀x. ∀y. ∀z. ∃1xy. pair_p x y xy ∧ ∃1xz. pair_p x z xz ∧ 
-(xy ∈ s ∧ xz ∈ s) -> y = z.
+(* I *) (∀x. x ∈ s -> ordered_pair x) ∧
+(* II *) (∀x. ∀y. ∀z. ∃1xy. pair_p x y xy ∧ ∃1xz. pair_p x z xz ∧ 
+((xy ∈ s ∧ xz ∈ s) -> y = z)).
+
+Definition on(s X: Set) := domain_p s X.
+
+Definition function_on(s X: Set) := (function s) 
+∧ domain_p s X.
+
+Definition range_is_subset(s Y: Set) :=
+∃1r. range_p s r ∧ r ⊆ Y.
+
+Definition into(s Y: Set) := range_is_subset s Y.
+
+Definition onto(s Y: Set) := range_p s Y.
+
+Definition function_into(s X Y: Set) := 
+(function s) ∧ (into s Y).
+
+Definition function_onto(s X Y: Set) := 
+(function s) ∧ (onto s Y).
+
+Definition function_on_into(s X Y: Set) := (function s) 
+∧ domain_p s X 
+∧ range_is_subset s Y.
+
+Definition on_onto(s X Y: Set) := (function s) 
+∧ domain_p s X 
+∧ range_p s Y.
+
+Notation "f : X -> Y" := (function_on_into f X Y)(at level 81, left associativity).
+
+Definition appl_p(f x fx: Set) :=  ∃1p. pair_p x fx p ∧ p ∈ f.
+
+Definition appl_exists: ∀f. ∀X. function_on f X -> ∀x::X. ∃1y. appl_p f x y.
+intro f.
+intro X.
+intro.
+intro x.
+intro.
+right H.
+left H.
+take H1 x.
+left H3 H0.
+ex_el H4.
+ex_el H4.
+both H4.
+split.
+unfold appl_p.
+ex_in y.
+ex_unique_in (pair_exists x y).
+join P H5.
+repl H4.
+apply H6.
+unfold appl_p.
+intros y1 y2.
+intro.
+intro.
+ex_el H4.
+ex_el H7.
+both H4.
+both H7.
+right H2.
+take H7 x y1 y2.
+ex_el H11.
+both H11.
+ex_el H13.
+both H13.
+apply H14.
+split.
+join H12 H8.
+repl H13.
+apply H9.
+join H4 H11.
+repl <- H13.
+apply H10.
+Qed.
 
 
-Definition into(s X Y: Set) := (function s) ∧ ∀
+Definition appl_p_with_Y(f x Y fx: Set):=  fx ∈ Y ∧ ∃1p. pair_p x fx p ∧ p ∈ f.
+
+Definition function_on_into_is_total: ∀f. ∀X. ∀Y. function_on_into f X Y -> ∀x::X. ∃1y. 
+appl_p_with_Y f x Y y.
+intro f.
+intro X.
+intro Y.
+intro.
+intro.
+intros.
+split.
+left H.
+right H1.
+take H2 x.
+left H3 H0.
+ex_el H4.
+ex_conj_chain_el H4.
+right H.
+unfold range_is_subset in H4.
+ex_conj_chain_el H4.
+assert (y ∈ Y).
+take P0 y.
+take F0 y.
+apply H5.
+apply_b H4.
+ex_in x.
+ex_unique_in (pair_exists x y).
+join P P1.
+repl <- H4.
+apply F.
+left H3.
+take H5 H0.
+ex_in y.
+split.
+ass.
+ex_el H6.
+ex_el H6.
+both H6.
+left H1.
+right H6.
+take H9 x y y0.
+ex_conj_chain_el H10.
+join P P1.
+repl <- H10 in F2.
+join H7 P2.
+repl <- H11 in F2.
+take conj_in _ _ F H8.
+take F2 H12.
+repl H13.
+unfold appl_p_with_Y.
+ex_unique_in (pair_exists x y0).
+join P2 P3.
+repl <- H14.
+repl <- H11.
+apply H8.
+intros a b H1 H2.
+both H1.
+both H2.
+left H.
+left H2.
+right H6.
+take H7 x a b.
+clear H7.
+ex_el H8.
+both H8.
+ex_el H9.
+both H9.
+apply H10.
+split.
+unfold appl_p_with_Y in H4.
+ex_el H4.
+both H4.
+join H7 H9.
+repl H4.
+ass.
+unfold appl_p_with_Y in H5.
+ex_el H5.
+both H5.
+join H8 H9.
+repl H5.
+ass.
+Qed.
+
+Definition appl_with_Y_exists: ∀f. ∀X. ∀Y. function_on_into f X Y -> ∀x::X. ∃1y. appl_p_with_Y f x Y y.
+apply function_on_into_is_total.
+Qed.
+
+Definition pair_components_are_in_domain_and_codomain: 
+∀a. ∀b. ∃1p. pair_p a b p ∧ 
+(∀f. ∀X. ∀Y. function_on_into f X Y -> p ∈ f -> a ∈ X ∧ b ∈ Y).
+intro a.
+intro b.
+ex_unique_in (pair_exists a b).
+intro f.
+intro X.
+intro Y.
+intro.
+intro.
+split.
+left H.
+right H1.
+unfold domain_p in H2.
+take H2 a.
+apply_b H3.
+ex_in b.
+split.
+ex_in p.
+split.
+apply P.
+ass.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+right H.
+unfold range_is_subset in H1.
+ex_el H1.
+both H1.
+take H3 b.
+apply H1.
+take H2 b.
+apply_b H4.
+ex_in a.
+ex_unique_in (pair_exists a b).
+join P P0.
+repl <- H4.
+ass.
+Qed.
+
+
+(* Y ^ X *)
+Definition all_functions_p (X Y s: Set) := 
+∀f. (f ∈ s) ⇔ (function_on_into f X Y).
+
+Definition all_functions_exists: ∀X. ∀Y. ∃1s. all_functions_p X Y s.
+intro X.
+intro Y.
+split.
+take cartesian_exists X Y.
+ex_el H.
+rename c into XmY.
+take ZF6_power_set XmY.
+ex_el H0.
+rename b into P_XmY.
+take ZF2_subsets (fun f=> (function_on_into f X Y)) P_XmY.
+ex_el H1.
+rename b into subset_P_XmY.
+ex_in subset_P_XmY.
+intro.
+split.
+intro.
+take H1 x.
+left H3 H2.
+right H4.
+apply H5.
+intro.
+take H1 x.
+apply_b H3.
+split.
+left H2.
+left H3.
+left H4.
+take any_set_is_empty_or_non_empty x.
+apply (disj_el _ _ _ H6).
+intro.
+take empty_set_is_subset_of_any XmY.
+ex_conj_chain_el H8.
+join H7 P.
+repl <- H8 in F.
+take H1 x.
+take H0 x F.
+apply H10.
+intro.
+ex_el H7.
+rename e into k.
+take H5 k H7.
+unfold ordered_pair in H8.
+ex_el H8.
+ex_el H8.
+take H1 x.
+left H9.
+take H0 x.
+apply H11.
+clear H11.
+intro p.
+intro.
+take H p.
+apply_b H12.
+take H5 p H11.
+unfold ordered_pair in H12.
+ex_el H12.
+ex_el H12.
+take pair_components_are_in_domain_and_codomain a0 b0.
+ex_conj_chain_el H13.
+take F x X Y H2.
+join H12 P.
+repl <- H14 in H13.
+take H13 H11.
+both H15.
+ex_in a0.
+split.
+ass.
+ex_in b0.
+split.
+ass.
+split.
+ex_in p.
+split.
+apply H12.
+apply eq_refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+apply H2.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Definition domain_of_all_functions_is_empty_then_only_one_element:
+∀X. ∀Y. ∃1s. (all_functions_p X Y s) ∧ 
+((empty_set_p X) -> ∀z. z ∈ s ⇔ empty_set_p z).
+intros X Y.
+ex_unique_in (all_functions_exists X Y).
+intro.
+intro.
+split.
+intro.
+unfold all_functions_p in P.
+take P x.
+left H1 H0.
+left H2.
+right H2.
+unfold empty_set_p.
+intro z.
+split.
+intro.
+left H3.
+left H6.
+take H7 z H5.
+unfold ordered_pair in H8.
+ex_el H8.
+ex_el H8.
+right H3.
+take H9 a.
+take H a.
+left H11.
+apply H12.
+apply_b H10.
+ex_in b.
+ex_unique_in (pair_exists a b).
+join H8 P0.
+repl <- H10.
+apply H5.
+intro.
+apply H5.
+intro.
+take P x.
+apply_b H1.
+(* empty set is INTO function from empty set to any codomain*)
+split.
+split.
+split.
+intro.
+intro.
+take H0 x0.
+left H2 H1.
+apply H3.
+intros a b c.
+ex_unique_in (pair_exists a b).
+ex_unique_in (pair_exists a c).
+intro.
+both H1.
+take H0 xy.
+left H1 H2.
+apply H4.
+intro z.
+split.
+intro.
+ex_in z.
+ex_unique_in (pair_exists z z).
+take H z.
+left H2 H1.
+apply H3.
+intro.
+ex_el H1.
+ex_el H1.
+both H1.
+take H0 xy.
+left H1 H3.
+apply H4.
+unfold range_is_subset.
+ex_unique_in (range_exists x).
+intro m.
+intro.
+take P0 m.
+left H2 H1.
+ex_el H3.
+ex_el H3.
+both H3.
+take H0 xy.
+left H3 H5.
+apply H6.
+Qed.
+
+Definition impl_el(A B: Prop): (A ⇒ B) -> ((¬A) ∨ B).
+intro.
+take exc_thrd A.
+apply (disj_el _ _ _ H0).
+intro.
+right.
+apply H.
+apply H1.
+intro.
+left.
+apply H1.
+Qed.
+
+Definition impl_in(A B: Prop): ((¬A) ∨ B) -> (A ⇒ B).
+intro.
+intro.
+apply (disj_el _ _ _ H).
+intro.
+apply (H1 H0).
+apply impl_in_tauto.
+Qed.
+
+Definition not_impl_el_1(A B: Prop): (¬ (A ⇒ B)) -> A.
+intro.
+assert (¬ ((¬A) ∨ B)).
+intro.
+apply H.
+apply impl_in in H0.
+apply H0.
+apply deMorganNotOr in H0.
+both H0.
+apply DN_el.
+apply H1.
+Qed.
+
+
+Definition non_empty_set_has_element_simple:
+∀s.  (¬ empty_set_p s) -> ∃ a . a ∈ s.
+intro.
+intro.
+unfold empty_set_p in H.
+assert (¬ (∀ x0 . ¬ ¬ (x0 ∈ x ⇔ ⊥))).
+intro.
+apply H.
+intro.
+take H0 x0.
+apply DN_el in H1.
+apply H1.
+apply ex_in_alt in H0.
+ex_el H0.
+ex_in x0.
+apply deMorganNotAnd in H0.
+apply (disj_el _ _ _ H0).
+intro.
+apply not_impl_el_1 in H1.
+apply H1.
+intro.
+apply not_impl_el_1 in H1.
+apply H1.
+Qed.
+
+Definition range_of_all_functions_is_empty_then_no_elements:
+∀X. ∀Y. ∃1s. (all_functions_p X Y s) ∧ 
+((empty_set_p Y) -> (¬(empty_set_p X)) -> empty_set_p s).
+intros X Y.
+ex_unique_in (all_functions_exists X Y).
+intro.
+intro.
+apply non_empty_set_has_element_simple in H0.
+ex_el H0.
+intro k.
+split.
+intro.
+take P k.
+left H2 H1.
+left H3.
+right H3.
+right H4.
+take H6 a.
+left H7 H0.
+ex_el H8.
+ex_el H8.
+both H8.
+rename y into b.
+unfold range_is_subset in H5.
+ex_el H5.
+both H5.
+take H8 b.
+take H11 b.
+take H b.
+left H13.
+apply H14.
+apply H12.
+apply_b H5.
+ex_in a.
+split.
+ex_in xy.
+split.
+ass.
+apply H10.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+intro.
+apply H1.
+Qed.
+
+
+Definition element_of_cartesian_is_ordered_pair (X Y c m: Set) 
+(H : cartesian_p X Y c)
+(H2: m ∈ c): ordered_pair m.
+unfold ordered_pair.
+take H m.
+left H0 H2.
+ex_el H1.
+both H1.
+ex_el H4.
+both H4.
+ex_el H5.
+both H5.
+ex_in x.
+ex_in y.
+repl H6.
+apply H4.
+Qed.
+
+Definition intersection_with_cartesian_p(A X Y s: Set):= 
+(∀k. (k ∈ s) ⇔ ((k ∈ A) ∧ (∃ x :: X . ∃ y :: Y . pair_p x y k))).
+
+Definition intersection_with_cartesian_exists(A X Y: Set): 
+∃1s. intersection_with_cartesian_p A X Y s.
+split.
+take cartesian_exists X Y.
+ex_el H.
+take intersection2_exists A c.
+ex_el H0.
+ex_in i.
+intro.
+split.
+intro.
+split.
+take H0 x.
+left H2 H1.
+both H3.
+apply H4.
+take H x.
+take H0 x.
+left H3 H1.
+both H4.
+left H2 H6.
+ex_el H4.
+both H4.
+ex_el H8.
+both H8.
+ex_el H9.
+both H9.
+ex_in x0.
+split.
+ass.
+ex_in y.
+split.
+ass.
+repl H10.
+apply H8.
+intro.
+both H1.
+take H0 x.
+apply_b H1.
+split.
+apply H2.
+take H x.
+apply_b H1.
+ex_el H3.
+both H3.
+ex_el H4.
+both H4.
+ex_in x0.
+split.
+ass.
+ex_in y.
+split.
+ass.
+split.
+ex_in x.
+split.
+apply H5.
+apply eq_refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Definition restriction_p (f A Y: Set) (g: Set):=
+intersection_with_cartesian_p f A Y g.
+
+Definition restriction_exists (f A Y: Set) : ∃1g. restriction_p f A Y g.
+apply intersection_with_cartesian_exists.
+Qed.
+
+Definition identity_map_p(X i: Set) := (∀p. ((p ∈ i) ⇔ 
+(∃x:: X. pair_p x x p))).
+
+Definition identity_map_exists (X: Set): ∃1i. identity_map_p X i.
+split.
+take cartesian_exists X X.
+ex_el H.
+take ZF2_subsets (fun p => (∃x:: X. pair_p x x p)) c.
+ex_el H0.
+ex_in b.
+intro.
+split.
+intro.
+take H0 x.
+left H2 H1.
+both H3.
+apply H5.
+intro.
+take H0 x.
+right H2.
+apply H3.
+split.
+take H x.
+apply_b H4.
+ex_el H1.
+both H1.
+ex_in x0.
+split.
+apply H4.
+ex_in x0.
+split.
+apply H4.
+split.
+ex_in x.
+split.
+apply H5.
+apply eq_refl.
+apply ex_less_conj_in.
+apply any_biimpl_set_is_no_more_than_one.
+apply H1.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Ltac join_pairs_by_name P1 P2 :=
+let T := fresh "T" in
+match type of P1 with
+|  ?xy := < ?x1, ?y1 > => 
+match type of P2 with
+|  xy := < ?x2, ?y2 > => 
+pose proof pair_property_p x1 y1 x2 y2 xy P1 P2 as T;
+both T
+end
+end.
+
+
+Definition identity_map_is_into (X: Set): 
+∃1i. identity_map_p X i ∧ function_on_into i X X.
+ex_unique_in (identity_map_exists X).
+split.
+split.
+split.
+intro.
+intro.
+take P x.
+left H0 H.
+ex_el H1.
+both H1.
+ex_in x0.
+ex_in x0.
+apply H3.
+intros x y z.
+ex_unique_in (pair_exists x y).
+ex_unique_in (pair_exists x z).
+intro.
+both H.
+take P xy.
+left H H0.
+ex_el H2.
+both H2.
+take P xz.
+left H2 H1.
+ex_el H5.
+both H5.
+join_pairs_by_name P0 H4.
+join_pairs_by_name P1 H7.
+join_pairs_by_name P1 H7.
+apply eq_symm in H9.
+take eq_trans x1 x x0 H9 H5.
+apply eq_symm in H10.
+apply eq_symm in H13.
+take eq_trans y x0 x1 H8 H13.
+take eq_trans y x1 z H14 H10.
+apply H15.
+intro x.
+split.
+intro.
+ex_in x.
+ex_unique_in (pair_exists x x ).
+take P xy.
+apply_b H0.
+ex_in x.
+split.
+apply H.
+apply P0.
+intro.
+ex_el H.
+ex_el H.
+both H.
+take P xy.
+left H H1.
+ex_el H2.
+both H2.
+join_pairs_by_name H0 H4.
+repl H2.
+apply H3.
+unfold range_is_subset.
+ex_unique_in (range_exists i).
+intro g.
+intro.
+take P0 g.
+left H0 H.
+ex_el H1.
+ex_el H1.
+both H1.
+take P xy.
+left H1 H3.
+ex_el H4.
+both H4.
+join_pairs_by_name H2 H6.
+repl H7.
+apply H5.
+Qed.
+
+(* Exercise 8.2 *)
+Definition restriction_of_identity_relation (A X: Set) (H: A ⊆ X) :
+∃1ix. identity_map_p X ix ∧
+∀H1: function_on_into ix X X.
+∃1iA. identity_map_p A iA ∧ 
+∃1ix_A. (restriction_p ix A A ix_A) ∧ ix_A = iA.
+ex_unique_in (identity_map_exists X).
+intro.
+ex_unique_in (identity_map_exists A).
+ex_unique_in (restriction_exists ix A A).
+unfold restriction_p in P1.
+unfold intersection_with_cartesian_p in P1.
+eq_in.
+take P1 x0.
+left H1 H0.
+both H2.
+unfold identity_map_p in P0.
+unfold identity_map_p in P.
+take P0 x0.
+apply_b H2.
+ex_el H4.
+both H4.
+ex_el H5.
+both H5.
+take P x0.
+left H5 H3.
+ex_el H7.
+both H7.
+join_pairs_by_name H6 H9.
+repl H7 in H6.
+repl H10 in H6.
+ex_in x2.
+split.
+repl H7 in H2.
+apply H2.
+apply H9.
+take P1 x0.
+apply_b H1.
+take P0 x0.
+left H1 H0.
+split.
+take P x0.
+apply_b H3.
+ex_el H2.
+both H2.
+take H x1 H3.
+ex_in x1.
+split.
+apply H2.
+apply H4.
+ex_el H2.
+both H2.
+ex_in x1.
+split.
+apply H3.
+ex_in x1.
+split.
+apply H3.
+apply H4.
+Qed.
+
+Ltac right_uniqueness_in x y z :=
+let T := fresh "T" in
+intros x y z;
+ex_unique_in (pair_exists x y);
+ex_unique_in (pair_exists x z);
+intro T;
+both T.
+
+
+
+Definition restriction_is_function_on_A (f X Y A: Set) (H1: function_on_into f X Y) 
+(SUB: A ⊆ X) (fA: Set) 
+(H2: restriction_p f A Y fA) : function_on fA A.
+split.
+split.
+intro.
+intro.
+take H2 x.
+left H0 H.
+both H3.
+ex_conj_chain_el H5.
+ex_el H5.
+both H5.
+ex_el H6.
+both H6.
+ex_in x0.
+ex_in y.
+apply H7.
+right_uniqueness_in x y z.
+take H2 xy.
+left H3 H.
+both H4.
+take H2 xz.
+left H4 H0.
+both H7.
+left H1.
+left H7.
+right H10.
+take H11 x y z.
+ex_el H12.
+both H12.
+ex_el H14.
+both H14.
+join H13 P.
+repl H14 in H15.
+join H12 P0.
+repl H16 in H15.
+apply H15.
+split;ass.
+intro.
+split.
+intro.
+take function_on_into_is_total f X Y H1 x.
+take SUB x H.
+take H0 H3.
+ex_el H4.
+unfold appl_p_with_Y in H4.
+both H4.
+ex_el H6.
+both H6.
+ex_in y.
+ex_unique_in (pair_exists x y).
+join H4 P.
+repl <- H6.
+take H2 p.
+apply_b H8.
+split.
+apply H7.
+ex_in x.
+split.
+apply H.
+ex_in y.
+split.
+apply H5.
+apply H4.
+intro.
+ex_el H.
+ex_el H.
+both H.
+take H2 xy.
+left H H3.
+right H4.
+ex_el H5.
+both H5.
+ex_el H7.
+both H7.
+join_pairs_by_name H0 H8.
+repl H7.
+apply H6.
+Qed.
+
+Definition function_on_into_function_on (f X Y: Set) (H1: function_on_into f X Y): function_on f X.
+unfold function_on.
+left H1.
+apply H.
+Qed.
+
+Definition restriction_property (f X Y A: Set) (H1: function_on_into f X Y) (SUB: A ⊆ X) 
+(fA: Set) (H2: restriction_p f A Y fA) : ∀a::A. 
+(∃1y1. appl_p fA a y1 ∧
+∃1y2. appl_p f a y2 ∧ y1 = y2).
+intros a.
+intro.
+take restriction_is_function_on_A f X Y A H1 SUB fA H2.
+take appl_exists fA A H0 a H.
+ex_unique_in H3.
+take H1.
+apply function_on_into_function_on in H4.
+take SUB a H.
+take appl_exists f X H4 a H5.
+ex_unique_in H6.
+clear H3 H6.
+unfold appl_p in P0.
+ex_el P0.
+both H0.
+unfold appl_p in P.
+ex_el P.
+both P.
+both P0.
+left H4.
+right H10.
+assert (p0 ∈ f -> y1 = y2).
+intro.
+take H11 a y1 y2.
+ex_el H13.
+both H13.
+ex_el H15.
+both H15.
+apply H16.
+split.
+join H0 H14.
+repl H15 in H12.
+ass.
+join H8 H13.
+repl H15 in H9.
+ass.
+apply H12.
+clear H11.
+take H2 p0.
+left H11 H7.
+left H13.
+apply H14.
+Qed.
+
+Definition injection_mapping_on_into_p(A X s: Set) :=
+∃1ix. identity_map_p X ix ∧
+restriction_p ix A X s ∧ function_on_into s A X.
+
+Definition one_to_one (f: Set) := ∀x1. ∀x2. 
+∃1y1. appl_p f x1 y1 ∧
+∃1y2. appl_p f x2 y2 ∧
+(y1 = y2) -> (x1 = x2).
+
+Definition one_to_one_correspondence(f X Y: Set) :=
+(function f) ∧ (on f X) ∧ (one_to_one f) ∧ (onto f Y).
+
+Definition in_one_to_one_correspondence(X Y: Set) :=
+∃f. one_to_one_correspondence f X Y.
+
+Definition all_functions_in_one_to_one (A B X: Set)
+(H: in_one_to_one_correspondence A B):
+∃1AX. all_functions_p A X AX ∧
+∃1BX. all_functions_p B X BX ∧
+in_one_to_one_correspondence AX BX.
+ex_unique_in (all_functions_exists A X).
+ex_unique_in (all_functions_exists B X).
+unfold in_one_to_one_correspondence.
+Admitted.
+
+Definition zero_p s := empty_set_p s.
+
+Definition zero_exists : ∃1s. zero_p s.
+apply empty_set_exists.
+Qed.
+
+
+Definition one_p s := ∀x. (x ∈ s) ⇔ empty_set_p x.
+
+Definition one_exists: ∃1s. one_p s.
+split.
+take zero_exists.
+ex_el H.
+take unit_set_exists s.
+ex_el H0.
+unfold one_p.
+ex_in p.
+intro.
+split.
+intro.
+take H0 x.
+left H2 H1.
+repl <- H3 in H.
+apply H.
+intro.
+join H H1.
+take eq_symm _ _ H2.
+take H0 x.
+right H4.
+take H5 H3.
+apply H6.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Definition set_of_two_elements_p(s: Set) := 
+∀x. (x ∈ s) ⇔ (zero_p x ∨ one_p x).
+
+Definition set_of_two_elements_exists: 
+∃1s. set_of_two_elements_p s.
+split.
+take one_exists.
+ex_el H.
+take zero_exists.
+ex_el H0.
+take ZF3_pairing_equiv s s0.
+ex_el H1.
+ex_in c.
+unfold set_of_two_elements_p.
+intro.
+split.
+intro.
+take H1 x.
+left H3 H2.
+apply (disj_el _ _ _ H4).
+intro.
+right.
+repl H5.
+ass.
+intro.
+left.
+repl H5.
+ass.
+intro.
+take H1 x.
+apply_b H3.
+apply (disj_el _ _ _ H2).
+intro.
+right.
+join H0 H3.
+apply eq_symm.
+ass.
+intro.
+left.
+join H H3.
+apply eq_symm.
+apply H4.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Definition characteristic_function_p (A X: Set) (H: A ⊆ X) (f: Set):
+∀p. (p ∈ f) ⇔ (∃x. ∃y. pair_p x y p ∧ 
+(x ∈ A -> one_p y) ∧ ((x ∈ X ∧ x ∉ A) -> zero_p y)).
+
+
 

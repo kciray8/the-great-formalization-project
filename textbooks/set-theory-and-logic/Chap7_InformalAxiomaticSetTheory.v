@@ -159,7 +159,7 @@ Defined.
 
 Axiom ZF3_pairing: ∀ a. ∀b. ∃c. (a ∈ c) ∧ (b ∈ c).
 
-Definition ZF3_pairing_equiv: ∀ a. ∀b. ∃c.  
+Definition ZF3_pairing_with_subset: ∀ a. ∀b. ∃c.  
 ∀ x. (x ∈ c) ⇔ ((x = a) ∨ (x = b)).
 intro a.
 intro b.
@@ -221,7 +221,7 @@ Definition pair_unord_p (a b s: Set):= ∀ x. ((x ∈ s) ⇔ ((x = a) ∨ (x = b
 Definition pair_unord_exists (a b: Set): ∃1p. ∀ x. ((x ∈ p) ⇔ ((x = a) ∨ (x = b))).
 unfold ex_unique.
 apply (conj_in _ _).
-pose proof ZF3_pairing_equiv a b.
+pose proof ZF3_pairing_with_subset a b.
 cbv beta in H.
 apply H.
 intro x1.
