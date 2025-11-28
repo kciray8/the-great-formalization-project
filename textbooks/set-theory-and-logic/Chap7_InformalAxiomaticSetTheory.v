@@ -1783,9 +1783,8 @@ apply H0.
 apply H6.
 Defined.
 
-Definition domain_exists (r: Set) (is_relation: relation r): ∃1d. 
+Definition domain_exists (r: Set): ∃1d. 
 (∀ x. ((x ∈ d) ⇔ ((∃y. <x,y> ∈ r )))).
-unfold relation in is_relation .
 apply (conj_in _ _).
 pose proof ZF2_subsets (fun x => (∃y. <x,y> ∈ r ))
 ((union (union r))).
@@ -1855,11 +1854,10 @@ apply H2.
 apply (any_biimpl_set_is_no_more_than_one _).
 Defined.
 
-Definition domain (r: Set) (is_relation: relation r):= ι _ (domain_exists r is_relation).
+Definition domain (r: Set):= ι _ (domain_exists r).
 
-Definition range_exists (r: Set) (is_relation: relation r): ∃1d. 
+Definition range_exists (r: Set): ∃1d. 
 (∀ y. ((y ∈ d) ⇔ ((∃x. <x,y> ∈ r )))).
-unfold relation in is_relation .
 apply (conj_in _ _).
 pose proof ZF2_subsets (fun y => (∃x. <x,y> ∈ r ))
 ((union (union r))).

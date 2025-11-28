@@ -25,6 +25,16 @@ Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) :=
 Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) uconstr(f) :=
   take_core (a b c d e f).
 
+Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) uconstr(f) uconstr(g) :=
+  take_core (a b c d e f g).
+
+Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) uconstr(f) uconstr(g) uconstr(h) :=
+  take_core (a b c d e f g h).
+
+Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) uconstr(f) uconstr(g) uconstr(h) uconstr(i) :=
+  take_core (a b c d e f g h i).
+
+
 Axiom intuitive_abstraction: forall A: (Set -> Prop), 
 ∃b. ∀ x. ((x ∈ b) ⇔ (A x)).
 
@@ -64,6 +74,18 @@ match type of H with
 clear H;
 rename temp into H
 end.
+
+Definition extension_trans (a b: Set) (P: Set->Prop) 
+(H1: ∀x. (x ∈ a) ⇔ P x) 
+(H2: ∀x. (x ∈ b) ⇔ P x): a = b.
+apply ZF1_extension.
+intros g.
+take H1 g.
+take H2 g.
+swap_biimpl H0.
+take biimpl_trans _ _ _ H H0.
+assumption.
+Qed.
 
 (* Exercise 2.2 *)
 Theorem simple_in_2: ¬({1,2} ∈ {{1, 2, 3}, {1, 3}, 1, 2}).
@@ -2894,6 +2916,203 @@ Qed.
 Definition identity_relation (X: Set): Set := ι _ (identity_relation_exists X).
 Definition id (X: Set): Set := ι _ (identity_relation_exists X).
 
+Ltac ex_el H :=
+match type of H with
+|∃ x. _ =>
+let V := fresh x in
+let H2 := fresh "H2" in
+apply (ex_el _ H);
+intros V H2;
+move V before H;
+move H2 before V;
+clear H;
+rename H2 into H
+|∃1 x. _ =>
+let V := fresh x in
+let H2 := fresh "H2" in
+let H3 := fresh "H3" in
+pose proof conj_el_1 _ _ H as H3;
+apply (ex_el _ H3);
+intros V H2;
+move V before H;
+move H2 before V;
+move H3 before H2;
+cbv beta in H3;
+clear H H3;
+rename H2 into H
+end.
+
+Ltac ex_unique_el H :=
+match type of H with
+|∃1 x. _ =>
+let V := fresh x in
+let H2 := fresh "H2" in
+let H3 := fresh "H3" in
+let U := fresh "U" in
+pose proof conj_el_1 _ _ H as H3;
+pose proof conj_el_2 _ _ H as U;
+apply (ex_el _ H3);
+intros V H2;
+move V before H;
+move H2 before V;
+move H3 before H2;
+move U before V;
+cbv beta in H3;
+cbv beta in U;
+clear H H3;
+rename H2 into H
+end.
+
+Ltac get_left B H := 
+let K := fresh "K" in
+let G := fresh "G" in
+match type of H with
+|?x ∈ _ =>
+pose proof conj_el_1 _ _ (B x) as K;
+pose proof K H as G;
+clear K
+end.
+
+Ltac get_right B H := 
+let K := fresh "K" in
+let G := fresh "G" in
+match type of H with
+|?x ∈ _ =>
+pose proof conj_el_2 _ _ (B x) as K;
+pose proof K H as G;
+clear K
+end.
+
+Ltac grab B H := get_left B H || get_right B H.
+
+Ltac apply_b H :=
+let K := fresh "K" in
+pose proof conj_el_2 _ _ H as K;
+apply K;
+clear H K.
+
+Ltac ex_in x := apply (ex_in _ x).
+
 Theorem identity_relation_prop(X: Set): ∀x::X. ∀y::X. 
 (<x,y> ∈ (id X)) ⇔ (x = y).
+
+Definition p_relatives_ex(A r: Set): 
+∃1s. (∀y. (y ∈ s) ⇔ ∃x::A. <x, y> ∈ r).
+split.
+take range_exists r.
+ex_el H.
+take ZF2_subsets (fun y => (∃ x :: A . < x, y > ∈ r)) d.
+ex_el H0.
+apply (ex_in _ b).
+intro.
+split.
+intro.
+take H0 x.
+left H2.
+take H3 H1.
+right H4.
+apply H5.
+intro.
+ex_el H1.
+both H1.
+take H0 x.
+apply_b H1.
+split.
+take H x.
+apply_b H1.
+ex_in x0.
+ass.
+ex_in x0.
+split.
+apply H2.
+apply H3.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Definition p_relatives(A p: Set)
+:= ι _ (p_relatives_ex A p).
+
+Notation "p [ A ]" := 
+(p_relatives A p)
+(at level 60, left associativity).
+
+Definition ordered_pair (s: Set) := ∃a. ∃b. s = <a, b>.
+
+Definition function (s: Set) := 
+(* I *) (∀x. x ∈ s -> ordered_pair x) ∧
+(* II *) (∀x. ∀y. ∀z. ((<x, y> ∈ s ∧ <x, z> ∈ s) -> y = z)).
+
+Definition on(s X: Set) := (domain s) = X.
+
+Definition function_on(s X: Set) := (function s) ∧ (on s X).
+
+Definition range (r: Set):= ι _ (range_exists r).
+
+Definition range_is_subset(s Y: Set) := range s ⊆ Y.
+
+Definition into(s Y: Set) := range_is_subset s Y.
+
+Definition onto(s Y: Set) := (range s) = Y.
+
+Definition function_into(s X Y: Set) := 
+(function s) ∧ (into s Y).
+
+Definition function_onto(s X Y: Set) := 
+(function s) ∧ (onto s Y).
+
+Definition function_on_into(s X Y: Set) := (function s) 
+∧ on s X
+∧ into s Y.
+
+Definition on_onto(s X Y: Set) := (function s) 
+∧ on s X
+∧ onto s X.
+
+Notation "f : X -> Y" := (function_on_into f X Y)(at level 81, left associativity).
+
+Definition one_to_one (s: Set) := (∀a. ∀b. ∀y. ((<a, y> ∈ s ∧ <b, y> ∈ s) -> a = b)).
+
+Ltac left_and_take x y := 
+let K := fresh "K" in
+pose proof conj_el_1 _ _ x as K;
+pose proof K y;
+clear K.
+
+Tactic Notation "left" uconstr(x) uconstr(y) := left_and_take x y.
+
+Theorem exercsise_8_9 (A B f: Set): f[A ∩ B] ⊆ (f[A] ∩ f[B]).
+intro.
+intro.
+extract_iota (f [A ∩ B]) H.
+extract_iota_from_goal ((f [A] ∩ f [B])).
+take iota_prop0 x.
+apply_b H0.
+split.
+take iota_prop x.
+left H0 H.
+ex_el H1.
+both H1.
+apply (intersection_el) in H2.
+both H2.
+extract_iota_from_goal (f [A]).
+take iota_prop1 x.
+apply_b H2.
+ex_in x0.
+split.
+ass.
+ass.
+extract_iota_from_goal (f [B]).
+take iota_prop1 x.
+apply_b H0.
+take iota_prop x.
+left H0 H.
+ex_el H1.
+both H1.
+apply (intersection_el) in H2.
+both H2.
+ex_in x0.
+split.
+ass.
+ass.
+Qed.
 
