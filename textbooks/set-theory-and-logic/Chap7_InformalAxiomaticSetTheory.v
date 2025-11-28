@@ -159,7 +159,7 @@ Defined.
 
 Axiom ZF3_pairing: ∀ a. ∀b. ∃c. (a ∈ c) ∧ (b ∈ c).
 
-Definition ZF3_pairing_with_subset: ∀ a. ∀b. ∃c.  
+Definition ZF3_pairing_equiv: ∀ a. ∀b. ∃c.  
 ∀ x. (x ∈ c) ⇔ ((x = a) ∨ (x = b)).
 intro a.
 intro b.
@@ -216,12 +216,10 @@ pose proof biimpl_trans _ _ _ H2 H4.
 apply H5.
 Defined.
 
-Definition pair_unord_p (a b s: Set):= ∀ x. ((x ∈ s) ⇔ ((x = a) ∨ (x = b))).
-
 Definition pair_unord_exists (a b: Set): ∃1p. ∀ x. ((x ∈ p) ⇔ ((x = a) ∨ (x = b))).
 unfold ex_unique.
 apply (conj_in _ _).
-pose proof ZF3_pairing_with_subset a b.
+pose proof ZF3_pairing_equiv a b.
 cbv beta in H.
 apply H.
 intro x1.
@@ -242,8 +240,6 @@ Defined.
 Definition pair_unord (a b: Set): Set := ι _ (pair_unord_exists a b).
 
 Notation "{ a , b }" := (pair_unord a b).
-
-Definition unit_set_p (a s: Set) :=  ∀ x. ((x ∈ s) ⇔ ((x = a))).
 
 Definition unit_set_exists (a: Set): ∃1p. ∀ x. ((x ∈ p) ⇔ ((x = a))).
 pose proof pair_unord_exists a a.
@@ -274,6 +270,7 @@ Definition unit_set (a: Set): Set := (ι _ (unit_set_exists a)).
 
 (* '`' is used to prevent collision with coq { } *)
 Notation "{` a }" := (unit_set a).
+
 
 Definition every_set_is_in_unit_set: ∀m. m ∈ {`m}.
 intro.
@@ -317,8 +314,6 @@ Defined.
 Ltac destruct_subset H := 
 let x := fresh in
 pose proof (destruct_subset_def _ _ _ H) as x; clear H; cbv beta in x.
-
-Definition union_p(c u: Set) :=  ∀ x. ((x ∈ u) ⇔ ((∃y. (x ∈ y) ∧ (y ∈ c)))).
 
 Definition union_exists (c: Set): ∃1u. ∀ x. ((x ∈ u) ⇔ ((∃y. (x ∈ y) ∧ (y ∈ c)))).
 apply (conj_in _ _).
@@ -372,9 +367,7 @@ Defined.
 
 Definition union (c: Set): Set := ι _ (union_exists c).
 
-Definition union2_p(a b u: Set) :=  (∀ x. ((x ∈ u) ⇔ ((x ∈ a) ∨ (x ∈ b)))).
-
-Definition union2_exists (a b: Set): ∃1u. union2_p a b u.
+Definition union2_exists (a b: Set): ∃1u. (∀ x. ((x ∈ u) ⇔ ((x ∈ a) ∨ (x ∈ b)))).
 pose proof pair_unord_exists a b.
 left H.
 destruct_ex H0 p.
@@ -437,10 +430,6 @@ Notation " a ∪ b " := (union2 a b)(at level 81, left associativity).
 Axiom ZF6_infinity: ∃a. ((∃e.  (∀ x . ¬(x ∈ e)) ∧ (e ∈ a))
 ∧ (∀ x . (x ∈ a) -> (x ∪ (unit_set x)) ∈ a)).
 
-Definition empty_set_p_traditional (e: Set) := (∀ x . ¬(x ∈ e)).
-Definition empty_set_p (e: Set) := (∀ x . (x ∈ e) ⇔ ⊥).
-
-(* deprecated *)
 Definition empty_set_unique: ∃1e.  (∀ x . ¬(x ∈ e)).
 apply (conj_in _ _).
 pose proof ZF6_infinity.
@@ -463,25 +452,6 @@ intro.
 pose proof H0 x H1.
 apply (abs_el (x ∈ a) H2).
 Defined.
-
-Definition empty_set_exists: ∃1e.  (∀ x . (x ∈ e) ⇔ ⊥).
-pose proof empty_set_unique.
-left H.
-cbv beta in H0.
-apply (ex_el _ H0).
-intros x H1.
-apply (conj_in).
-apply (ex_in _ x).
-intro k.
-apply (conj_in).
-intro.
-pose proof H1 k.
-apply H3.
-apply H2.
-intro.
-apply H2.
-apply any_biimpl_set_is_no_more_than_one.
-Qed.
 
 Definition empty_set: Set := ι _ (empty_set_unique).
 Notation " ∅ " := (empty_set).
@@ -556,10 +526,8 @@ Defined.
 Definition intersection (c: Set) (not_empty: ¬(c = ∅)): Set 
 := ι _ (intersection_exists c not_empty).
 
-Definition intersection2_p(a b i: Set):= ∀ x. ((x ∈ i) ⇔ (x ∈ a ∧ x ∈ b)).
-
 Definition intersection2_exists (a b: Set): 
-∃1i. intersection2_p a b i.
+∃1i. ∀ x. ((x ∈ i) ⇔ (x ∈ a ∧ x ∈ b)).
 pose proof unique_subset_exists (fun x=>x ∈ b) a.
 cbv beta in H.
 apply H.
@@ -756,24 +724,9 @@ Definition symmetric_difference (a b: Set) :=
 
 Notation "a + b" := (symmetric_difference a b)(at level 81, left associativity).
 
-Definition pair_p_traditional (a b s: Set) := 
-∃1u. unit_set_p a u ∧
-∃1ab. pair_unord_p a b ab ∧
-pair_unord_p u ab s.
-
-Definition pair_p (a b s: Set) := 
-∀x. (x∈s) ⇔ (∃1u. unit_set_p a u ∧
-∃1ab. pair_unord_p a b ab ∧
-(x = u ∨ x = ab)).
-
-
 Definition pair (a b: Set) := { (unit_set a) , { a, b } }. 
 
 Notation "< a , b >" := (pair a b)(at level 81, left associativity).
-
-Definition triple_p (a b c s: Set) := 
-∃1ab. pair_p a b ab ∧ 
-pair_p ab c s. 
 
 Definition triple (a b c: Set) := <<a, b>, c>.
 
@@ -1274,7 +1227,6 @@ intro.
 apply H27.
 Defined.
 
-
 Axiom ZF6_power_set: ∀a. ∃b. ∀x. (x ⊆ a) -> x ∈ b.
 
 Definition power_set_exists: ∀a. ∃1b. 
@@ -1313,10 +1265,7 @@ Definition power_set (a: Set) := ι _ (power_set_exists a).
 
 Notation "'𝒫' a " := (power_set a)(at level 69, left associativity).
 
-Definition cartesian_old_p (a b c: Set):= 
-(∀ w. ((w ∈ c) ⇔ ((∃x. (x ∈ a) ∧ (∃y. (y ∈ b) ∧ w = <x,y>))))).
-
-Definition cartesian_exists_old (a b: Set): ∃1c. 
+Definition cartesian_product_exists (a b: Set): ∃1c. 
 (∀ w. ((w ∈ c) ⇔ ((∃x. (x ∈ a) ∧ (∃y. (y ∈ b) ∧ w = <x,y>))))).
 pose proof ZF2_subsets (
     fun w => (∃x. ∃y. ((¬(x = y)) ∧ (x ∈ a) ∧ (y ∈ b) ∧ (∀z. (z ∈ w) ⇔ 
@@ -1722,7 +1671,7 @@ pose proof eq_subs (fun g => ∀ x . x ∈ p_p_a_b ⇔ x ⊆ g)
  apply H20.
  Defined.
 
-Definition cartesian_product (a b: Set) := ι _ (cartesian_exists_old a b).
+Definition cartesian_product (a b: Set) := ι _ (cartesian_product_exists a b).
 
 Notation "a × b" := (cartesian_product a b)(at level 70).
 
@@ -1834,10 +1783,7 @@ apply H0.
 apply H6.
 Defined.
 
-Definition domain_p (r: Set) (d: Set) := (∀ x. (x ∈ d) ⇔ 
-((∃y. ∃1xy. pair_p x y xy ∧ xy ∈ r ))).
-
-Definition domain_exists_iota (r: Set) (is_relation: relation r): ∃1d. 
+Definition domain_exists (r: Set) (is_relation: relation r): ∃1d. 
 (∀ x. ((x ∈ d) ⇔ ((∃y. <x,y> ∈ r )))).
 unfold relation in is_relation .
 apply (conj_in _ _).
@@ -1909,12 +1855,9 @@ apply H2.
 apply (any_biimpl_set_is_no_more_than_one _).
 Defined.
 
-Definition domain (r: Set) (is_relation: relation r):= ι _ (domain_exists_iota r is_relation).
+Definition domain (r: Set) (is_relation: relation r):= ι _ (domain_exists r is_relation).
 
-Definition range_p (r: Set) (d: Set) := (∀ y. ((y ∈ d) ⇔ (
-(∃x. ∃1xy. pair_p x y xy ∧ xy ∈ r )))).
-
-Definition range_exists_iota (r: Set) (is_relation: relation r): ∃1d. 
+Definition range_exists (r: Set) (is_relation: relation r): ∃1d. 
 (∀ y. ((y ∈ d) ⇔ ((∃x. <x,y> ∈ r )))).
 unfold relation in is_relation .
 apply (conj_in _ _).
@@ -1985,8 +1928,6 @@ apply H9.
 apply H2.
 apply (any_biimpl_set_is_no_more_than_one _).
 Defined.
-
-Definition range (r: Set) (is_relation: relation r):= ι _ (range_exists_iota r is_relation).
 
 Definition S (x: Set) := x ∪ {`x}.
 
@@ -2891,14 +2832,14 @@ pose proof no_nat_is_subset_of_any_its_elements n n_nat n H21.
 apply (H23 H22).
 Defined.
 
-Definition relation_on_cp_iota (f: Set) (X Y: Set) := f ⊆ (X × Y).
+Definition relation_on_cp (f: Set) (X Y: Set) := f ⊆ (X × Y).
 
-Definition is_function_iota (f: Set) (X Y: Set) := 
-(relation_on_cp_iota f X Y) ∧ 
+Definition is_function (f: Set) (X Y: Set) := 
+(relation_on_cp f X Y) ∧ 
 (∀ x :: X. ∃ y :: Y. (<x,y> ∈ f)) ∧ 
 (∀ x. ∀ y. ∀ z. (<x,y> ∈ f) -> (<x,z> ∈ f) -> (y = z)).
 
-Definition f_appl_iota_ex (f: Set) (X Y: Set) (H: is_function_iota f X Y) (x: Set) 
+Definition f_appl_ex (f: Set) (X Y: Set) (H: is_function f X Y) (x: Set) 
 (x_in_X: x ∈ X):
  ∃1y. (y ∈ Y) ∧ (<x,y> ∈ f).
 apply (conj_in _ _).
@@ -2921,17 +2862,17 @@ right H1.
 apply H4.
 Defined.
 
-Definition f_appl_iota (f: Set) (X Y: Set) 
-(H: is_function_iota f X Y) (x: Set) (x_in_X: x ∈ X) := 
-ι _ (f_appl_iota_ex f X Y H x x_in_X).
+Definition f_appl (f: Set) (X Y: Set) 
+(H: is_function f X Y) (x: Set) (x_in_X: x ∈ X) := 
+ι _ (f_appl_ex f X Y H x x_in_X).
 
 Definition f_x_eq_y (f: Set) (x y: Set) := (<x, y> ∈ f).
 
 Notation "f [ x ] ≔ y" := (f_x_eq_y f x y)(at level 70).
 
-Definition inc_set_ex: ∃1f. (is_function_iota f N N) ∧ 
+Definition inc_set_ex: ∃1f. (is_function f N N) ∧ 
 (∀x :: N. (f [x] ≔ (S x))).
-pose proof cartesian_exists_old N N as NN_ex.
+pose proof cartesian_product_exists N N as NN_ex.
 left NN_ex.
 destruct_ex H NN.
 clear H.
@@ -3209,14 +3150,14 @@ Defined.
 
 Definition inc_set := ι _ (inc_set_ex).
 
-Definition inc_set_is_function_iota: (is_function_iota inc_set N N).
+Definition inc_set_is_function: (is_function inc_set N N).
 extract_iota_from_goal (inc_set).
 left iota_prop.
 apply H.
 Defined.
 
 Definition inc (x: Set) (x_in_N: x ∈ N) := 
-ι _ (f_appl_iota_ex (inc_set) N N (inc_set_is_function_iota) x x_in_N).
+ι _ (f_appl_ex (inc_set) N N (inc_set_is_function) x x_in_N).
 
 Definition inc_ex_alt_simple (x: Set) (x_in_N: x ∈ N): ∃1y. y = S (x).
 apply (conj_in _ _).
@@ -3229,7 +3170,7 @@ left H0.
 right H0.
 clear H0.
 refine (_: ∃ y. y = S x).
-pose proof f_appl_iota_ex f N N H1 x x_in_N.
+pose proof f_appl_ex f N N H1 x x_in_N.
 left H0.
 destruct_ex H3 y.
 right H4.
@@ -3390,21 +3331,21 @@ apply not_empty.
 Defined.
 
 (* They say that "Formally, ZFC is a one-sorted theory in first-order logic."
-Howerver, in this version of axiom from a textbook, they definitely pass proofs of "is_function_iota" and "b_in_domain".
+Howerver, in this version of axiom from a textbook, they definitely pass proofs of "is_function" and "b_in_domain".
 Without these proofs, the f(x) application will not exists because iota denotes existance.
 Maybe math people do this in mind when they see the context and maybe it is possible to improve
 the theorem prover to see the context of expression and "catch" all the proofs needed implicitly.
 Anyway, the PAT-notation when I pass proof objects is clear enough and compatible with CoC
 *)
 
-Axiom ZF7_choice: ∀a. ∃f. @ex (is_function_iota f (non_empty_subsets_of a) 
+Axiom ZF7_choice: ∀a. ∃f. @ex (is_function f (non_empty_subsets_of a) 
 a) (fun f_is_func =>
 ∀b. @all (b ∈ (non_empty_subsets_of a)) ( fun b_in_domain => 
-(f_appl_iota f (non_empty_subsets_of a) a f_is_func b b_in_domain) ∈ b)).
+(f_appl f (non_empty_subsets_of a) a f_is_func b b_in_domain) ∈ b)).
 
-Definition choice_simplified: ∀x. (¬(∅ ∈ x)) -> ∃f. @ex (is_function_iota f x (union x)) 
+Definition choice_simplified: ∀x. (¬(∅ ∈ x)) -> ∃f. @ex (is_function f x (union x)) 
 (fun f_is_func => (∀a. @all (a ∈ x) 
-(fun a_in_x => (f_appl_iota f x (union x) f_is_func a a_in_x) ∈ a))).
+(fun a_in_x => (f_appl f x (union x) f_is_func a a_in_x) ∈ a))).
 intro x.
 intro no_empty_set_in_x.
 pose proof ZF7_choice (union x).
@@ -3425,13 +3366,13 @@ pose proof H3 H.
 left H4.
 apply H5.
 apply (ex_in _ g).
-assert (is_function_iota g x (union x)).
+assert (is_function g x (union x)).
 apply (conj_in _ _).
 apply (conj_in _ _).
-unfold relation_on_cp_iota.
+unfold relation_on_cp.
 left f_is_func.
 left H.
-unfold relation_on_cp_iota in H2.
+unfold relation_on_cp in H2.
 intro w.
 intro.
 set_el_1 H0 w H3.
@@ -3439,7 +3380,7 @@ left H4.
 left f_is_func.
 left H6.
 clear H6.
-unfold relation_on_cp_iota in H7.
+unfold relation_on_cp in H7.
 pose proof H7 w H5.
 extract_iota_from_goal (x × union x).
 pose proof iota_prop w.
@@ -3516,7 +3457,7 @@ apply (g_subset_of_f (< a, c >) H2).
 apply (ex_in _ H).
 intro a.
 intro.
-extract_iota_from_goal (f_appl_iota g x (union x) H a x0).
+extract_iota_from_goal (f_appl g x (union x) H a x0).
 assert (a ∈ non_empty_subsets_of (union x)).
 pose proof in_non_empty_subsets_of_union a x.
 apply H2.
@@ -3527,7 +3468,7 @@ apply x1.
 apply x0.
 pose proof H1 a H2.
 cbv beta in H3.
-extract_iota (f_appl_iota f (non_empty_subsets_of (union x)) 
+extract_iota (f_appl f (non_empty_subsets_of (union x)) 
 (union x) f_is_func a H2) H3.
 right iota_prop.
 pose proof g_subset_of_f _ H4.
@@ -3556,12 +3497,12 @@ apply (disj_in_1 _ _ H2).
 Defined.
 
 Definition functional_application_works_for_equality 
-{f X Y: Set} (f_is_func: is_function_iota f X Y) 
+{f X Y: Set} (f_is_func: is_function f X Y) 
 (a: Set) (a_in_X: a ∈ X)  
 (b: Set) (b_in_X: b ∈ X) (equality: a = b): 
-(f_appl_iota f X Y f_is_func a a_in_X) = (f_appl_iota f X Y f_is_func b b_in_X).
-extract_iota_from_goal (f_appl_iota f X Y f_is_func a a_in_X).
-extract_iota_from_goal (f_appl_iota f X Y f_is_func b b_in_X).
+(f_appl f X Y f_is_func a a_in_X) = (f_appl f X Y f_is_func b b_in_X).
+extract_iota_from_goal (f_appl f X Y f_is_func a a_in_X).
+extract_iota_from_goal (f_appl f X Y f_is_func b b_in_X).
 right iota_prop. 
 right iota_prop0.
 repl equality H0.
@@ -3704,11 +3645,11 @@ rename H0 into V_in_x.
 pose proof choice_prop V V_in_x.
 cbv beta in H0.
 rename H0 into f_V_in_V.
-refine (let f_V := (f_appl_iota f X (union X) f_is_func V V_in_x) in _).
+refine (let f_V := (f_appl f X (union X) f_is_func V V_in_x) in _).
 pose proof f_V_in_V: (f_V ∈ V).
 clear f_V_in_V.
 rename H0 into f_V_in_V.
-refine (let f_U := (f_appl_iota f X (union X) f_is_func U U_in_x) in _).
+refine (let f_U := (f_appl f X (union X) f_is_func U U_in_x) in _).
 pose proof f_U_in_U: (f_U ∈ U).
 clear f_U_in_U.
 rename H0 into f_U_in_U.
@@ -3755,9 +3696,6 @@ apply (disj_in_2).
 apply H5.
 apply H4.
 Defined.
-
-Print Assumptions functional_application_works_for_equality.
-(* issue: exc_thrd *)
 
 Definition zero_in_every_natual_number (n:Set) (n_in_N: n ∈ N ): (¬(n = 0)) -> 0 ∈ n.
 pose proof PN5_induction (fun k => (¬(k = 0)) -> 0 ∈ k).
@@ -4136,7 +4074,7 @@ Defined.
 Definition subset_of_cartesian_exists (A B: Set)(P: Set -> Prop): 
 ∃1 c. ∀ w . w ∈ c ⇔ ((∃ x :: A . ∃ y :: B . (w = (< x, y >))) ∧ (P w)).
 apply conj_in.
-pose proof cartesian_exists_old A B.
+pose proof cartesian_product_exists A B.
 left H.
 destruct_ex H0 cartesian.
 pose proof ZF2_subsets (fun w => P w) cartesian.
@@ -4183,19 +4121,19 @@ Definition subset_of_cartesian5_for_2_args_exists (X Y A B C: Set)(P: Set -> Pro
 ∃1 c. ∀ w . w ∈ c ⇔ ((∃ x :: X . ∃ y :: Y . ∃ a :: A . 
 ∃ b :: B . ∃ c :: C . (w = (<< x, y >, < a, b, c >>))) ∧ (P w)).
 apply conj_in.
-pose proof cartesian_exists_old X Y as x_y_exists.
+pose proof cartesian_product_exists X Y as x_y_exists.
 left x_y_exists.
 destruct_ex H x_y.
 rename H0 into x_y_prop. 
-pose proof cartesian_exists_old A B as a_b_exists.
+pose proof cartesian_product_exists A B as a_b_exists.
 left a_b_exists.
 destruct_ex H0 a_b.
 rename H1 into a_b_prop.
-pose proof cartesian_exists_old a_b C as a_b_c_exists.
+pose proof cartesian_product_exists a_b C as a_b_c_exists.
 left a_b_c_exists.
 destruct_ex H1 a_b_c.
 rename H2 into a_b_c_prop.
-pose proof cartesian_exists_old x_y a_b_c as x_y_a_b_c_exists.
+pose proof cartesian_product_exists x_y a_b_c as x_y_a_b_c_exists.
 left x_y_a_b_c_exists.
 destruct_ex H2 x_y_a_b_c.
 rename H3 into x_y_a_b_c_prop.
@@ -4592,11 +4530,11 @@ pose proof pairs_not_equal_if_pr1_is_not a b c d NE.
 apply (H P).
 Defined.
 
-Definition piecewise_function_nat_3_elements_is_function_iota (a b c blank: Set)
+Definition piecewise_function_nat_3_elements_is_function (a b c blank: Set)
 (range: Set)
 (a_in_range: a ∈ range) (b_in_range: b ∈ range)
 (c_in_range: c ∈ range) (blank_in_range: blank ∈ range):
-(is_function_iota (
+(is_function (
   piecewise_function_nat_3_elements a b c blank range 
 a_in_range b_in_range c_in_range blank_in_range
 ) N range).
@@ -4606,7 +4544,7 @@ rename s into f.
 rename iota_prop into H1.
 apply conj_in.
 apply conj_in.
-unfold relation_on_cp_iota.
+unfold relation_on_cp.
 intro z.
 intro.
 extract_iota_from_goal (N × range).
@@ -4837,3 +4775,4 @@ pose proof (eq_symm _ _ H15).
 pose proof (eq_trans _ _ _ H16 H17).
 apply H18.
 Defined.
+
