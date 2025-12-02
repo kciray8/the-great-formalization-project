@@ -920,6 +920,26 @@ take H1 H.
 apply H2.
 Qed.
 
+Lemma relative_complement_el_alt: ∀A. ∀B. ∀x. 
+x ∉ (A - B) ->  (x ∉ A) ∨ (x ∈ B).
+intros A B x.
+intro.
+extract_iota (A - B) H.
+take iota_prop x.
+right H0.
+take contrapositive H1.
+take H2 H.
+apply deMorganNotAnd in H3.
+apply (disj_el _ _ _ H3).
+intro.
+left.
+apply H4.
+intro.
+right.
+apply DN_el.
+apply H4.
+Qed.
+
 Lemma relative_complement_in: ∀A. ∀B. ∀x. 
 ((x ∈ A) ∧ (x ∉ B) -> x ∈ (A - B)).
 intros A B x.
@@ -1276,6 +1296,13 @@ Qed.
 Lemma eq_in: ∀A. ∀B. A ⊆ B -> B ⊆ A -> A = B.
 intros A B H.
 apply extensionality_for_subsets.
+ass.
+Qed.
+
+Lemma eq_in_backward: ∀A. ∀B. B ⊆ A -> A ⊆ B -> A = B.
+intros A B H H2.
+apply extensionality_for_subsets.
+ass.
 ass.
 Qed.
 
@@ -2993,9 +3020,6 @@ clear H K.
 
 Ltac ex_in x := apply (ex_in _ x).
 
-Theorem identity_relation_prop(X: Set): ∀x::X. ∀y::X. 
-(<x,y> ∈ (id X)) ⇔ (x = y).
-
 Definition p_relatives_ex(A r: Set): 
 ∃1s. (∀y. (y ∈ s) ⇔ ∃x::A. <x, y> ∈ r).
 split.
@@ -3050,14 +3074,14 @@ Definition range (r: Set):= ι _ (range_exists r).
 
 Definition range_is_subset(s Y: Set) := range s ⊆ Y.
 
-Definition into(s Y: Set) := range_is_subset s Y.
+Definition into(s Y: Set) := range s ⊆ Y.
 
 Definition onto(s Y: Set) := (range s) = Y.
 
-Definition function_into(s X Y: Set) := 
+Definition function_into(s Y: Set) := 
 (function s) ∧ (into s Y).
 
-Definition function_onto(s X Y: Set) := 
+Definition function_onto(s Y: Set) := 
 (function s) ∧ (onto s Y).
 
 Definition function_on_into(s X Y: Set) := (function s) 
@@ -3071,6 +3095,9 @@ Definition on_onto(s X Y: Set) := (function s)
 Notation "f : X -> Y" := (function_on_into f X Y)(at level 81, left associativity).
 
 Definition one_to_one (s: Set) := (∀a. ∀b. ∀y. ((<a, y> ∈ s ∧ <b, y> ∈ s) -> a = b)).
+
+Definition one_to_one_correspondence (f A B: Set) :=
+(function f) ∧ (on f A) ∧ (onto f B) ∧ (one_to_one f).
 
 Ltac left_and_take x y := 
 let K := fresh "K" in
@@ -3115,4 +3142,1285 @@ split.
 ass.
 ass.
 Qed.
+
+Definition similar (A B: Set) := ∃f. one_to_one_correspondence f A B.
+
+Notation "A ~ B" := 
+(similar A B) (at level 60, left associativity).
+
+Definition dominated (A B: Set) := ∃b. (b ⊆ B) ∧ (A ~ b).
+
+Notation "A ≾ B" := 
+(dominated A B) (at level 60, left associativity).
+
+Definition dominates (A B: Set) := dominated B A.
+
+Notation "A ≿ B" := 
+(dominates A B) (at level 60, left associativity).
+
+Theorem dominated_means_ex_of_function (A B: Set) (H: A ≾ B): 
+∃f. function_on_into f A B ∧ one_to_one f.
+unfold dominated in H.
+ex_el H.
+both H.
+unfold similar in H1.
+ex_el H1.
+ex_in f.
+split.
+left H1.
+split.
+left H.
+apply H2.
+unfold into.
+right H.
+unfold onto in H2.
+repl H2.
+apply H0.
+right H1.
+apply H.
+Qed.
+
+Definition appl_ex (f: Set) (X Y: Set) (H: function_on_into f X Y) (x: Set) 
+(x_in_X: x ∈ X):
+ ∃1y. (y ∈ Y) ∧ (<x,y> ∈ f).
+apply (conj_in _ _).
+left H.
+right H0.
+unfold on in H1.
+extract_iota (domain f) H1.
+apply eq_symm in  H1.
+repl H1 in x_in_X.
+take iota_prop x.
+left H2 x_in_X.
+ex_el H3.
+ex_in y.
+split.
+right H.
+unfold into in H4.
+take H4 y.
+apply H5.
+extract_iota_from_goal (range f).
+take iota_prop0 y.
+apply_b H6.
+ex_in x.
+ass.
+ass.
+left H.
+left H0.
+right H1.
+intros a b K L.
+both K.
+both L.
+take H2 x a b.
+apply H7.
+split.
+ass.
+ass.
+Defined.
+
+Definition appl (f: Set) (X Y: Set) 
+(H: function_on_into f X Y) (x: Set) (x_in_X: x ∈ X) := 
+ι _ (appl_ex f X Y H x x_in_X).
+
+Theorem composition_ex(g f: Set): ∃1c. ∀p. (p ∈ c) ⇔ 
+∃x. ∃z. (p = <x, z>) ∧ ∃y. <x,y> ∈ f ∧ <y,z> ∈ g.
+take domain_exists f.
+ex_el H.
+rename d into dom_f.
+take range_exists g.
+ex_el H0.
+rename d into ran_g.
+take cartesian_product_exists dom_f ran_g.
+ex_el H1.
+take ZF2_subsets (fun p => ∃x. ∃z. (p = <x, z>) ∧ ∃y. <x,y> ∈ f ∧ <y,z> ∈ g) c.
+ex_el H2.
+split.
+ex_in b.
+intro.
+split.
+intro.
+take H2 x.
+left H4 H3.
+both H5.
+apply H7.
+intro.
+take H3.
+ex_el H3.
+ex_el H3.
+both H3.
+take H2 x.
+apply_b H3.
+split.
+take H1 x.
+apply_b H3.
+rename x into p.
+rename x0 into x.
+ex_in x.
+split.
+take H x.
+apply_b H3.
+ex_el H6.
+both H6.
+ex_in y.
+ass.
+ex_el H6.
+both H6.
+ex_in z.
+split.
+take H0 z.
+apply_b H6.
+ex_in y.
+ass.
+ass.
+apply H4.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Definition composition(g f: Set)
+:= ι _ (composition_ex g f).
+
+Notation "g ∘ f" := 
+(composition g f) (at level 60, left associativity).
+
+Ltac pick H:=
+let L := fresh "L" in
+let R := fresh "R" in
+let function := fresh "function" in
+let on := fresh "on" in
+let into := fresh "into" in
+match type of H with
+| function_on_into ?f ?A ?B => pose proof conj_el_1 _ _ H as L;
+pose proof conj_el_1 _ _ L as function;
+pose proof conj_el_2 _ _ L as on;
+pose proof conj_el_2 _ _ H as into;
+clear L
+end.
+
+Theorem subset_of_p_relatives (f A B: Set) (H: A ⊆ B): 
+f [A] ⊆ f [B].
+intro.
+intro.
+extract_iota (f [A]) H0.
+extract_iota_from_goal (f [B]).
+take iota_prop x.
+left H1 H0.
+take iota_prop0 x.
+apply_b H3.
+ex_el H2.
+both H2.
+take H x0 H3.
+ex_in x0.
+split.
+ass.
+ass.
+Qed.
+
+Theorem conj_symm (A B: Prop): (A ∧ B) -> (B ∧ A).
+intro.
+both H.
+split.
+ass.
+ass.
+Qed.
+
+Ltac grab_function_domain f :=
+  lazymatch goal with
+  | H : (function_on_into f ?A ?B) |- _ => exact A
+  | _ => fail "Unable to grab function domain"
+  end.
+
+Ltac grab_function_range f :=
+  lazymatch goal with
+  | H : (function_on_into f ?A ?B) |- _ => exact B
+  | _ => fail "Unable to grab function domain"
+  end.
+
+(* Don't use it !!! Why:
+1) it is weaker than inverse_property because ∃x. ∃y
+2) Impossible to prove uniqueness because these sets can contain some extra
+ trash
+*)
+Definition inverse_property_weak(f f_inv: Set) := 
+∀x. ∀y. (<x, y> ∈ f) ⇔ (<y, x> ∈ f_inv).
+
+Definition inverse_property (f f_inv: Set) :=
+∀p. (p ∈ f_inv) ⇔ (∃x. ∃y. (p = <x,y>) ∧ (<y,x> ∈ f)).
+
+Theorem inverse_property_strong_to_weak(f f_inv: Set):
+(inverse_property f f_inv) -> (inverse_property_weak f f_inv).
+intro.
+unfold inverse_property in H.
+unfold inverse_property_weak.
+intros x y.
+split.
+intro.
+take H (< y, x >).
+apply_b H1.
+ex_in y.
+ex_in x.
+split.
+apply eq_refl.
+ass.
+intro.
+take H (< y, x >).
+left H1 H0.
+ex_el H2.
+ex_el H2.
+both H2.
+apply pair_property in H3.
+both H3.
+repl H2.
+repl H5.
+ass.
+Qed.
+
+
+Theorem inverse_exists (f A B: Set) 
+(H: function_on_into f A B): ∃1f_inv. 
+(inverse_property f f_inv).
+split.
+take cartesian_product_exists B A.
+ex_el H0.
+take ZF2_subsets (fun p=> (∃ x . ∃ y . p = (< x, y >) ∧ < y, x >
+∈ f)) c.
+ex_el H1.
+rename b into inv.
+ex_in inv.
+unfold inverse_property.
+intro.
+split.
+intro.
+take H1 x.
+left H3 H2.
+both H4.
+apply H6.
+intro.
+take H1 x.
+apply_b H3.
+split.
+take H0 x.
+apply_b H3.
+ex_el H2.
+ex_el H2.
+both H2.
+pick H.
+ex_in x0.
+split.
+take into0 x0.
+apply H2.
+extract_iota_from_goal (range f).
+take iota_prop x0.
+apply_b H5.
+ex_in y.
+ass.
+ex_in y.
+split.
+apply eq_el_1 in on0.
+take on0 y.
+apply H2.
+extract_iota_from_goal (domain f).
+take iota_prop y.
+apply_b H5.
+ex_in x0.
+ass.
+ass.
+apply H2.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Definition inverse(f A B: Set) (H: function_on_into f A B)
+:= ι _ (inverse_exists f A B H).
+
+Theorem function_application (f A B: Set) (H : function_on_into f A B):
+∀a::A. ∃b. <a, b> ∈ f.
+intro a.
+intro.
+pick H.
+unfold on in on0.
+apply eq_el_2 in on0.
+take on0 a H0.
+extract_iota ( domain f) H1.
+take iota_prop a.
+left H2 H1.
+apply H3.
+Qed.
+
+Theorem element_of_function_in_domain (f A B x y: Set) 
+(H : function_on_into f A B) (H2: < x, y > ∈ f): x ∈ A.
+left H.
+left H0.
+left H1.
+right H0.
+apply eq_el_1 in H4.
+take H4 x.
+apply H5.
+extract_iota_from_goal (domain f).
+take iota_prop x.
+apply_b H6.
+ex_in y.
+apply H2.
+Qed.
+
+Theorem element_of_function_in_range (f A B x y: Set) 
+(H : function_on_into f A B) (H2: < x, y > ∈ f): y ∈ B.
+right H.
+take H0 y.
+apply H1.
+extract_iota_from_goal (range f).
+take iota_prop y.
+apply_b H3.
+ex_in x.
+ass.
+Qed.
+
+Ltac clear_dup :=
+  repeat match goal with
+  | H1 : ?P, H2 : ?P |- _ =>
+      (* clear the second one; you could pick H1 instead *)
+      clear H2
+  end.
+
+
+Theorem SchroderBernstein (A B: Set) (H1: A ≾ B) (H2: B ≾ A): (A ~ B).
+take dominated_means_ex_of_function A B H1.
+take dominated_means_ex_of_function B A H2.
+ex_el H.
+ex_el H0.
+rename f0 into g.
+both H.
+both H0.
+assert (∃A1. A1 ⊆ A ∧ (g [B - f [A1]]) = (A - A1)).
+take power_set_exists A.
+ex_el H0.
+rename b into subsets_of_A.
+take ZF2_subsets (fun A0 => (A - g[B] ⊆ A0) ∧ ((g ∘ f)[A0] ⊆ A0 )) subsets_of_A.
+ex_el H6.
+rename b into alpha.
+change (∀ A0. A0 ∈ alpha ⇔ (A0 ∈ subsets_of_A
+∧ (A - g [B] ⊆ A0 ∧ ((g ∘ f) [A0]) ⊆ A0))) in H6.
+assert (A ∈ alpha).
+take H6 A.
+apply_b H7.
+split.
+take H0 A.
+apply_b H7.
+apply subset_refl.
+split.
+intro.
+intro.
+apply relative_complement_el in H7.
+both H7.
+apply H8.
+(* g ∘ f [A] ⊆ A *)
+intro p.
+intro.
+extract_iota (g ∘ f [A]) H7.
+take iota_prop p.
+left H8 H7.
+ex_el H9.
+both H9.
+extract_iota (g ∘ f) H11.
+take iota_prop0 (< x, p >).
+left H9 H11.
+ex_el H12.
+ex_el H12.
+both H12.
+apply pair_property in H13.
+both H13.
+ex_el H14.
+both H14.
+repl <- H15 in H16.
+pick H.
+unfold into in into0.
+take into0 p.
+apply H14.
+extract_iota_from_goal ( range g).
+take iota_prop1 p.
+apply_b H17.
+ex_in y.
+ass.
+assert (alpha ≠ ∅).
+intro.
+apply eq_el_1 in H8.
+take H8 A H7.
+apply any_set_in_empty_set_causes_contradiction in H9.
+apply H9.
+take intersection_exists alpha H8.
+ex_el H9.
+rename a into A1.
+assert (A1 ∈ alpha).
+take H6 A1.
+apply_b H10.
+split.
+take H0 A1.
+apply_b H10.
+intro k.
+intro.
+take H9 k.
+left H11 H10.
+take H12 A.
+apply H13.
+apply H7.
+split.
+(* A - g [B] ⊆ A1 *)
+intro k.
+intro.
+apply relative_complement_el in H10.
+both H10.
+take H9 k.
+apply_b H10.
+intro.
+intro.
+take H6 x.
+left H13 H10.
+right H14.
+left H15.
+take H16 k.
+apply H17.
+apply relative_complement_in.
+split.
+ass.
+ass.
+(* g ∘ f [A1] ⊆ A1 *)
+assert (∀A0::alpha. (((g ∘ f)[A1] ⊆ (g ∘ f) [A0])) ∧ ((g ∘ f) [A0] ⊆ A0)).
+intro A0.
+intro.
+split.
+(* g ∘ f [A1] ⊆ g ∘ f [A0] *)
+apply subset_of_p_relatives.
+intro a.
+intro.
+take H9 a.
+left H12 H11.
+take H13 A0 H10.
+apply H14.
+take H6 A0.
+left H11 H10.
+right H12.
+right H13.
+apply H14.
+assert (∀ A0 :: alpha . g ∘ f [A1] ⊆ A0).
+intro A0.
+intro.
+take H10 A0 H11.
+both H12.
+take subset_trans _ _ _ H13 H14.
+ass.
+(* g ∘ f [A1] ⊆ A1 *)
+intro el.
+intro.
+take H9 el.
+apply_b H13.
+intro.
+intro.
+take H11 x H13.
+take H14 el H12.
+apply H15.
+(* first page finished, A1 ∈ alpha proven*)
+ex_in A1.
+split.
+take H6 A1.
+left H11 H10.
+left H12.
+take H0 A1.
+left H14 H13.
+apply H15.
+(* (g [B - f [A1]]) = (A - A1) *)
+apply eq_in_backward.
+take H6 A1.
+left H11 H10.
+both H12.
+both H14.
+assert (A - A1 ⊆ g [B]).
+intro.
+intro.
+apply relative_complement_el in H14.
+both H14.
+take H12 x.
+take contrapositive H14.
+take H18 H17.
+apply relative_complement_el_alt in H19.
+apply (disj_el _ _ _ H19).
+intro.
+apply (H20 H16).
+intro.
+ass.
+take H6 A1.
+left H16 H10.
+both H17.
+both H19.
+clear H16 H18 H17.
+rename H14 into first.
+rename H20 into second.
+intro.
+intro.
+apply relative_complement_el in H14.
+both H14.
+extract_iota_from_goal (f [A1]).
+rename s into f_A1.
+extract_iota_from_goal (g [B - f_A1]).
+take iota_prop0 x.
+apply_b H14.
+take first x.
+assert (x ∈ (A - A1)).
+apply relative_complement_in.
+split; ass.
+take H14 H18.
+extract_iota (g [B]) H19.
+take iota_prop1 x.
+left H20 H19.
+ex_el H21.
+both H21.
+rename x0 into y.
+ex_in y.
+split.
+apply relative_complement_in.
+split.
+ass.
+intro.
+take iota_prop y.
+left H24 H21.
+ex_el H25.
+both H25.
+rename x0 into y0.
+take second x.
+apply contrapositive in H25.
+assert (<y0, x> ∈ g ∘ f).
+extract_iota_from_goal (g ∘ f).
+take iota_prop2 (< y0, x >).
+apply_b H28.
+ex_in y0.
+ex_in x.
+split.
+apply eq_refl.
+ex_in y.
+split; ass.
+apply H25.
+extract_iota_from_goal (g ∘ f [A1]).
+take iota_prop2 x.
+apply_b H29.
+ex_in y0.
+split.
+ass.
+ass.
+ass.
+apply H23.
+assert (((A - g[B]) ∪ ((g ∘ f) [A1])) = A1).
+take H6 A1.
+left H11 H10.
+right H12.
+both H13.
+assert(A - g [B] ∪ g ∘ f [A1] ⊆ A1).
+intro.
+intro.
+apply union_el in H13.
+apply (disj_el _ _ _ H13).
+intro.
+apply (H14 x).
+ass.
+intro.
+take H15 x.
+apply H17.
+ass.
+apply eq_in.
+apply H13.
+take subset_of_p_relatives (g ∘ f) ( A - g [B] ∪ g ∘ f [A1]) A1 H13.
+assert (A - g [B] ∪ g ∘ f [A1] ∈ alpha).
+rename H16 into condition.
+take H6 (A - g [B] ∪ g ∘ f [A1]).
+apply_b H16.
+(* 3 cases *)
+apply conj_symm.
+split.
+split.
+intros x HH.
+apply union_in.
+left.
+apply HH.
+intros x HH.
+apply union_in.
+right.
+take  condition x.
+apply H16.
+apply HH.
+(* last case *)
+take H0 (A - g [B] ∪ g ∘ f [A1]).
+apply_b H16.
+intro z.
+intro.
+apply union_el in H16.
+apply (disj_el _ _ _ H16).
+intro.
+apply relative_complement_el in H17.
+both H17.
+ass.
+intro.
+take H15 z H17.
+take H9 z.
+left H19 H18.
+take H20 A.
+apply H21.
+apply H7.
+intro z.
+intro.
+take H9 z.
+left H19 H18.
+take H20 (A - g [B] ∪ g ∘ f [A1]) H17.
+apply H21.
+rename H11 into main_condition.
+(* g [B - f [A1]] ⊆ (A - A1)  *)
+intro z.
+intro.
+apply relative_complement_in.
+apply conj_symm.
+split.
+(* disjoint proof is here *)
+intro.
+apply eq_el_2 in main_condition.
+take main_condition z H12.
+clear H12.
+extract_iota (f [A1]) H11.
+rename s into f_A1.
+extract_iota (g [B - f_A1]) H11.
+take iota_prop0 z.
+left H12 H11.
+clear iota_prop0 H12.
+ex_el H14.
+rename x into b.
+both H14.
+apply relative_complement_el in H12.
+both H12.
+assert (z ∈ g [B]).
+extract_iota_from_goal (g [B]).
+take iota_prop0 z. 
+apply_b H12.
+ex_in b.
+split;ass.
+apply union_el in H13.
+apply (disj_el _ _ _ H13).
+intro.
+apply relative_complement_el in H17.
+both H17.
+apply H19.
+apply H12.
+intro.
+(* first condition done *)
+clear H13.
+take iota_prop b.
+right H13.
+apply contrapositive in H18.
+clear H13.
+clear H16.
+apply ex_el_alt_simple in H18.
+extract_iota (g ∘ f [A1]) H17.
+take iota_prop0 z.
+left H13 H17.
+ex_el H16.
+clear H13.
+both H16.
+extract_iota (g ∘ f) H19.
+take iota_prop1 (< x, z >).
+left H16 H19.
+clear H16.
+ex_el H20.
+ex_el H20.
+both H20.
+apply pair_property in H16.
+both H16.
+repl <- H20 in H21.
+repl <- H22 in H21.
+ex_el H21.
+both H21.
+clear H20 H22.
+clear iota_prop1.
+take H5 b y z.
+take conj_in _ _ H15 H23.
+take H20 H21.
+repl <- H22 in H16.
+take H18 x.
+apply H24.
+split.
+ass.
+ass.
+apply H16.
+(* disjoint proof successfully done*)
+pick H.
+extract_iota (f [A1]) H11.
+rename s into f_A1.
+extract_iota (g [B - f_A1]) H11.
+take iota_prop0 z.
+left H12 H11.
+ex_el H13.
+both H13.
+unfold into in into0.
+take into0 z.
+apply H13.
+extract_iota_from_goal (range g).
+take iota_prop1 z.
+apply_b H16.
+ex_in x.
+apply H15.
+(* A ~ B *)
+take cartesian_product_exists A B.
+ex_el H6.
+ex_el H0.
+both H0.
+rename c into AxB.
+take inverse_exists g B A H.
+ex_el H0.
+rename f_inv into g_inv.
+unfold inverse_property in H0.
+take ZF2_subsets (fun p => ∀x. ∀y. (p = <x,y>) -> 
+((x ∈ A1) -> <x, y> ∈ f)
+∧ ((x ∈ (A - A1)) -> <x, y> ∈ g_inv)) AxB.
+ex_el H9.
+rename b into h.
+change (∀ p. p ∈ h⇔ (p ∈ AxB
+∧ (∀ x. ∀ y. (p = (< x, y >)) -> ((x ∈ A1 -> < x, y > ∈ f)
+∧ (x ∈ (A - A1) -> < x, y > ∈ g_inv))))) in H9.
+assert (one_to_one g_inv) as g_inv_is_one_to_one.
+intros x y z.
+apply inverse_property_strong_to_weak in H0.
+unfold inverse_property_weak in H0.
+intro.
+both H10.
+take H0 z x.
+right H10.
+take H13 H11.
+take H0 z y.
+right H15.
+take H16 H12.
+pick H.
+right function0.
+take H18 z x y.
+apply H19.
+split.
+ass.
+ass.
+assert (function g_inv) as g_inv_is_function.
+split.
+intro.
+intro.
+take H0 x.
+left H11 H10.
+ex_el H12.
+ex_el H12.
+both H12.
+ex_in x0.
+ex_in y.
+ass.
+intros x y z.
+intro.
+both H10.
+take H0.
+apply inverse_property_strong_to_weak in H10.
+take H10 y x.
+right H13.
+take H14 H11.
+take H10 z x.
+right H16.
+take H17 H12.
+apply (H5 y z x).
+split; ass.
+apply inverse_property_strong_to_weak in H0.
+unfold inverse_property_weak in H0.
+ex_in h.
+split.
+split.
+split.
+split.
+intro p.
+intro.
+take H9 p.
+left H11 H10.
+both H12.
+take H6 p.
+left H12 H13.
+ex_el H15.
+both H15.
+ex_el H17.
+both H17.
+ex_in x.
+ex_in y.
+apply H18.
+intros x y z.
+intro.
+both H10.
+take H9 ( < x, y >).
+left H10 H11.
+right H13.
+take H14 x y.
+assert ((< x, y >) = (< x, y >)).
+apply eq_refl.
+take H15 H16.
+both H17.
+take H9 ( < x, z >).
+left H17 H12.
+right H20.
+take H21 x z.
+assert ((< x, z >) = (< x, z >)).
+apply eq_refl.
+take H22 H23.
+both H24.
+clear H17 H20 H21 H22 H23.
+assert (x ∈ A).
+take H6 (< x, y >).
+left H17.
+left H13.
+take H20 H21.
+ex_el H22.
+both H22.
+ex_el H24.
+both H24.
+apply pair_property in H27.
+both H27.
+repl H24.
+apply H23.
+take exc_thrd (x ∈ A1).
+apply (disj_el _ _ _ H20).
+intro.
+take H18 H21.
+take H25 H21.
+pick H3.
+right function0.
+take H24 x y z.
+apply H27.
+split; ass.
+intro.
+assert (x ∈ A ∧ x ∉ A1).
+split; ass.
+take relative_complement_in _ _ x H22.
+take H19 H23.
+take H26 H23.
+right g_inv_is_function.
+take H28 x y z.
+apply H29.
+split.
+ass.
+ass.
+(* on h A *)
+apply eq_in.
+intro.
+intro.
+extract_iota (domain h) H10.
+take iota_prop x.
+left H11 H10.
+ex_el H12.
+take H9 (< x, y >).
+left H13 H12.
+left H14.
+take H6 (< x, y >).
+left H16 H15.
+ex_el H17.
+both H17.
+ex_el H19.
+both H19.
+apply pair_property in H20.
+both H20.
+repl H19.
+ass.
+intros x HH.
+extract_iota_from_goal (domain h).
+take iota_prop x.
+apply_b H10.
+clear iota_prop s.
+take exc_thrd (x ∈ A1).
+apply (disj_el _ _ _ H10).
+intro.
+take function_application  _ _ _ H3 x HH.
+ex_el H12.
+rename b into y.
+ex_in y.
+take H9 (< x, y >).
+apply_b H13.
+split.
+take H6 (< x, y >).
+apply_b H13.
+ex_in x.
+split.
+take element_of_function_in_domain f A B x y H3 H12.
+ass.
+ex_in y.
+split.
+take element_of_function_in_range f A B x y H3 H12.
+ass.
+apply eq_refl.
+intros x0 y0.
+intro.
+apply pair_property in H13.
+both H13.
+repl <- H14.
+repl <- H15.
+split.
+intro.
+ass.
+intro.
+apply relative_complement_el in H13.
+both H13.
+apply (H17 H11).
+intro.
+assert (x ∈ A ∧ x ∉ A1).
+split; ass.
+take relative_complement_in A A1 x H12.
+clear H12 H10.
+(* try *)
+apply eq_el_2 in H8.
+take H8 x H13.
+extract_iota (f [A1]) H10.
+rename s into f_A1.
+extract_iota (g [B - f_A1]) H10.
+take iota_prop0 x.
+left H12 H10.
+ex_el H14.
+rename x0 into y.
+both H14.
+take H0 y x.
+left H14 H16.
+ex_in y.
+take H9 (< x, y >).
+apply_b H18.
+split.
+take H6 (< x, y >).
+apply_b H18.
+ex_in x.
+split.
+take element_of_function_in_range g B A y x H H16.
+ass.
+ex_in y.
+split.
+take element_of_function_in_domain g B A y x H H16.
+ass.
+apply eq_refl.
+intros x0 y0.
+intro.
+apply pair_property in H18.
+both H18.
+repl <- H19.
+repl <- H20.
+split.
+intro.
+apply (H11 H18).
+intro.
+apply H17.
+(* onto h B *)
+2:{
+  intros a b y.
+  intro.
+  both H10.
+  take H9 (< a, y >).
+  left H10 H11.
+  both H13.
+  take H15 a y.
+  assert ((< a, y >) = (< a, y >)).
+  apply eq_refl.
+  take H13 H16.
+  both H17.
+  take H9 (< b, y >).
+  left H17 H12.
+  both H20.
+  take H22 b y.
+  assert ((< b, y >) = (< b, y >)).
+  apply eq_refl.
+  take H20 H23.
+  both H24.
+  clear H17 H21 H22 H20 H23.
+  move H25 before H18.
+  clear H16 H13 H15.
+  take exc_thrd (a ∈ A1).
+  apply (disj_el _ _ _ H13).
+  intro.
+  take exc_thrd (b ∈ A1).
+  apply (disj_el _ _ _ H16).
+  intro.
+  clear H13 H16.
+  take H18 H15.
+  take H25 H17.
+  take H4 a b y.
+  apply H20.
+  split; ass.
+  intro.
+  assert (b ∈ A).
+  take H9 (< b, y >).
+  left H20 H12.
+  left H21.
+  take H6 (< b, y >).
+  left H23 H22.
+  ex_el H24.
+  both H24.
+  ex_el H28.
+  both H28.
+  apply pair_property in H29.
+  both H29.
+  repl H28.
+  ass.
+  assert ((b ∈ A ∧ b ∉ A1)).
+  split; ass.
+  take relative_complement_in A A1 b H21.
+  take H18 H15.
+  take H26 H22.
+  (* try to derive a contradiction *)
+  take H0 y b.
+  right H27.
+  take H28 H24.
+  clear H28 H27.
+  take H8.
+  apply eq_el_2 in H27.
+  take H27 b.
+  take H28 H22.
+  clear H27 H28.
+  extract_iota (f [A1]) H30.
+  extract_iota (g [B - s]) H30.
+  take iota_prop0 b.
+  left H27 H30.
+  ex_el H28.
+  both H28.
+  apply relative_complement_el in H31.
+  both H31.
+  assert ( (< x, b > ∈ g ∧ < y, b > ∈ g)).
+  split; ass.
+  take H5 x y b H31.
+  repl H34 in H32.
+  repl H34 in H28.
+  repl H34 in H33.
+  clear H31 H34.
+  clear H32.
+  take iota_prop y.
+  right H31.
+  apply contrapositive in H32.
+  apply ex_el_alt_simple in H32.
+  take H32 a.
+  apply abs_el.
+  apply H34.
+  split.
+  ass.
+  apply H23.
+  ass.
+  intro.
+  (* branch 2 -- a ∉ A1*)
+  take exc_thrd (b ∈ A1).
+  apply (disj_el _ _ _ H16).
+  intro.
+  clear H13 H16.
+  assert (a ∈ (A - A1)).
+  apply relative_complement_in.
+  split.
+  take H6 (< a, y >).
+  left H13 H14.
+  ex_el H16.
+  both H16.
+  ex_el H21.
+  both H21.
+  apply pair_property in H22.
+  both H22.
+  repl H21.
+  ass.
+  ass.
+  take H8.
+  apply eq_el_2 in H16.
+  take H16 a H13.
+  extract_iota (f [A1]) H20.
+  extract_iota (g [B - s]) H20.
+  take iota_prop0 a.
+  left H21 H20.
+  ex_el H22.
+  both H22.
+  apply relative_complement_el in H23.
+  both H23.
+  take iota_prop x.
+  right H23.
+  take @contrapositive (∃ x0 :: A1 . < x0, x > ∈ f) (x ∈ s) H28.
+  apply contrapositive in H28.
+  take H29 H27.
+  apply ex_el_alt_simple in H30.
+  take H30 b.
+  apply abs_el.
+  apply H31.
+  split.
+  ass.
+  take H19 H13.
+  take H25 H17.
+  take H0 x a.
+  left H34 H24.
+  right g_inv_is_function.
+  take H36 a y x.
+  assert ((< a, y > ∈ g_inv ∧ < a, x > ∈ g_inv)).
+  split; ass.
+  take H37 H38.
+  repl <- H39.
+  ass.
+  ass.
+  intro.
+  assert (a ∈ (A - A1)).
+  apply relative_complement_in.
+  split.
+  take H6 (< a, y >).
+  left H20 H14.
+  ex_el H21.
+  both H21.
+  ex_el H23.
+  both H23.
+  apply pair_property in H24.
+  both H24.
+  repl H23.
+  ass.
+  ass.
+  assert (b ∈ (A - A1)).
+  apply relative_complement_in.
+  split.
+  take H6 (< b, y >).
+  take H9 (< b, y >).
+  left H22 H12.
+  left H23.
+  take H6 (< b, y >).
+  left H27 H24.
+  ex_el H28.
+  both H28.
+  ex_el H30.
+  both H30.
+  apply pair_property in H31.
+  both H31.
+  repl H30.
+  ass.
+  ass.
+  take H19 H20.
+  take H26 H21.
+  take g_inv_is_one_to_one a b y.
+  apply H24.
+  split; ass.
+}
+(* onto h B *)
+apply eq_in.
+intro b.
+intro.
+extract_iota (range h) H10.
+take iota_prop b.
+left H11 H10.
+ex_el H12.
+take H9 (< x, b >).
+left H13 H12.
+left H14.
+take H6 (< x, b >).
+left H16 H15.
+ex_el H17.
+both H17.
+ex_el H19.
+both H19.
+apply pair_property in H20.
+both H20.
+repl H21.
+ass.
+intro b.
+intro.
+extract_iota_from_goal (range h).
+rename s into range_h.
+take iota_prop b.
+apply_b H11.
+take exc_thrd (b ∈ f [A1]).
+(* b ∈ f [A1] ∨ b ∉ f [A1] *)
+apply (disj_el _ _ _ H11).
+intro.
+extract_iota (f [A1]) H12.
+take iota_prop0 b.
+left H13 H12.
+ex_el H14.
+both H14.
+take H9 (< x, b >).
+ex_in x.
+apply_b H14.
+split.
+take H6 (< x, b >).
+apply_b H14.
+ex_in x.
+split.
+take element_of_function_in_domain f A B x b H3 H16.
+ass.
+ex_in b.
+split.
+take element_of_function_in_range f A B x b H3 H16.
+ass.
+apply eq_refl.
+intro.
+intro.
+intro.
+apply pair_property in H14.
+both H14.
+repl <- H17.
+repl <- H18.
+split.
+intro.
+apply H16.
+intro.
+apply relative_complement_el in H14.
+both H14.
+apply (H20 H15).
+intro.
+assert (b ∈ (B - f [A1])).
+apply relative_complement_in.
+split;ass.
+take H8.
+clear H11.
+take function_application g B A H b H10.
+ex_el H11.
+rename b0 into a.
+assert (a ∈ g [B - f [A1]]).
+extract_iota_from_goal (f [A1]).
+extract_iota_from_goal (g [B - s]).
+take iota_prop1 a.
+apply_b H15.
+ex_in b.
+split.
+apply relative_complement_in.
+split.
+ass.
+take iota_prop0 b.
+left H15.
+take @contrapositive (b ∈ s) (∃ x :: A1 . < x, b > ∈ f) H16.
+apply H17.
+intro.
+ex_el H18.
+both H18.
+apply H12.
+extract_iota_from_goal (f [A1]).
+take iota_prop2 b.
+apply_b H18.
+ex_in x.
+split;ass.
+ass.
+apply eq_el_1 in H14.
+take H14 a H15.
+ex_in a.
+take H9 (< a, b >).
+apply_b H17.
+split.
+take H6 (< a, b >).
+apply_b H17.
+ex_in a.
+split.
+take element_of_function_in_range g B A b a H H11.
+ass.
+ex_in b.
+split.
+take element_of_function_in_domain g B A b a H H11.
+ass.
+apply eq_refl.
+intros x y HH.
+apply pair_property in HH.
+both HH.
+repl <- H17.
+repl <- H18.
+split.
+apply relative_complement_el in H16.
+right H16.
+intro.
+apply (H19 H20).
+intro.
+take H0 b a.
+left H20.
+apply H21.
+apply H11.
+Qed.
+
+
+
+
 
