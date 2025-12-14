@@ -2888,8 +2888,11 @@ Definition relation_in_z (p Z: Set) := relation_from_x_to_y p Z Z.
 Definition universal_relation_in_x (X: Set) := (X × X).
 Definition void_relation := ∅.
 
-Definition identity_relation_exists (X: Set): ∃1i.
+Definition identity_relation_prop(X i: Set) := 
 (∀p. ((p ∈ i) ⇔ (∃x:: X. p = <x, x>))).
+
+Definition identity_relation_exists (X: Set): ∃1i.
+identity_relation_prop X i.
 split.
 take cartesian_product_exists X X.
 left H.
@@ -4420,7 +4423,816 @@ apply H21.
 apply H11.
 Qed.
 
+Definition similarity_relation_exists (U: Set): ∃1r.
+(∀p. ((p ∈ r) ⇔ (∃x. x ∈ (𝒫 U) ∧ ∃y. y ∈ (𝒫 U) ∧ ((p = <x, y>) ∧ (x ~ y))))).
+split.
+take cartesian_product_exists (𝒫 U) (𝒫 U).
+ex_el H.
+take ZF2_subsets (fun p => ∃x. ∃y. (p = <x, y>) ∧ (x ~ y)) c.
+ex_el H0.
+ex_in b.
+intro.
+split.
+intro.
+take H0 x.
+left H2 H1.
+both H3.
+take H x.
+left H3 H4.
+ex_el H6.
+both H6.
+ex_el H8.
+both H8.
+ex_in x0.
+split.
+ass.
+ex_in y.
+split.
+ass.
+split.
+ass.
+ex_el H5.
+ex_el H5.
+both H5.
+repl H9 in H8.
+apply pair_property in H8.
+both H8.
+repl H5.
+repl H11.
+ass.
+intro.
+ex_el H1.
+both H1.
+ex_el H3.
+both H3.
+both H4.
+take H0 x.
+apply_b H4.
+split.
+take H x.
+apply_b H4.
+ex_in x0.
+split. ass.
+ex_in y.
+split. ass.
+ass.
+ex_in x0.
+ex_in y.
+split; ass.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Definition similarity_relation (U: Set): Set := 
+ι _ (similarity_relation_exists U).
+
+Definition equivalence_class_gen_by (x r: Set): Set := p_relatives (unit_set x) r.
+
+Definition card (U x: Set):= equivalence_class_gen_by x (similarity_relation U).
+
+Definition element_in_power_set (A B: Set) (H: A ⊆ B): A ∈ power_set B.
+extract_iota_from_goal ( 𝒫 B).
+take iota_prop A.
+apply_b H0.
+ass.
+Qed.
+
+Definition identity_relation_is_one_to_one_correspondence (X i: Set)
+(H: identity_relation_prop X i): one_to_one_correspondence i X X.
+unfold one_to_one_correspondence.
+unfold identity_relation_prop in H.
+split.
+split.
+split.
+unfold function.
+split.
+intro.
+intro.
+take H x.
+left H1 H0.
+ex_el H2.
+both H2.
+ex_in x0.
+ex_in x0.
+ass.
+intros x y z.
+intro.
+both H0.
+take H (< x, y >).
+left H0 H1.
+take H (< x, z >).
+left H4 H2.
+ex_el H3.
+both H3.
+ex_el H5.
+both H5.
+apply pair_property in H7.
+both H7.
+apply pair_property in H8.
+both H8.
+apply eq_symm in H9.
+take eq_trans _ _ _ H5 H9.
+apply eq_symm in H10.
+take eq_trans _ _ _ H7 H10.
+apply eq_symm in H11.
+take eq_trans _ _ _ H11 H8.
+apply eq_symm.
+ass.
+unfold on.
+apply eq_in.
+intro.
+intro.
+extract_iota (domain i) H0.
+take iota_prop x.
+left H1 H0.
+ex_el H2.
+take H ( < x, y > ).
+left H3 H2.
+ex_el H4.
+both H4.
+apply pair_property in H6.
+both H6.
+repl H4.
+ass.
+intro.
+intro.
+extract_iota_from_goal (domain i).
+take iota_prop x.
+apply_b H1.
+ex_in x.
+take H (< x, x >).
+apply_b H1.
+ex_in x.
+split.
+ass.
+apply eq_refl.
+apply eq_in.
+intro.
+intro.
+extract_iota (range i) H0.
+take iota_prop x.
+left H1 H0.
+ex_el H2.
+take H (< x0, x >).
+left H3 H2.
+ex_el H4.
+both H4.
+apply pair_property in H6.
+both H6.
+repl H7.
+ass.
+intro.
+intro.
+extract_iota_from_goal (range i).
+take iota_prop x.
+apply_b H1.
+ex_in x.
+take H (< x, x >).
+apply_b H1.
+ex_in x.
+split.
+ass.
+apply eq_refl.
+intros a b c.
+intro.
+both H0.
+take H (< a, c >).
+take H (< b, c >).
+left H0 H1.
+left H3 H2.
+ex_el H4.
+both H4.
+ex_el H5.
+both H5.
+apply pair_property in H7.
+both H7.
+apply pair_property in H8.
+both H8.
+apply eq_symm in H10.
+take eq_trans _ _ _ H10 H9.
+apply eq_symm in H8.
+take eq_trans _ _ _ H5 H8.
+take eq_trans _ _ _ H9 H8.
+apply eq_symm in H7.
+take eq_trans _ _ _ H11 H7.
+ass.
+Qed.
 
 
+Definition similar_reflective (A: Set): A ~ A.
+unfold similar.
+take identity_relation_exists A.
+ex_el H.
+take identity_relation_is_one_to_one_correspondence A i H.
+ex_in i.
+ass.
+Qed.
+
+Definition one_to_one_correspondence_to_into (f A B: Set)
+(H: (one_to_one_correspondence f A B)):  function_on_into f A B.
+unfold one_to_one_correspondence in H.
+both H.
+both H0.
+both H.
+split.
+split.
+ass.
+ass.
+unfold into.
+unfold onto in H2.
+repl H2.
+apply subset_refl.
+Qed.
+
+Definition domain_range_of_inverse (f f_inv: Set) 
+(H: inverse_property f f_inv): domain f = range f_inv.
+unfold inverse_property in H.
+apply eq_in.
+intro.
+intro.
+extract_iota (domain f) H0.
+take iota_prop x.
+left H1 H0.
+ex_el H2.
+extract_iota_from_goal ( range f_inv).
+take iota_prop0 x.
+apply_b H3.
+ex_in y.
+take H (< y, x >).
+apply_b H3.
+ex_in y.
+ex_in x.
+split.
+apply eq_refl.
+ass.
+intro.
+intro.
+extract_iota (range f_inv) H0.
+take iota_prop x.
+left H1 H0.
+ex_el H2.
+extract_iota_from_goal ( domain f).
+take iota_prop0 x.
+apply_b H3.
+take H (< x0, x >).
+left H3 H2.
+ex_el H4.
+ex_el H4.
+both H4.
+apply pair_property in H5.
+both H5.
+repl <- H4 in H6.
+repl <- H7 in H6.
+ex_in x0.
+ass.
+Qed.
+
+Definition inverse_the_inverse_property (f f_inv: Set) 
+(f_is_function: function f)
+(H: inverse_property f f_inv): inverse_property f_inv f.
+unfold inverse_property.
+unfold inverse_property in H.
+intro p.
+split.
+intro.
+left f_is_function.
+take H1 p H0.
+unfold ordered_pair in H2.
+ex_el H2.
+ex_el H2.
+ex_in a.
+ex_in b.
+split.
+ass.
+take H (< b, a >).
+apply_b H3.
+ex_in b.
+ex_in a.
+split.
+apply eq_refl.
+repl H2 in H0.
+ass.
+intro.
+ex_el H0.
+ex_el H0.
+both H0.
+take H (< y, x >).
+left H0 H2.
+ex_el H3.
+ex_el H3.
+both H3.
+apply pair_property in H4.
+both H4.
+repl <- H3 in H5.
+repl <- H6 in H5.
+repl H1.
+ass.
+Qed.
+
+
+
+Definition similar_symmetric (A B: Set) (H: A ~ B): B ~ A.
+unfold similar in H.
+ex_el H.
+pose proof H as HH.
+both H.
+both H0.
+both H.
+take one_to_one_correspondence_to_into f A B HH.
+take inverse_exists f A B H.
+ex_el H4.
+ex_in f_inv.
+unfold inverse_property in H4.
+split.
+split.
+split.
+split.
+intro x.
+intro.
+take H4 x.
+left H6 H5.
+ex_el H7.
+ex_el H7.
+both H7.
+unfold ordered_pair.
+ex_in x0.
+ex_in y.
+ass.
+intros x y z.
+intro.
+both H5.
+take H4 (< x, y >).
+take H4 (< x,z >).
+left H5 H6.
+left H8 H7.
+ex_el H9.
+ex_el H9.
+both H9.
+apply pair_property in H11.
+both H11.
+repl <- H9 in H12.
+repl <- H13 in H12.
+ex_el H10.
+ex_el H10.
+both H10.
+apply pair_property in H11.
+both H11.
+repl <- H10 in H14.
+repl <- H15 in H14.
+take H1 y z x.
+apply H11.
+split; ass.
+unfold on.
+unfold onto in H2.
+take inverse_the_inverse_property f f_inv H0 H4.
+take domain_range_of_inverse f_inv f H5.
+take eq_trans _ _ _ H6 H2.
+ass.
+unfold onto.
+take domain_range_of_inverse f f_inv H4.
+unfold on in H3.
+apply eq_symm in H3.
+take eq_trans _ _ _ H3 H5.
+apply eq_symm.
+ass.
+intros a b c.
+intro.
+both H5.
+take H4 (< a, c >).
+left H5 H6.
+ex_el H8.
+ex_el H8.
+both H8.
+apply pair_property in H9.
+both H9.
+repl <- H8 in H10.
+repl <- H11 in H10.
+take H4 (< b, c >).
+left H9 H7.
+ex_el H12.
+ex_el H12.
+both H12.
+apply pair_property in H13.
+both H13.
+repl <- H12 in H14.
+repl <- H15 in H14.
+right H0.
+take H13 c a b.
+apply H16.
+split.
+ass.
+ass.
+Qed.
+
+Definition composition_of_one_to_one_correspondences
+(A B C f g: Set)
+(H : one_to_one_correspondence f A B)
+(H1 : one_to_one_correspondence g B C):
+one_to_one_correspondence (g ∘ f) A C .
+extract_iota_from_goal (g ∘ f).
+rename s into comp.
+split.
+split.
+split.
+split.
+intro.
+intro.
+unfold ordered_pair.
+take iota_prop x.
+left H2 H0.
+ex_el H3.
+ex_el H3.
+both H3.
+ex_in x0.
+ex_in z.
+ass.
+intros x y z HH.
+both HH.
+take iota_prop ( < x, y >).
+left H3 H0.
+ex_el H4.
+ex_el H4.
+both H4.
+apply pair_property in H5.
+both H5.
+repl <- H4 in H6.
+repl <- H7 in H6.
+ex_el H6.
+both H6.
+take iota_prop ( < x, z >). 
+left H6 H2.
+ex_el H9.
+ex_el H9.
+both H9.
+apply pair_property in H10.
+both H10.
+repl <- H9 in H11.
+repl <- H12 in H11.
+ex_el H11.
+both H11.
+left H.
+left H11.
+left H14.
+right H15.
+take H16 x y0 y1.
+assert ( (< x, y0 > ∈ f ∧ < x, y1 > ∈ f)).
+split. 
+ass.
+ass.
+take H17 H18.
+repl H19 in H5.
+repl H19 in H8.
+left H1.
+left H20.
+left H21.
+right H22.
+take H23 y1 y z.
+apply H24.
+split.
+ass.
+ass.
+apply eq_in.
+intro.
+intro.
+extract_iota ( domain comp) H0.
+take iota_prop0 x.
+left H2 H0.
+ex_el H3.
+take iota_prop (< x, y>).
+left H4 H3.
+ex_el H5.
+ex_el H5.
+both H5.
+apply pair_property in H6.
+both H6.
+ex_el H7.
+both H7.
+repl H5.
+left H.
+left H7.
+right H10.
+apply eq_el_1 in H11.
+take H11 x0.
+apply H12.
+extract_iota_from_goal (domain f).
+take iota_prop1 x0.
+apply_b H13.
+ex_in y0.
+ass.
+intro.
+intro.
+extract_iota_from_goal (domain comp).
+take iota_prop0 x.
+apply_b H2.
+left H.
+left H2.
+right H3.
+apply eq_el_2 in H4.
+take H4 x H0.
+extract_iota (domain f) H5.
+take iota_prop1 x.
+left H6 H5.
+ex_el H7.
+left H1.
+left H8.
+right H9.
+apply eq_el_2 in H10.
+take H10 y.
+right H2.
+unfold onto in H12.
+assert (y ∈ B).
+apply eq_el_1 in H12.
+take H12 y.
+apply H13.
+extract_iota_from_goal ( range f).
+take iota_prop2 y.
+apply_b H14.
+ex_in x.
+ass.
+take H11 H13.
+extract_iota (domain g) H14.
+take iota_prop2 y.
+left H15 H14.
+ex_el H16.
+ex_in y0.
+take iota_prop (< x, y0 >).
+apply_b H17.
+ex_in x.
+ex_in y0.
+split.
+apply eq_refl.
+ex_in y.
+split.
+ass.
+ass.
+apply eq_in.
+intro.
+intro.
+extract_iota (range comp) H0.
+take iota_prop0 x.
+left H2 H0.
+ex_el H3.
+take iota_prop (< x0, x >).
+left H4 H3.
+ex_el H5.
+ex_el H5.
+both H5.
+ex_el H7.
+both H7.
+apply pair_property in H6.
+both H6.
+repl H9.
+left H1.
+right H6.
+apply eq_el_1 in H10.
+take H10 z.
+apply H11.
+extract_iota_from_goal (range g).
+take iota_prop1 z.
+apply_b H12.
+ex_in y.
+ass.
+intro.
+intro.
+extract_iota_from_goal (range comp).
+take iota_prop0 x.
+apply_b H2.
+left H1.
+right H2.
+apply eq_el_2 in H3. 
+take H3 x H0.
+extract_iota (range g) H4.
+take iota_prop1 x.
+left H5 H4.
+ex_el H6.
+left H.
+right H7.
+apply eq_el_2 in H8. 
+assert (x0 ∈ B).
+left H2.
+right H9.
+apply eq_el_1 in H10.  
+take H10 x0.
+apply H11.
+extract_iota_from_goal ( domain g).
+take iota_prop2 x0.
+apply_b H12.
+ex_in x.
+ass.
+take H8 x0 H9.
+extract_iota (range f) H10.
+take iota_prop2 x0.
+left H11 H10.
+ex_el H12.
+ex_in x1.
+take iota_prop (< x1, x >).
+apply_b H13.
+ex_in x1.
+ex_in x.
+split.
+apply eq_refl.
+ex_in x0.
+split.
+ass.
+ass.
+intros a b c.
+intro.
+both H0.
+take iota_prop (< a, c >).
+left H0 H2.
+ex_el H4.
+ex_el H4.
+both H4.
+apply pair_property in H5.
+ex_el H6.
+both H6.
+take iota_prop (< b, c >).
+left H6 H3.
+ex_el H8.
+ex_el H8.
+both H8.
+apply pair_property in H9.
+ex_el H10.
+both H10.
+both H5.
+repl <- H10 in H4.
+repl <- H12 in H7.
+both H9.
+repl <- H5 in H8.
+repl <- H13 in H11. 
+clear H6 H10 H12 H5 H13.
+right H1.
+take H5 y y0 c.
+assert (< y, c > ∈ g ∧ < y0, c > ∈ g).
+split; ass.
+take H6 H9.
+repl <- H10 in H8.
+right H.
+take H12 a b y.
+apply H13.
+split.
+ass.
+ass.
+Qed.
+
+
+Definition similar_transitive (A B C: Set)
+(H: A ~ B) (H1: B ~ C): A ~ C.
+unfold similar in H.
+unfold similar in H1.
+unfold similar.
+ex_el H.
+ex_el H1.
+rename f0 into g.
+ex_in (g ∘ f).
+apply (composition_of_one_to_one_correspondences A B).
+ass.
+ass.
+Qed.
+
+
+Definition cardinality_property (U A B: Set)(UP: ∀s. s ⊆ U): 
+(card U A = card U B) ⇔ (A ~ B). 
+split.
+intro.
+unfold card in H.
+unfold equivalence_class_gen_by in H.
+extract_iota (similarity_relation U [{`A}]) H.
+extract_iota (similarity_relation U [{`B}]) H.
+repl H in iota_prop.
+clear H.
+extract_iota (similarity_relation U) iota_prop.
+extract_iota (similarity_relation U) iota_prop0.
+take iota_prop1 (<A,B>).
+assert ( < A, B > ∈ s1 -> A ~ B).
+intro.
+left H H0.
+ex_el H1.
+both H1.
+ex_el H3.
+both H3.
+both H4.
+apply pair_property in H3.
+both H3.
+repl H4.
+repl H6.
+ass.
+apply H0.
+clear H H0.
+take iota_prop B.
+assert (B ∈ s0 -> < A, B > ∈ s1).
+intro.
+left H H0.
+ex_el H1.
+both H1.
+apply element_of_unit_set in H2.
+repl H2 in H3.
+ass.
+apply H0.
+take iota_prop0 B.
+apply_b H1.
+ex_in B.
+split.
+apply every_set_is_in_unit_set.
+take iota_prop2 (< B, B >).
+apply_b H1.
+ex_in B.
+split.
+apply element_in_power_set.
+apply (UP B).
+ex_in B.
+split.
+apply element_in_power_set.
+apply (UP B).
+split.
+apply eq_refl.
+apply similar_reflective.
+intro.
+unfold card.
+unfold equivalence_class_gen_by.
+extract_iota_from_goal ((similarity_relation U [{`A}]) ).
+extract_iota_from_goal ((similarity_relation U [{`B}]) ).
+extract_iota (similarity_relation U) iota_prop.
+extract_iota (similarity_relation U) iota_prop0.
+apply eq_in.
+intro.
+intro.
+take iota_prop x.
+left H1 H0.
+ex_el H2.
+both H2.
+apply element_of_unit_set in H3.
+repl H3 in H4.
+take iota_prop1  (< A, x >).
+left H2 H4.
+ex_el H5.
+both H5.
+ex_el H7.
+both H7.
+both H8.
+apply pair_property in H7.
+both H7.
+repl <- H8 in H9.
+repl <- H10 in H9.
+clear H8 H10.
+take iota_prop0 x.
+apply_b H7.
+ex_in B.
+split.
+apply every_set_is_in_unit_set.
+take iota_prop2 (< B, x >).
+apply_b H7.
+ex_in B.
+split.
+apply element_in_power_set.
+apply (UP B).
+ex_in x.
+split.
+take UP x.
+apply element_in_power_set.
+ass.
+split.
+apply eq_refl.
+apply similar_symmetric in H.
+take similar_transitive _ _ _ H H9.
+ass.
+intro.
+intro.
+take iota_prop0 x.
+left H1 H0.
+ex_el H2.
+both H2.
+apply element_of_unit_set in H3.
+repl H3 in H4.
+take iota_prop x.
+apply_b H2.
+ex_in A.
+split.
+apply every_set_is_in_unit_set.
+take iota_prop2 (< B, x >).
+left H2 H4.
+ex_el H5.
+both H5.
+ex_el H7.
+both H7.
+both H8.
+apply pair_property in H7.
+both H7.
+repl <- H8 in H9.
+repl <- H10 in H9.
+take iota_prop1 (< A, x >).
+apply_b H7.
+ex_in A.
+split.
+apply element_in_power_set.
+apply (UP A).
+ex_in x.
+split.
+apply element_in_power_set.
+apply (UP x).
+split.
+apply eq_refl.
+take similar_transitive _ _ _ H H9.
+apply H7.
+Qed.
 
 
