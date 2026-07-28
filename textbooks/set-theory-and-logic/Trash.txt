@@ -1,0 +1,83 @@
+Definition inverse_of_one_to_one (f A B f_inv: Set) 
+(H: function_on_into f A B) (G: one_to_one f) (P: inverse_property f f_inv):
+function_on_into f_inv B A.
+pick H.
+unfold inverse_property in P.
+split.
+split.
+split.
+intro.
+intro.
+take P x.
+left H1 H0.
+ex_el H2.
+ex_el H2.
+unfold ordered_pair.
+both H2.
+ex_in x0.
+ex_in y.
+ass.
+intros x y z.
+intro.
+both H0.
+take P (< x, y >).
+left H0 H1.
+ex_el H3.
+ex_el H3.
+both H3.
+apply pair_property in H4.
+both H4.
+repl H3.
+repl H6.
+take P (< x, z >).
+left H4 H2.
+ex_el H7.
+ex_el H7.
+both H7.
+apply pair_property in H8.
+both H8.
+repl <- H7 in H9.
+repl <- H10 in H9.
+take H5.
+take H9.
+repl <- H3 in H8.
+take G y0 z x.
+apply H12.
+split.
+ass.
+ass.
+apply eq_in.
+intro.
+intro.
+extract_iota (domain f_inv) H0.
+take iota_prop x.
+left H1 H0.
+ex_el H2.
+take P (< x, y >).
+left H3 H2.
+ex_el H4.
+ex_el H4.
+both H4.
+apply pair_property in H5.
+both H5.
+repl <- H4 in H6.
+repl <- H7 in H6.
+take into0 x.
+apply H5.
+extract_iota_from_goal (range f).
+take iota_prop0 x.
+apply_b H8.
+ex_in y.
+apply H6.
+intro b.
+intro.
+extract_iota_from_goal (domain f_inv).
+take iota_prop b.
+apply_b H1.
+
+Ltac extract_iota_from_goal_in :=
+let x := fresh "x" in
+match goal with
+|- (?A ∈ ?B) => extract_iota_from_goal B
+end.
+
