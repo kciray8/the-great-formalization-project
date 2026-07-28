@@ -4423,6 +4423,7 @@ apply H21.
 apply H11.
 Qed.
 
+
 Definition similarity_relation_exists (U: Set): ∃1r.
 (∀p. ((p ∈ r) ⇔ (∃x. x ∈ (𝒫 U) ∧ ∃y. y ∈ (𝒫 U) ∧ ((p = <x, y>) ∧ (x ~ y))))).
 split.
@@ -4487,7 +4488,8 @@ Definition similarity_relation (U: Set): Set :=
 
 Definition equivalence_class_gen_by (x r: Set): Set := p_relatives (unit_set x) r.
 
-Definition card (U x: Set):= equivalence_class_gen_by x (similarity_relation U).
+(* deprecated *)
+Definition card_eq_class (U x: Set):= equivalence_class_gen_by x (similarity_relation U).
 
 Definition element_in_power_set (A B: Set) (H: A ⊆ B): A ∈ power_set B.
 extract_iota_from_goal ( 𝒫 B).
@@ -5090,11 +5092,11 @@ ass.
 Qed.
 
 
-Definition cardinality_property (U A B: Set)(UP: ∀s. s ⊆ U): 
-(card U A = card U B) ⇔ (A ~ B). 
+Definition card_eq_classinality_property (U A B: Set)(UP: ∀s. s ⊆ U): 
+(card_eq_class U A = card_eq_class U B) ⇔ (A ~ B). 
 split.
 intro.
-unfold card in H.
+unfold card_eq_class in H.
 unfold equivalence_class_gen_by in H.
 extract_iota (similarity_relation U [{`A}]) H.
 extract_iota (similarity_relation U [{`B}]) H.
@@ -5147,7 +5149,7 @@ split.
 apply eq_refl.
 apply similar_reflective.
 intro.
-unfold card.
+unfold card_eq_class.
 unfold equivalence_class_gen_by.
 extract_iota_from_goal ((similarity_relation U [{`A}]) ).
 extract_iota_from_goal ((similarity_relation U [{`B}]) ).
@@ -5234,5 +5236,277 @@ apply eq_refl.
 take similar_transitive _ _ _ H H9.
 apply H7.
 Qed.
+
+(* ==== Graph Theory ====*)
+(* 
+started July 26, 2026 
+finished _
+*)
+
+Definition gt (a b: Set) := b ∈ a.
+
+Notation "a > b" := (gt a b)(at level 70).
+
+Definition ge (a b: Set) := (a > b) ∨ (a = b).
+
+Notation "a ≥ b" := (ge a b)(at level 70).
+
+Theorem nn_is_ge_zero: forall k : Set, k ∈ N -> k ≥ 0.
+intro.
+intro.
+take zero_is_le_nn.
+take H0 k.
+take H1 H.
+unfold ge.
+unfold le in H2.
+disj H2.
+left.
+unfold gt.
+unfold lt in H3.
+apply H3.
+right.
+apply eq_symm in H3.
+apply H3.
+Qed.
+
+
+(* {0,1,…, m−1} *)
+Theorem set_from_0_to_n_minus_1_exists (n: Set) : 
+∃1s. (∀e. e∈s ⇔ (e ∈ N ∧ e ≥ 0 ∧ e < n)).
+split.
+take ZF2_subsets (fun e => e ≥ 0 ∧ e < n) N.
+ex_el H.
+ex_in b.
+intro.
+split.
+intro.
+take H x.
+left H1 H0.
+conj_el H2.
+conj_el H4.
+split.
+split.
+assumption.
+assumption.
+assumption.
+intro.
+conj_el H0.
+conj_el H1.
+take H x.
+apply_b H5.
+split.
+assumption.
+split.
+assumption.
+assumption.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Definition set_from_0_to_n_minus_1(n: Set)
+:= ι _ (set_from_0_to_n_minus_1_exists n).
+
+(* finite sequence *)
+Definition sequence_len_in(s n A: Set) := 
+(function_on_into s (set_from_0_to_n_minus_1 n) A).
+
+Definition sequence_el_ex (s: Set) (n A: Set) (H: sequence_len_in s n A) 
+(x: Set) (x_in_X: x ∈ (set_from_0_to_n_minus_1 n)):
+ ∃1y. (y ∈ A) ∧ (pair x y ∈ s).
+unfold sequence_len_in in H.
+take appl_ex s (set_from_0_to_n_minus_1 n) A H x x_in_X.
+apply H0.
+Qed.
+
+Definition sequence_el (s: Set) (n A: Set) (H: sequence_len_in s n A) 
+(x: Set) (x_in_X: x ∈ (set_from_0_to_n_minus_1 n)) := 
+ι _ (sequence_el_ex s n A H x x_in_X).
+
+Definition path(p k V E u v: Set) :=
+∃ p_is_seq: (sequence_len_in p (S k) V). (pair 0 u ∈ p) ∧ (pair k u ∈ p) ∧ ∀i. 
+∀ i_in_domain: (i ∈ (set_from_0_to_n_minus_1 (S k))).
+∀ si_in_domain: (S i ∈ (set_from_0_to_n_minus_1 (S k))).
+pair (sequence_el p (S k) V p_is_seq i i_in_domain) (sequence_el p (S k) V p_is_seq (S i) si_in_domain) ∈ E.
+
+Definition connected(G: Set) := ∃V. ∃E. G = pair V E ∧ 
+∀u::V. ∀v::V. ∃p. ∃l. (path p l V E u v).
+
+Definition finite(s: Set) := ∃n::N. similar n s. 
+
+Definition zero_is_in_one:  0 ∈ 1.
+unfold one .
+unfold zero.
+unfold S.
+extract_iota_from_goal ({`∅}).
+apply union_in.
+right.
+take iota_prop ∅.
+right H.
+apply H0.
+apply eq_refl.
+Qed.
+
+Definition every_number_inside_nn_is_nn:
+∀n::N. ∀k. k ∈ n -> k ∈ N.
+apply PN5_induction.
+intro.
+intro.
+apply any_set_in_empty_set_causes_contradiction in H.
+apply H.
+intro.
+intro.
+intro.
+intro.
+intro.
+rename x0 into k.
+take H0 k.
+unfold S in H1.
+apply union_el in H1.
+disj H1.
+take H2 H3.
+assumption.
+apply element_of_unit_set in H3.
+repl H3.
+assumption.
+Qed.
+
+Definition domain_of_rc_left (x A B: Set) (HH: one_to_one B):
+x ∈ domain (A - B) -> x ∈ (domain A).
+intro.
+extract_iota_from_goal (domain A).
+take iota_prop x.
+apply_b H0.
+extract_iota (domain (A - B)) H.
+take iota_prop0 x.
+left H0 H.
+ex_el H1.
+apply relative_complement_el in H1.
+both H1.
+ex_in y.
+apply H2.
+Qed.
+
+
+Definition set_with_one_pair_is_one_to_one(x y: Set):
+one_to_one {`pair x y }.
+intros a b c.
+intro.
+both H.
+apply element_of_unit_set in H0.
+apply element_of_unit_set in H1.
+apply pair_property in H0, H1.
+both H0.
+both H1.
+apply eq_symm in H0.
+take eq_trans a x b.
+apply H1.
+assumption.
+assumption.
+Qed.
+
+
+Definition there_is_no_one_to_one_function_from_n_back: 
+∀k::N. ¬∃f. function_on_into f (S k) k ∧  (one_to_one f).
+apply PN5_induction.
+intro.
+ex_el H.
+left H.
+left H0.
+right H0.
+both H1.
+unfold on in H4.
+take function_application f (S 0) 0 H0.
+take H1 0.
+take zero_is_in_one.
+take H5 H6.
+ex_el H7.
+unfold into in H2.
+take element_of_function_in_range f (S 0) 0 0 b H0 H7.
+take empty_set_el b.
+apply H9.
+assumption.
+intro.
+intros.
+intro.
+ex_el H1.
+rename f into h.
+both H1.
+rename x into k.
+take function_application _ _ _ H2 (S k).
+assert (∀ x. x ∈ (S x)).
+intro.
+unfold S.
+apply union_in_2.
+apply every_set_is_in_unit_set.
+take H4 (S k).
+take H1 H5.
+ex_el H6.
+rename b into a.
+right H2.
+unfold into in H7.
+take element_of_function_in_range _ _ _ (S k) a H2.
+take H8 H6.
+take PN2_succ k.
+change (a ∈ S k) with (a < S k) in H9.
+take elimitane_S_and_lt a.
+take PN2_succ k H.
+take every_number_inside_nn_is_nn (S k) H12 a H9.
+take H11 H13.
+take H14 k H H9.
+unfold le in H15.
+(* a < k ∨ a = k 
+  Shall be clean and correst up until now
+*)
+disj H15.
+take identity_relation_exists (S k).
+ex_el H15.
+rename i into sksk.
+take identity_relation_is_one_to_one_correspondence (S k) sksk H15.
+(* construction is too long, can resume later...
+proceed with building step by step the requred set
+https://chatgpt.com/c/6a65a87d-9454-83ea-86e1-14961d7df121
+alternative: https://chatgpt.com/c/6a674c05-b640-83ea-9726-f8edaf797339
+
+Why return back? Nice function construction exercise, very valuable
+*)
+Admitted.
+
+
+Definition two_similar_nn_are_equal(a b: Set) 
+(a_in_N: a ∈ N) (b_in_N: b ∈ N) (H: a ~ b): a = b.
+
+
+Admitted.
+
+Definition card_ex(s: Set)(H: finite s) : ∃1n. n∈N ∧ similar n s.
+split.
+unfold finite in H.
+ex_el H.
+right H.
+ex_in n.
+assumption.
+intros a b.
+intros H1 H2.
+both H1.
+both H2.
+apply similar_symmetric in H4.
+take similar_transitive a s b.
+unfold finite in H.
+take H2 H3.
+take H5 H4.
+ex_el H.
+both H.
+apply two_similar_nn_are_equal.
+assumption.
+assumption.
+assumption.
+Qed.
+
+
+
+
+
+
+
+
 
 
