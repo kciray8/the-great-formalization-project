@@ -726,23 +726,23 @@ Notation "a + b" := (symmetric_difference a b)(at level 81, left associativity).
 
 Definition pair (a b: Set) := { (unit_set a) , { a, b } }. 
 
-Notation "< a , b >" := (pair a b)(at level 81, left associativity).
+Notation "⟨ a , b ⟩" := (pair a b)(at level 0, a at level 99, b at level 99).
 
-Definition triple (a b c: Set) := <<a, b>, c>.
+Definition triple (a b c: Set) := ⟨⟨a, b⟩, c⟩.
 
-Notation "< a , b , c >" := (triple a b c)(at level 81, left associativity).
+Notation "⟨ a , b , c ⟩" := (triple a b c)(at level 0, a at level 99, b at level 99, c at level 99).
 
-Definition tuple4 (a b c d: Set) := <(triple a b c), d>.
-Definition tuple5 (a b c d e: Set) := <(tuple4 a b c d), e>.
-Definition tuple6 (a b c d e f: Set) := <(tuple5 a b c d e), f>.
-Definition tuple7 (a b c d e f g: Set) := <(tuple6 a b c d e f), g>.
+Definition tuple4 (a b c d: Set) := ⟨(triple a b c), d⟩.
+Definition tuple5 (a b c d e: Set) := ⟨(tuple4 a b c d), e⟩.
+Definition tuple6 (a b c d e f: Set) := ⟨(tuple5 a b c d e), f⟩.
+Definition tuple7 (a b c d e f g: Set) := ⟨(tuple6 a b c d e f), g⟩.
 
-Definition is_pair(p: Set) :=  ∃a. ∃b. p = <a, b>.
+Definition is_pair(p: Set) :=  ∃a. ∃b. p = ⟨a, b⟩.
 
 Definition triple_is_pair(a b c: Set) : is_pair (triple a b c).
 unfold triple.
 unfold is_pair.
-apply(ex_in _ (< a, b >)).
+apply(ex_in _ (⟨ a, b ⟩)).
 apply(ex_in _ (c)).
 apply eq_refl.
 Defined.
@@ -750,7 +750,7 @@ Defined.
 Definition tuple4_is_pair(a b c d: Set) : is_pair (tuple4 a b c d).
 unfold tuple4.
 unfold is_pair.
-apply(ex_in _ (< a, b, c >)).
+apply(ex_in _ (⟨ a, b, c ⟩)).
 apply(ex_in _ (d)).
 apply eq_refl.
 Defined.
@@ -793,7 +793,7 @@ apply H5.
 apply (disj_in_1).
 apply (eq_refl ({`a})).
 Defined.
-Definition it_is_a_pair(x y p: Set) (E: p = <x, y>): is_pair p.
+Definition it_is_a_pair(x y p: Set) (E: p = ⟨x, y⟩): is_pair p.
 unfold is_pair.
 apply (ex_in _ x).
 apply (ex_in _ y).
@@ -801,9 +801,9 @@ apply E.
 Defined.
 
 Definition pair_obviously_exists {L: Set} {M: Set} (z a b: Set)
-(z_eq_pair : z = (< a, b >))
+(z_eq_pair : z = (⟨ a, b ⟩))
 (a_in_L: a ∈ L) (b_in_M: b ∈ M): 
-∃ x :: L . ∃ y :: M . z = (< x, y >).
+∃ x :: L . ∃ y :: M . z = (⟨ x, y ⟩).
 apply (ex_in _ a).
 apply conj_in.
 apply a_in_L.
@@ -815,7 +815,7 @@ Defined.
 
 Definition tuple5_arg2_obviously_exists {X: Set} {Y: Set} {A: Set} {B: Set} {C: Set}
 (w x y a b c: Set)
-(w_eq_tuple : w = (< < x, y >, < a, b, c > >))
+(w_eq_tuple : w = (⟨ ⟨ x, y ⟩, ⟨ a, b, c ⟩ ⟩))
 (x_in_X: x ∈ X) 
 (y_in_Y: y ∈ Y)
 (a_in_A: a ∈ A) 
@@ -823,7 +823,7 @@ Definition tuple5_arg2_obviously_exists {X: Set} {Y: Set} {A: Set} {B: Set} {C: 
 (c_in_C: c ∈ C): 
 ∃ x :: X. ∃ y :: Y
 . ∃ a :: A . ∃ b :: B . ∃ c :: C
-. w = (< < x, y >, < a, b, c > >).
+. w = (⟨ ⟨ x, y ⟩, ⟨ a, b, c ⟩ ⟩).
 apply (ex_in _ x).
 apply conj_in.
 apply x_in_X.
@@ -860,7 +860,7 @@ apply H6.
 apply H4.
 Defined.
 
-Definition intersection_of_pair(x y p: Set)(E: p = <x, y>)(M: is_pair p): 
+Definition intersection_of_pair(x y p: Set)(E: p = ⟨x, y⟩)(M: is_pair p): 
 (intersection p (pair_is_never_empty p M)) = {`x}.
 apply (ZF1_extension).
 intro k.
@@ -916,7 +916,7 @@ apply (disj_in_1).
 apply (eq_refl k).
 Defined.
 
-Definition pr1_formula_prop (x y p: Set) (E: p = <x, y>) (M: is_pair p): (pr1_formula p M) = x.
+Definition pr1_formula_prop (x y p: Set) (E: p = ⟨x, y⟩) (M: is_pair p): (pr1_formula p M) = x.
 unfold pr1_formula.
 apply (ZF1_extension).
 intro z.
@@ -952,7 +952,7 @@ apply H.
 apply (every_set_is_in_unit_set x).
 Defined.
 
-Definition pr1_exists(p: Set)(H: is_pair p): ∃1k. ∀x. ∀y. (p = <x, y>) -> k = x.
+Definition pr1_exists(p: Set)(H: is_pair p): ∃1k. ∀x. ∀y. (p = ⟨x, y⟩) -> k = x.
 apply (conj_in).
 assert (∃l. l = pr1_formula p H).
 apply (ex_in _ (pr1_formula p H)).
@@ -1128,7 +1128,7 @@ pose proof element_of_unit_set x y.
 apply (H21 H20).
 Defined.
 
-Definition pair_property {x y u v: Set}: (<x,y> =  <u,v>) -> (x = u) ∧ (y = v).
+Definition pair_property {x y u v: Set}: (⟨x,y⟩ =  ⟨u,v⟩) -> (x = u) ∧ (y = v).
 intro.
 pose proof exc_thrd (u = v).
 apply (disj_el _ _ (x = u ∧ y = v) H0).
@@ -1266,7 +1266,7 @@ Definition power_set (a: Set) := ι _ (power_set_exists a).
 Notation "'𝒫' a " := (power_set a)(at level 69, left associativity).
 
 Definition cartesian_product_exists (a b: Set): ∃1c. 
-(∀ w. ((w ∈ c) ⇔ ((∃x. (x ∈ a) ∧ (∃y. (y ∈ b) ∧ w = <x,y>))))).
+(∀ w. ((w ∈ c) ⇔ ((∃x. (x ∈ a) ∧ (∃y. (y ∈ b) ∧ w = ⟨x,y⟩))))).
 pose proof ZF2_subsets (
     fun w => (∃x. ∃y. ((¬(x = y)) ∧ (x ∈ a) ∧ (y ∈ b) ∧ (∀z. (z ∈ w) ⇔ 
     (z = {`x} ∨ z = {x, y}))))
@@ -1406,7 +1406,7 @@ refine (conj_in _ _ H7 _).
 intro z.
 apply (conj_in _ _).
 intro.
-pose proof eq_subs (fun g=>w = (< x, g >)) _ _ (eq_symm _ _ H5) H4.
+pose proof eq_subs (fun g=>w = (⟨ x, g ⟩)) _ _ (eq_symm _ _ H5) H4.
 cbv beta in H9.
 unfold pair in H9.
 extract_iota ({{`x}, {x, x}}) H9.
@@ -1675,7 +1675,7 @@ Definition cartesian_product (a b: Set) := ι _ (cartesian_product_exists a b).
 
 Notation "a × b" := (cartesian_product a b)(at level 70).
 
-Definition relation (a: Set) := ∀x. (x ∈ a) -> ∃m. ∃n. x = <m,n>.
+Definition relation (a: Set) := ∀x. (x ∈ a) -> ∃m. ∃n. x = ⟨m,n⟩.
 
 Definition relation_is_subset_of_cp_with_itself: ∀r. (relation r) ->  
 r ⊆ (union (union r)) × (union (union r)).
@@ -1784,9 +1784,9 @@ apply H6.
 Defined.
 
 Definition domain_exists (r: Set): ∃1d. 
-(∀ x. ((x ∈ d) ⇔ ((∃y. <x,y> ∈ r )))).
+(∀ x. ((x ∈ d) ⇔ ((∃y. ⟨x,y⟩ ∈ r )))).
 apply (conj_in _ _).
-pose proof ZF2_subsets (fun x => (∃y. <x,y> ∈ r ))
+pose proof ZF2_subsets (fun x => (∃y. ⟨x,y⟩ ∈ r ))
 ((union (union r))).
 cbv beta in H.
 destruct_ex H d.
@@ -1857,9 +1857,9 @@ Defined.
 Definition domain (r: Set):= ι _ (domain_exists r).
 
 Definition range_exists (r: Set): ∃1d. 
-(∀ y. ((y ∈ d) ⇔ ((∃x. <x,y> ∈ r )))).
+(∀ y. ((y ∈ d) ⇔ ((∃x. ⟨x,y⟩ ∈ r )))).
 apply (conj_in _ _).
-pose proof ZF2_subsets (fun y => (∃x. <x,y> ∈ r ))
+pose proof ZF2_subsets (fun y => (∃x. ⟨x,y⟩ ∈ r ))
 ((union (union r))).
 cbv beta in H.
 destruct_ex H d.
@@ -2834,15 +2834,15 @@ Definition relation_on_cp (f: Set) (X Y: Set) := f ⊆ (X × Y).
 
 Definition is_function (f: Set) (X Y: Set) := 
 (relation_on_cp f X Y) ∧ 
-(∀ x :: X. ∃ y :: Y. (<x,y> ∈ f)) ∧ 
-(∀ x. ∀ y. ∀ z. (<x,y> ∈ f) -> (<x,z> ∈ f) -> (y = z)).
+(∀ x :: X. ∃ y :: Y. (⟨x,y⟩ ∈ f)) ∧ 
+(∀ x. ∀ y. ∀ z. (⟨x,y⟩ ∈ f) -> (⟨x,z⟩ ∈ f) -> (y = z)).
 
 Definition f_appl_ex (f: Set) (X Y: Set) (H: is_function f X Y) (x: Set) 
 (x_in_X: x ∈ X):
- ∃1y. (y ∈ Y) ∧ (<x,y> ∈ f).
+ ∃1y. (y ∈ Y) ∧ (⟨x,y⟩ ∈ f).
 apply (conj_in _ _).
 left H.
-refine (_: ∃ y. (y ∈ Y) ∧ < x, y > ∈ f).
+refine (_: ∃ y. (y ∈ Y) ∧ ⟨ x, y ⟩ ∈ f).
 right H0.
 pose proof H1 x x_in_X.
 apply H2.
@@ -2864,7 +2864,7 @@ Definition f_appl (f: Set) (X Y: Set)
 (H: is_function f X Y) (x: Set) (x_in_X: x ∈ X) := 
 ι _ (f_appl_ex f X Y H x x_in_X).
 
-Definition f_x_eq_y (f: Set) (x y: Set) := (<x, y> ∈ f).
+Definition f_x_eq_y (f: Set) (x y: Set) := (⟨x, y⟩ ∈ f).
 
 Notation "f [ x ] ≔ y" := (f_x_eq_y f x y)(at level 70).
 
@@ -2876,7 +2876,7 @@ destruct_ex H NN.
 clear H.
 pose proof ZF2_subsets 
 (* made it simple a bit *)
-(fun g => ∃ a :: N . g = (< a, (S a) >)) NN.
+(fun g => ∃ a :: N . g = (⟨ a, (S a) ⟩)) NN.
 destruct_ex H f.
 clear H.
 apply (conj_in _ _).
@@ -2935,11 +2935,11 @@ apply (conj_in _ _).
 pose proof PN2_succ x H.
 apply H2.
 pose proof PN2_succ x H.
-pose proof H1 (< x, S x >).
+pose proof H1 (⟨ x, S x ⟩).
 right H3.
 apply H4.
 apply (conj_in _ _).
-pose proof H0 (< x, S x >).
+pose proof H0 (⟨ x, S x ⟩).
 right H5.
 apply H6.
 apply (ex_in _ x).
@@ -2956,8 +2956,8 @@ apply (eq_refl _).
 intros x y z.
 intro.
 intro.
-pose proof H1 (< x, y >).
-pose proof H1 (< x, z >).
+pose proof H1 (⟨ x, y ⟩).
+pose proof H1 (⟨ x, z ⟩).
 left H3.
 left H4.
 pose proof H5 H.
@@ -2971,12 +2971,12 @@ right H13.
 pose proof H12.
 pose proof pair_property H14.
 left H16.
-pose proof eq_subs (fun a2 => (< x, z >) = (< a2, S a2 >))
+pose proof eq_subs (fun a2 => (⟨ x, z ⟩) = (⟨ a2, S a2 ⟩))
 _ _ (eq_symm _ _ H17) H14.
 cbv beta in H18.
 pose proof pair_property H15.
 left H19.
-pose proof eq_subs (fun a2 => (< x, y >) = (< a2, S a2 >))
+pose proof eq_subs (fun a2 => (⟨ x, y ⟩) = (⟨ a2, S a2 ⟩))
 _ _ (eq_symm _ _ H20) H15.
 cbv beta in H21.
 pose proof eq_trans _ _ _ H18 (eq_symm _ _ H21).
@@ -2986,11 +2986,11 @@ apply (eq_symm _ _ H24).
 intro x.
 intro.
 unfold f_x_eq_y.
-pose proof H1 (< x, S x >).
+pose proof H1 (⟨ x, S x ⟩).
 right H2.
 apply H3.
 apply (conj_in _ _).
-pose proof H0 (< x, S x >).
+pose proof H0 (⟨ x, S x ⟩).
 right H4.
 apply H5.
 pose proof PN2_succ x H.
@@ -3351,7 +3351,7 @@ cbv beta in H.
 destruct_ex H f.
 destruct_ex H0 f_is_func.
 clear H H0.
-pose proof ZF2_subsets (fun p => (∀c. ∀d. (<c,d> = p) -> c ∈ x)) f.
+pose proof ZF2_subsets (fun p => (∀c. ∀d. (⟨c,d⟩ = p) -> c ∈ x)) f.
 cbv beta in H.
 destruct_ex H g.
 clear H.
@@ -3431,7 +3431,7 @@ apply (conj_in _ _).
 left H7.
 apply H8.
 right H7.
-pose proof H0 (< a, y >).
+pose proof H0 (⟨ a, y ⟩).
 right H9.
 apply H10.
 apply (conj_in _ _).
@@ -3450,8 +3450,8 @@ right f_is_func .
 pose proof H3 a b c.
 cbv beta in H4.
 apply H4.
-apply (g_subset_of_f (< a, b >) H).
-apply (g_subset_of_f (< a, c >) H2).
+apply (g_subset_of_f (⟨ a, b ⟩) H).
+apply (g_subset_of_f (⟨ a, c ⟩) H2).
 apply (ex_in _ H).
 intro a.
 intro.
@@ -4070,7 +4070,7 @@ apply H3.
 Defined.
 
 Definition subset_of_cartesian_exists (A B: Set)(P: Set -> Prop): 
-∃1 c. ∀ w . w ∈ c ⇔ ((∃ x :: A . ∃ y :: B . (w = (< x, y >))) ∧ (P w)).
+∃1 c. ∀ w . w ∈ c ⇔ ((∃ x :: A . ∃ y :: B . (w = (⟨ x, y ⟩))) ∧ (P w)).
 apply conj_in.
 pose proof cartesian_product_exists A B.
 left H.
@@ -4110,14 +4110,14 @@ apply H6.
 right H.
 apply H4.
 pose proof any_biimpl_set_is_no_more_than_one 
-(fun w=> ((∃ x0 :: A . ∃ y :: B . w = (< x0, y >)) ∧ P w)).
+(fun w=> ((∃ x0 :: A . ∃ y :: B . w = (⟨ x0, y ⟩)) ∧ P w)).
 apply H.
 Defined.
 
 
 Definition subset_of_cartesian5_for_2_args_exists (X Y A B C: Set)(P: Set -> Prop): 
 ∃1 c. ∀ w . w ∈ c ⇔ ((∃ x :: X . ∃ y :: Y . ∃ a :: A . 
-∃ b :: B . ∃ c :: C . (w = (<< x, y >, < a, b, c >>))) ∧ (P w)).
+∃ b :: B . ∃ c :: C . (w = (⟨⟨ x, y ⟩, ⟨ a, b, c ⟩⟩))) ∧ (P w)).
 apply conj_in.
 pose proof cartesian_product_exists X Y as x_y_exists.
 left x_y_exists.
@@ -4219,9 +4219,9 @@ apply subset_prop0.
 apply (conj_in).
 set_right x_y_a_b_c_prop w.
 apply x_y_a_b_c_prop0.
-apply (ex_in _ (< x, y >)).
+apply (ex_in _ (⟨ x, y ⟩)).
 apply (conj_in).
-set_right x_y_prop (< x, y >).
+set_right x_y_prop (⟨ x, y ⟩).
 apply x_y_prop0.
 apply (ex_in _ x).
 apply (conj_in).
@@ -4230,13 +4230,13 @@ apply (ex_in _ y).
 apply (conj_in).
 apply H5.
 apply eq_refl.
-apply (ex_in _ (< a, b, c >)).
+apply (ex_in _ (⟨ a, b, c ⟩)).
 apply (conj_in).
-set_right a_b_c_prop (< a, b, c >).
+set_right a_b_c_prop (⟨ a, b, c ⟩).
 apply a_b_c_prop0.
-apply (ex_in _ (< a, b>)).
+apply (ex_in _ (⟨ a, b⟩)).
 apply (conj_in).
-set_right a_b_prop (< a, b>).
+set_right a_b_prop (⟨ a, b⟩).
 apply a_b_prop0.
 apply (ex_in _ a).
 apply (conj_in).
@@ -4454,11 +4454,11 @@ Definition piecewise_function_nat_3_elements_exists (a b c blank: Set) (range: S
 (a_in_range: a ∈ range) (b_in_range: b ∈ range)
 (c_in_range: c ∈ range) (blank_in_range: blank ∈ range):
 ∃1f. (∀x. ((x ∈ f) ⇔
-((x = <0, a>) ∨ (x = <1, b>) ∨ (x = <2, c>) ∨
-(∃n. (n ∈ N) ∧ (2 < n) ∧ (x = <n, blank>))))).
+((x = ⟨0, a⟩) ∨ (x = ⟨1, b⟩) ∨ (x = ⟨2, c⟩) ∨
+(∃n. (n ∈ N) ∧ (2 < n) ∧ (x = ⟨n, blank⟩))))).
 pose proof subset_of_cartesian_exists N range (fun x => 
-(x = (< 0, a >) ∨ x = (< 1, b >)) ∨ x = (< 2, c >)
- ∨ (∃n. (n ∈ N) ∧ (2 < n) ∧ (x = <n, blank>))).
+(x = (⟨ 0, a ⟩) ∨ x = (⟨ 1, b ⟩)) ∨ x = (⟨ 2, c ⟩)
+ ∨ (∃n. (n ∈ N) ∧ (2 < n) ∧ (x = ⟨n, blank⟩))).
 cbv beta in H.
 apply conj_in.
 left H.
@@ -4498,11 +4498,11 @@ Definition piecewise_function_nat_3_elements (a b c blank: Set)
 a_in_range b_in_range c_in_range blank_in_range).
 
 Definition piecewise_function_sanity_check: 
-<3, 0> ∈ (piecewise_function_nat_3_elements 1 1 1 0 N
+⟨3, 0⟩ ∈ (piecewise_function_nat_3_elements 1 1 1 0 N
 one_in_N one_in_N one_in_N PN1_empty_set).
 extract_iota_from_goal (piecewise_function_nat_3_elements 1 1 1 0 N one_in_N one_in_N
 one_in_N PN1_empty_set).
-pose proof iota_prop (<3, 0>).
+pose proof iota_prop (⟨3, 0⟩).
 right H.
 apply H0.
 apply (disj_in_2).
@@ -4515,7 +4515,7 @@ apply eq_refl.
 Defined.
 
 Definition pairs_not_equal_if_pr1_is_not (a b c d: Set) (NE: ¬ (a = b)):
-(¬ (< a, c > = < b, d >)).
+(¬ (⟨ a, c ⟩ = ⟨ b, d ⟩)).
 intro.
 pose proof pair_property H.
 left H0.
@@ -4523,7 +4523,7 @@ apply (NE H1).
 Defined.
 
 Definition pr1_not_equal_in_pairs_leads_to_contradiction {a b c d: Set}
-(P: < a, c > = < b, d >) (NE: ¬ (a = b)): ⊥.
+(P: ⟨ a, c ⟩ = ⟨ b, d ⟩) (NE: ¬ (a = b)): ⊥.
 pose proof pairs_not_equal_if_pr1_is_not a b c d NE.
 apply (H P).
 Defined.
@@ -4569,7 +4569,7 @@ intro.
 intro x_in_N.
 pose proof divide_n_into_pieces x x_in_N.
 destruct_4_disj H.
-set_right H1 (< x, a >).
+set_right H1 (⟨ x, a ⟩).
 apply (ex_in _ a).
 apply conj_in.
 apply a_in_range.
@@ -4577,7 +4577,7 @@ apply H0.
 apply (disj_in_1).
 apply (disj_in_1).
 apply (disj_in_1).
-pose proof eq_subs (fun g => (< g, a >) = (< 0, a >)) _ _ 
+pose proof eq_subs (fun g => (⟨ g, a ⟩) = (⟨ 0, a ⟩)) _ _ 
 (eq_symm _ _ d_1).
 apply H.
 apply (eq_refl).
@@ -4585,7 +4585,7 @@ repl_in_goal d_2.
 apply (ex_in _ b).
 apply conj_in.
 apply b_in_range.
-set_right H1 (< 1, b >).
+set_right H1 (⟨ 1, b ⟩).
 apply H0.
 apply (disj_in_1).
 apply (disj_in_1).
@@ -4595,7 +4595,7 @@ apply (ex_in _ c).
 apply conj_in.
 apply c_in_range.
 repl_in_goal d_3.
-set_right H1 (< 2, c > ).
+set_right H1 (⟨ 2, c ⟩ ).
 apply H0.
 apply (disj_in_1).
 apply (disj_in_2).
@@ -4603,7 +4603,7 @@ apply eq_refl.
 apply (ex_in _ blank ).
 apply conj_in.
 apply blank_in_range.
-set_right H1 (< x, blank >).
+set_right H1 (⟨ x, blank ⟩).
 apply H0.
 apply (disj_in_2).
 apply (ex_in _ x).
@@ -4615,7 +4615,7 @@ apply eq_refl.
 intros x y z.
 intro.
 intro.
-set_left H1 (< x, y >).
+set_left H1 (⟨ x, y ⟩).
 pose proof H2 H.
 clear H2.
 destruct_4_disj H3.
@@ -4628,7 +4628,7 @@ repl H5 H.
 repl_in_goal H3.
 repl H3 H7.
 clear H7.
-set_left H1 (< 0, z >).
+set_left H1 (⟨ 0, z ⟩).
 pose proof H7 H6.
 destruct_4_disj H9.
 pose proof pair_property d_0.
@@ -4644,7 +4644,7 @@ left H9.
 apply (zero_not_equal_to_two H10).
 pose proof H7 H6.
 assert (¬((∃ n. (n ∈ N ∧ 2 < n)
-∧ (< 0, z >) = (< n, blank >)))).
+∧ (⟨ 0, z ⟩) = (⟨ n, blank ⟩)))).
 intro.
 destruct_ex H10 n.
 left H11.
@@ -4676,7 +4676,7 @@ left H2.
 right H2.
 repl H3 H.
 repl H3 H0.
-set_left H1 (< 1, z >).
+set_left H1 (⟨ 1, z ⟩).
 pose proof H7 H6.
 destruct_4_disj H8.
 pose proof zero_not_equals_to_one.
@@ -4707,7 +4707,7 @@ right H2.
 repl H3 H.
 repl H3 H0.
 repl_in_goal H4.
-set_left H1 (< 2, z >).
+set_left H1 (⟨ 2, z ⟩).
 pose proof H7 H6.
 destruct_4_disj H8.
 pose proof pair_property d_1.
@@ -4740,7 +4740,7 @@ left H5.
 right H5.
 repl H6 H.
 repl H6 H0.
-set_left H1 (< n, z >).
+set_left H1 (⟨ n, z ⟩).
 pose proof H10 H9.
 destruct_4_disj H11.
 assert (¬(n = 0)).

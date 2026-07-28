@@ -2889,7 +2889,7 @@ Definition universal_relation_in_x (X: Set) := (X × X).
 Definition void_relation := ∅.
 
 Definition identity_relation_prop(X i: Set) := 
-(∀p. ((p ∈ i) ⇔ (∃x:: X. p = <x, x>))).
+(∀p. ((p ∈ i) ⇔ (∃x:: X. p = ⟨x, x⟩))).
 
 Definition identity_relation_exists (X: Set): ∃1i.
 identity_relation_prop X i.
@@ -2899,11 +2899,11 @@ left H.
 clear H.
 cbv beta in H0.
 change (∃ s1. (∀ w . ((w ∈ s1) ⇔ 
-(∃ x :: X . (∃ y :: X . (w = (< x, y >))))))) in H0.
+(∃ x :: X . (∃ y :: X . (w = (⟨ x, y ⟩))))))) in H0.
 apply (ex_el _ H0).
 intros s1 P.
 clear H0.
-take ZF2_subsets (fun g => (∃ z :: X . (g = (< z, z >)))) s1.
+take ZF2_subsets (fun g => (∃ z :: X . (g = (⟨ z, z ⟩)))) s1.
 apply (ex_el _ H).
 intros s2.
 intros P0.
@@ -2911,7 +2911,7 @@ intros P0.
   apply any_biimpl_set_is_no_more_than_one.
 }
 change (∃ s. (∀ p . ((p ∈ s) ⇔ 
-(∃ x :: X . (p = (< x, x >)))))).
+(∃ x :: X . (p = (⟨ x, x ⟩)))))).
 apply (ex_in _ s2).
 intros k.
 split.
@@ -3024,11 +3024,11 @@ clear H K.
 Ltac ex_in x := apply (ex_in _ x).
 
 Definition p_relatives_ex(A r: Set): 
-∃1s. (∀y. (y ∈ s) ⇔ ∃x::A. <x, y> ∈ r).
+∃1s. (∀y. (y ∈ s) ⇔ ∃x::A. ⟨x, y⟩ ∈ r).
 split.
 take range_exists r.
 ex_el H.
-take ZF2_subsets (fun y => (∃ x :: A . < x, y > ∈ r)) d.
+take ZF2_subsets (fun y => (∃ x :: A . ⟨ x, y ⟩ ∈ r)) d.
 ex_el H0.
 apply (ex_in _ b).
 intro.
@@ -3063,11 +3063,11 @@ Notation "p [ A ]" :=
 (p_relatives A p)
 (at level 60, left associativity).
 
-Definition ordered_pair (s: Set) := ∃a. ∃b. s = <a, b>.
+Definition ordered_pair (s: Set) := ∃a. ∃b. s = ⟨a, b⟩.
 
 Definition function (s: Set) := 
 (* I *) (∀x. x ∈ s -> ordered_pair x) ∧
-(* II *) (∀x. ∀y. ∀z. ((<x, y> ∈ s ∧ <x, z> ∈ s) -> y = z)).
+(* II *) (∀x. ∀y. ∀z. ((⟨x, y⟩ ∈ s ∧ ⟨x, z⟩ ∈ s) -> y = z)).
 
 Definition on(s X: Set) := (domain s) = X.
 
@@ -3097,7 +3097,7 @@ Definition on_onto(s X Y: Set) := (function s)
 
 Notation "f : X -> Y" := (function_on_into f X Y)(at level 81, left associativity).
 
-Definition one_to_one (s: Set) := (∀a. ∀b. ∀y. ((<a, y> ∈ s ∧ <b, y> ∈ s) -> a = b)).
+Definition one_to_one (s: Set) := (∀a. ∀b. ∀y. ((⟨a, y⟩ ∈ s ∧ ⟨b, y⟩ ∈ s) -> a = b)).
 
 Definition one_to_one_correspondence (f A B: Set) :=
 (function f) ∧ (on f A) ∧ (onto f B) ∧ (one_to_one f).
@@ -3185,7 +3185,7 @@ Qed.
 
 Definition appl_ex (f: Set) (X Y: Set) (H: function_on_into f X Y) (x: Set) 
 (x_in_X: x ∈ X):
- ∃1y. (y ∈ Y) ∧ (<x,y> ∈ f).
+ ∃1y. (y ∈ Y) ∧ (⟨x,y⟩ ∈ f).
 apply (conj_in _ _).
 left H.
 right H0.
@@ -3226,7 +3226,7 @@ Definition appl (f: Set) (X Y: Set)
 ι _ (appl_ex f X Y H x x_in_X).
 
 Theorem composition_ex(g f: Set): ∃1c. ∀p. (p ∈ c) ⇔ 
-∃x. ∃z. (p = <x, z>) ∧ ∃y. <x,y> ∈ f ∧ <y,z> ∈ g.
+∃x. ∃z. (p = ⟨x, z⟩) ∧ ∃y. ⟨x,y⟩ ∈ f ∧ ⟨y,z⟩ ∈ g.
 take domain_exists f.
 ex_el H.
 rename d into dom_f.
@@ -3235,7 +3235,7 @@ ex_el H0.
 rename d into ran_g.
 take cartesian_product_exists dom_f ran_g.
 ex_el H1.
-take ZF2_subsets (fun p => ∃x. ∃z. (p = <x, z>) ∧ ∃y. <x,y> ∈ f ∧ <y,z> ∈ g) c.
+take ZF2_subsets (fun p => ∃x. ∃z. (p = ⟨x, z⟩) ∧ ∃y. ⟨x,y⟩ ∈ f ∧ ⟨y,z⟩ ∈ g) c.
 ex_el H2.
 split.
 ex_in b.
@@ -3344,10 +3344,10 @@ Ltac grab_function_range f :=
  trash
 *)
 Definition inverse_property_weak(f f_inv: Set) := 
-∀x. ∀y. (<x, y> ∈ f) ⇔ (<y, x> ∈ f_inv).
+∀x. ∀y. (⟨x, y⟩ ∈ f) ⇔ (⟨y, x⟩ ∈ f_inv).
 
 Definition inverse_property (f f_inv: Set) :=
-∀p. (p ∈ f_inv) ⇔ (∃x. ∃y. (p = <x,y>) ∧ (<y,x> ∈ f)).
+∀p. (p ∈ f_inv) ⇔ (∃x. ∃y. (p = ⟨x,y⟩) ∧ (⟨y,x⟩ ∈ f)).
 
 Theorem inverse_property_strong_to_weak(f f_inv: Set):
 (inverse_property f f_inv) -> (inverse_property_weak f f_inv).
@@ -3357,7 +3357,7 @@ unfold inverse_property_weak.
 intros x y.
 split.
 intro.
-take H (< y, x >).
+take H (⟨ y, x ⟩).
 apply_b H1.
 ex_in y.
 ex_in x.
@@ -3365,7 +3365,7 @@ split.
 apply eq_refl.
 ass.
 intro.
-take H (< y, x >).
+take H (⟨ y, x ⟩).
 left H1 H0.
 ex_el H2.
 ex_el H2.
@@ -3384,7 +3384,7 @@ Theorem inverse_exists (f A B: Set)
 split.
 take cartesian_product_exists B A.
 ex_el H0.
-take ZF2_subsets (fun p=> (∃ x . ∃ y . p = (< x, y >) ∧ < y, x >
+take ZF2_subsets (fun p=> (∃ x . ∃ y . p = (⟨ x, y ⟩) ∧ ⟨ y, x ⟩
 ∈ f)) c.
 ex_el H1.
 rename b into inv.
@@ -3435,7 +3435,7 @@ Definition inverse(f A B: Set) (H: function_on_into f A B)
 := ι _ (inverse_exists f A B H).
 
 Theorem function_application (f A B: Set) (H : function_on_into f A B):
-∀a::A. ∃b. <a, b> ∈ f.
+∀a::A. ∃b. ⟨a, b⟩ ∈ f.
 intro a.
 intro.
 pick H.
@@ -3449,7 +3449,7 @@ apply H3.
 Qed.
 
 Theorem element_of_function_in_domain (f A B x y: Set) 
-(H : function_on_into f A B) (H2: < x, y > ∈ f): x ∈ A.
+(H : function_on_into f A B) (H2: ⟨ x, y ⟩ ∈ f): x ∈ A.
 left H.
 left H0.
 left H1.
@@ -3465,7 +3465,7 @@ apply H2.
 Qed.
 
 Theorem element_of_function_in_range (f A B x y: Set) 
-(H : function_on_into f A B) (H2: < x, y > ∈ f): y ∈ B.
+(H : function_on_into f A B) (H2: ⟨ x, y ⟩ ∈ f): y ∈ B.
 right H.
 take H0 y.
 apply H1.
@@ -3523,7 +3523,7 @@ left H8 H7.
 ex_el H9.
 both H9.
 extract_iota (g ∘ f) H11.
-take iota_prop0 (< x, p >).
+take iota_prop0 (⟨ x, p ⟩).
 left H9 H11.
 ex_el H12.
 ex_el H12.
@@ -3688,9 +3688,9 @@ both H25.
 rename x0 into y0.
 take second x.
 apply contrapositive in H25.
-assert (<y0, x> ∈ g ∘ f).
+assert (⟨y0, x⟩ ∈ g ∘ f).
 extract_iota_from_goal (g ∘ f).
-take iota_prop2 (< y0, x >).
+take iota_prop2 (⟨ y0, x ⟩).
 apply_b H28.
 ex_in y0.
 ex_in x.
@@ -3822,7 +3822,7 @@ ex_el H16.
 clear H13.
 both H16.
 extract_iota (g ∘ f) H19.
-take iota_prop1 (< x, z >).
+take iota_prop1 (⟨ x, z ⟩).
 left H16 H19.
 clear H16.
 ex_el H20.
@@ -3873,14 +3873,14 @@ take inverse_exists g B A H.
 ex_el H0.
 rename f_inv into g_inv.
 unfold inverse_property in H0.
-take ZF2_subsets (fun p => ∀x. ∀y. (p = <x,y>) -> 
-((x ∈ A1) -> <x, y> ∈ f)
-∧ ((x ∈ (A - A1)) -> <x, y> ∈ g_inv)) AxB.
+take ZF2_subsets (fun p => ∀x. ∀y. (p = ⟨x,y⟩) -> 
+((x ∈ A1) -> ⟨x, y⟩ ∈ f)
+∧ ((x ∈ (A - A1)) -> ⟨x, y⟩ ∈ g_inv)) AxB.
 ex_el H9.
 rename b into h.
 change (∀ p. p ∈ h⇔ (p ∈ AxB
-∧ (∀ x. ∀ y. (p = (< x, y >)) -> ((x ∈ A1 -> < x, y > ∈ f)
-∧ (x ∈ (A - A1) -> < x, y > ∈ g_inv))))) in H9.
+∧ (∀ x. ∀ y. (p = (⟨ x, y ⟩)) -> ((x ∈ A1 -> ⟨ x, y ⟩ ∈ f)
+∧ (x ∈ (A - A1) -> ⟨ x, y ⟩ ∈ g_inv))))) in H9.
 assert (one_to_one g_inv) as g_inv_is_one_to_one.
 intros x y z.
 apply inverse_property_strong_to_weak in H0.
@@ -3949,25 +3949,25 @@ apply H18.
 intros x y z.
 intro.
 both H10.
-take H9 ( < x, y >).
+take H9 ( ⟨ x, y ⟩).
 left H10 H11.
 right H13.
 take H14 x y.
-assert ((< x, y >) = (< x, y >)).
+assert ((⟨ x, y ⟩) = (⟨ x, y ⟩)).
 apply eq_refl.
 take H15 H16.
 both H17.
-take H9 ( < x, z >).
+take H9 ( ⟨ x, z ⟩).
 left H17 H12.
 right H20.
 take H21 x z.
-assert ((< x, z >) = (< x, z >)).
+assert ((⟨ x, z ⟩) = (⟨ x, z ⟩)).
 apply eq_refl.
 take H22 H23.
 both H24.
 clear H17 H20 H21 H22 H23.
 assert (x ∈ A).
-take H6 (< x, y >).
+take H6 (⟨ x, y ⟩).
 left H17.
 left H13.
 take H20 H21.
@@ -4009,10 +4009,10 @@ extract_iota (domain h) H10.
 take iota_prop x.
 left H11 H10.
 ex_el H12.
-take H9 (< x, y >).
+take H9 (⟨ x, y ⟩).
 left H13 H12.
 left H14.
-take H6 (< x, y >).
+take H6 (⟨ x, y ⟩).
 left H16 H15.
 ex_el H17.
 both H17.
@@ -4034,10 +4034,10 @@ take function_application  _ _ _ H3 x HH.
 ex_el H12.
 rename b into y.
 ex_in y.
-take H9 (< x, y >).
+take H9 (⟨ x, y ⟩).
 apply_b H13.
 split.
-take H6 (< x, y >).
+take H6 (⟨ x, y ⟩).
 apply_b H13.
 ex_in x.
 split.
@@ -4080,10 +4080,10 @@ both H14.
 take H0 y x.
 left H14 H16.
 ex_in y.
-take H9 (< x, y >).
+take H9 (⟨ x, y ⟩).
 apply_b H18.
 split.
-take H6 (< x, y >).
+take H6 (⟨ x, y ⟩).
 apply_b H18.
 ex_in x.
 split.
@@ -4110,19 +4110,19 @@ apply H17.
   intros a b y.
   intro.
   both H10.
-  take H9 (< a, y >).
+  take H9 (⟨ a, y ⟩).
   left H10 H11.
   both H13.
   take H15 a y.
-  assert ((< a, y >) = (< a, y >)).
+  assert ((⟨ a, y ⟩) = (⟨ a, y ⟩)).
   apply eq_refl.
   take H13 H16.
   both H17.
-  take H9 (< b, y >).
+  take H9 (⟨ b, y ⟩).
   left H17 H12.
   both H20.
   take H22 b y.
-  assert ((< b, y >) = (< b, y >)).
+  assert ((⟨ b, y ⟩) = (⟨ b, y ⟩)).
   apply eq_refl.
   take H20 H23.
   both H24.
@@ -4143,10 +4143,10 @@ apply H17.
   split; ass.
   intro.
   assert (b ∈ A).
-  take H9 (< b, y >).
+  take H9 (⟨ b, y ⟩).
   left H20 H12.
   left H21.
-  take H6 (< b, y >).
+  take H6 (⟨ b, y ⟩).
   left H23 H22.
   ex_el H24.
   both H24.
@@ -4179,7 +4179,7 @@ apply H17.
   both H28.
   apply relative_complement_el in H31.
   both H31.
-  assert ( (< x, b > ∈ g ∧ < y, b > ∈ g)).
+  assert ( (⟨ x, b ⟩ ∈ g ∧ ⟨ y, b ⟩ ∈ g)).
   split; ass.
   take H5 x y b H31.
   repl H34 in H32.
@@ -4207,7 +4207,7 @@ apply H17.
   assert (a ∈ (A - A1)).
   apply relative_complement_in.
   split.
-  take H6 (< a, y >).
+  take H6 (⟨ a, y ⟩).
   left H13 H14.
   ex_el H16.
   both H16.
@@ -4231,7 +4231,7 @@ apply H17.
   both H23.
   take iota_prop x.
   right H23.
-  take @contrapositive (∃ x0 :: A1 . < x0, x > ∈ f) (x ∈ s) H28.
+  take @contrapositive (∃ x0 :: A1 . ⟨ x0, x ⟩ ∈ f) (x ∈ s) H28.
   apply contrapositive in H28.
   take H29 H27.
   apply ex_el_alt_simple in H30.
@@ -4246,7 +4246,7 @@ apply H17.
   left H34 H24.
   right g_inv_is_function.
   take H36 a y x.
-  assert ((< a, y > ∈ g_inv ∧ < a, x > ∈ g_inv)).
+  assert ((⟨ a, y ⟩ ∈ g_inv ∧ ⟨ a, x ⟩ ∈ g_inv)).
   split; ass.
   take H37 H38.
   repl <- H39.
@@ -4256,7 +4256,7 @@ apply H17.
   assert (a ∈ (A - A1)).
   apply relative_complement_in.
   split.
-  take H6 (< a, y >).
+  take H6 (⟨ a, y ⟩).
   left H20 H14.
   ex_el H21.
   both H21.
@@ -4270,11 +4270,11 @@ apply H17.
   assert (b ∈ (A - A1)).
   apply relative_complement_in.
   split.
-  take H6 (< b, y >).
-  take H9 (< b, y >).
+  take H6 (⟨ b, y ⟩).
+  take H9 (⟨ b, y ⟩).
   left H22 H12.
   left H23.
-  take H6 (< b, y >).
+  take H6 (⟨ b, y ⟩).
   left H27 H24.
   ex_el H28.
   both H28.
@@ -4299,10 +4299,10 @@ extract_iota (range h) H10.
 take iota_prop b.
 left H11 H10.
 ex_el H12.
-take H9 (< x, b >).
+take H9 (⟨ x, b ⟩).
 left H13 H12.
 left H14.
-take H6 (< x, b >).
+take H6 (⟨ x, b ⟩).
 left H16 H15.
 ex_el H17.
 both H17.
@@ -4327,11 +4327,11 @@ take iota_prop0 b.
 left H13 H12.
 ex_el H14.
 both H14.
-take H9 (< x, b >).
+take H9 (⟨ x, b ⟩).
 ex_in x.
 apply_b H14.
 split.
-take H6 (< x, b >).
+take H6 (⟨ x, b ⟩).
 apply_b H14.
 ex_in x.
 split.
@@ -4377,7 +4377,7 @@ split.
 ass.
 take iota_prop0 b.
 left H15.
-take @contrapositive (b ∈ s) (∃ x :: A1 . < x, b > ∈ f) H16.
+take @contrapositive (b ∈ s) (∃ x :: A1 . ⟨ x, b ⟩ ∈ f) H16.
 apply H17.
 intro.
 ex_el H18.
@@ -4392,10 +4392,10 @@ ass.
 apply eq_el_1 in H14.
 take H14 a H15.
 ex_in a.
-take H9 (< a, b >).
+take H9 (⟨ a, b ⟩).
 apply_b H17.
 split.
-take H6 (< a, b >).
+take H6 (⟨ a, b ⟩).
 apply_b H17.
 ex_in a.
 split.
@@ -4425,11 +4425,11 @@ Qed.
 
 
 Definition similarity_relation_exists (U: Set): ∃1r.
-(∀p. ((p ∈ r) ⇔ (∃x. x ∈ (𝒫 U) ∧ ∃y. y ∈ (𝒫 U) ∧ ((p = <x, y>) ∧ (x ~ y))))).
+(∀p. ((p ∈ r) ⇔ (∃x. x ∈ (𝒫 U) ∧ ∃y. y ∈ (𝒫 U) ∧ ((p = ⟨x, y⟩) ∧ (x ~ y))))).
 split.
 take cartesian_product_exists (𝒫 U) (𝒫 U).
 ex_el H.
-take ZF2_subsets (fun p => ∃x. ∃y. (p = <x, y>) ∧ (x ~ y)) c.
+take ZF2_subsets (fun p => ∃x. ∃y. (p = ⟨x, y⟩) ∧ (x ~ y)) c.
 ex_el H0.
 ex_in b.
 intro.
@@ -4519,9 +4519,9 @@ ass.
 intros x y z.
 intro.
 both H0.
-take H (< x, y >).
+take H (⟨ x, y ⟩).
 left H0 H1.
-take H (< x, z >).
+take H (⟨ x, z ⟩).
 left H4 H2.
 ex_el H3.
 both H3.
@@ -4547,7 +4547,7 @@ extract_iota (domain i) H0.
 take iota_prop x.
 left H1 H0.
 ex_el H2.
-take H ( < x, y > ).
+take H ( ⟨ x, y ⟩ ).
 left H3 H2.
 ex_el H4.
 both H4.
@@ -4561,7 +4561,7 @@ extract_iota_from_goal (domain i).
 take iota_prop x.
 apply_b H1.
 ex_in x.
-take H (< x, x >).
+take H (⟨ x, x ⟩).
 apply_b H1.
 ex_in x.
 split.
@@ -4574,7 +4574,7 @@ extract_iota (range i) H0.
 take iota_prop x.
 left H1 H0.
 ex_el H2.
-take H (< x0, x >).
+take H (⟨ x0, x ⟩).
 left H3 H2.
 ex_el H4.
 both H4.
@@ -4588,7 +4588,7 @@ extract_iota_from_goal (range i).
 take iota_prop x.
 apply_b H1.
 ex_in x.
-take H (< x, x >).
+take H (⟨ x, x ⟩).
 apply_b H1.
 ex_in x.
 split.
@@ -4597,8 +4597,8 @@ apply eq_refl.
 intros a b c.
 intro.
 both H0.
-take H (< a, c >).
-take H (< b, c >).
+take H (⟨ a, c ⟩).
+take H (⟨ b, c ⟩).
 left H0 H1.
 left H3 H2.
 ex_el H4.
@@ -4659,7 +4659,7 @@ extract_iota_from_goal ( range f_inv).
 take iota_prop0 x.
 apply_b H3.
 ex_in y.
-take H (< y, x >).
+take H (⟨ y, x ⟩).
 apply_b H3.
 ex_in y.
 ex_in x.
@@ -4675,7 +4675,7 @@ ex_el H2.
 extract_iota_from_goal ( domain f).
 take iota_prop0 x.
 apply_b H3.
-take H (< x0, x >).
+take H (⟨ x0, x ⟩).
 left H3 H2.
 ex_el H4.
 ex_el H4.
@@ -4705,7 +4705,7 @@ ex_in a.
 ex_in b.
 split.
 ass.
-take H (< b, a >).
+take H (⟨ b, a ⟩).
 apply_b H3.
 ex_in b.
 ex_in a.
@@ -4717,7 +4717,7 @@ intro.
 ex_el H0.
 ex_el H0.
 both H0.
-take H (< y, x >).
+take H (⟨ y, x ⟩).
 left H0 H2.
 ex_el H3.
 ex_el H3.
@@ -4762,8 +4762,8 @@ ass.
 intros x y z.
 intro.
 both H5.
-take H4 (< x, y >).
-take H4 (< x,z >).
+take H4 (⟨ x, y ⟩).
+take H4 (⟨ x,z ⟩).
 left H5 H6.
 left H8 H7.
 ex_el H9.
@@ -4799,7 +4799,7 @@ ass.
 intros a b c.
 intro.
 both H5.
-take H4 (< a, c >).
+take H4 (⟨ a, c ⟩).
 left H5 H6.
 ex_el H8.
 ex_el H8.
@@ -4808,7 +4808,7 @@ apply pair_property in H9.
 both H9.
 repl <- H8 in H10.
 repl <- H11 in H10.
-take H4 (< b, c >).
+take H4 (⟨ b, c ⟩).
 left H9 H7.
 ex_el H12.
 ex_el H12.
@@ -4849,7 +4849,7 @@ ex_in z.
 ass.
 intros x y z HH.
 both HH.
-take iota_prop ( < x, y >).
+take iota_prop ( ⟨ x, y ⟩).
 left H3 H0.
 ex_el H4.
 ex_el H4.
@@ -4860,7 +4860,7 @@ repl <- H4 in H6.
 repl <- H7 in H6.
 ex_el H6.
 both H6.
-take iota_prop ( < x, z >). 
+take iota_prop ( ⟨ x, z ⟩). 
 left H6 H2.
 ex_el H9.
 ex_el H9.
@@ -4876,7 +4876,7 @@ left H11.
 left H14.
 right H15.
 take H16 x y0 y1.
-assert ( (< x, y0 > ∈ f ∧ < x, y1 > ∈ f)).
+assert ( (⟨ x, y0 ⟩ ∈ f ∧ ⟨ x, y1 ⟩ ∈ f)).
 split. 
 ass.
 ass.
@@ -4899,7 +4899,7 @@ extract_iota ( domain comp) H0.
 take iota_prop0 x.
 left H2 H0.
 ex_el H3.
-take iota_prop (< x, y>).
+take iota_prop (⟨ x, y⟩).
 left H4 H3.
 ex_el H5.
 ex_el H5.
@@ -4956,7 +4956,7 @@ take iota_prop2 y.
 left H15 H14.
 ex_el H16.
 ex_in y0.
-take iota_prop (< x, y0 >).
+take iota_prop (⟨ x, y0 ⟩).
 apply_b H17.
 ex_in x.
 ex_in y0.
@@ -4973,7 +4973,7 @@ extract_iota (range comp) H0.
 take iota_prop0 x.
 left H2 H0.
 ex_el H3.
-take iota_prop (< x0, x >).
+take iota_prop (⟨ x0, x ⟩).
 left H4 H3.
 ex_el H5.
 ex_el H5.
@@ -5026,7 +5026,7 @@ take iota_prop2 x0.
 left H11 H10.
 ex_el H12.
 ex_in x1.
-take iota_prop (< x1, x >).
+take iota_prop (⟨ x1, x ⟩).
 apply_b H13.
 ex_in x1.
 ex_in x.
@@ -5039,7 +5039,7 @@ ass.
 intros a b c.
 intro.
 both H0.
-take iota_prop (< a, c >).
+take iota_prop (⟨ a, c ⟩).
 left H0 H2.
 ex_el H4.
 ex_el H4.
@@ -5047,7 +5047,7 @@ both H4.
 apply pair_property in H5.
 ex_el H6.
 both H6.
-take iota_prop (< b, c >).
+take iota_prop (⟨ b, c ⟩).
 left H6 H3.
 ex_el H8.
 ex_el H8.
@@ -5064,7 +5064,7 @@ repl <- H13 in H11.
 clear H6 H10 H12 H5 H13.
 right H1.
 take H5 y y0 c.
-assert (< y, c > ∈ g ∧ < y0, c > ∈ g).
+assert (⟨ y, c ⟩ ∈ g ∧ ⟨ y0, c ⟩ ∈ g).
 split; ass.
 take H6 H9.
 repl <- H10 in H8.
@@ -5104,8 +5104,8 @@ repl H in iota_prop.
 clear H.
 extract_iota (similarity_relation U) iota_prop.
 extract_iota (similarity_relation U) iota_prop0.
-take iota_prop1 (<A,B>).
-assert ( < A, B > ∈ s1 -> A ~ B).
+take iota_prop1 (⟨A,B⟩).
+assert ( ⟨ A, B ⟩ ∈ s1 -> A ~ B).
 intro.
 left H H0.
 ex_el H1.
@@ -5121,7 +5121,7 @@ ass.
 apply H0.
 clear H H0.
 take iota_prop B.
-assert (B ∈ s0 -> < A, B > ∈ s1).
+assert (B ∈ s0 -> ⟨ A, B ⟩ ∈ s1).
 intro.
 left H H0.
 ex_el H1.
@@ -5135,7 +5135,7 @@ apply_b H1.
 ex_in B.
 split.
 apply every_set_is_in_unit_set.
-take iota_prop2 (< B, B >).
+take iota_prop2 (⟨ B, B ⟩).
 apply_b H1.
 ex_in B.
 split.
@@ -5164,7 +5164,7 @@ ex_el H2.
 both H2.
 apply element_of_unit_set in H3.
 repl H3 in H4.
-take iota_prop1  (< A, x >).
+take iota_prop1  (⟨ A, x ⟩).
 left H2 H4.
 ex_el H5.
 both H5.
@@ -5181,7 +5181,7 @@ apply_b H7.
 ex_in B.
 split.
 apply every_set_is_in_unit_set.
-take iota_prop2 (< B, x >).
+take iota_prop2 (⟨ B, x ⟩).
 apply_b H7.
 ex_in B.
 split.
@@ -5210,7 +5210,7 @@ apply_b H2.
 ex_in A.
 split.
 apply every_set_is_in_unit_set.
-take iota_prop2 (< B, x >).
+take iota_prop2 (⟨ B, x ⟩).
 left H2 H4.
 ex_el H5.
 both H5.
@@ -5221,7 +5221,7 @@ apply pair_property in H7.
 both H7.
 repl <- H8 in H9.
 repl <- H10 in H9.
-take iota_prop1 (< A, x >).
+take iota_prop1 (⟨ A, x ⟩).
 apply_b H7.
 ex_in A.
 split.
@@ -5387,7 +5387,7 @@ Qed.
 
 
 Definition set_with_one_pair_is_one_to_one(x y: Set):
-one_to_one {`pair x y }.
+one_to_one {`⟨ x, y ⟩ }.
 intros a b c.
 intro.
 both H.
@@ -5500,9 +5500,6 @@ assumption.
 assumption.
 assumption.
 Qed.
-
-
-
 
 
 
