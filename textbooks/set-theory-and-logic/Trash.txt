@@ -89,3 +89,82 @@ match goal with
 |- (?A ∈ ?B) => extract_iota_from_goal B
 end.
 
+
+
+
+Definition transposition_of_two_elements_in_identity_exists (A a k: Set)
+(a_in_A: a ∈ A) (k_in_A: k ∈ A):
+∃f. bijection f A A ∧ 
+∀p. p ∈ f ⇔ ∃x::A. ∃y::A. p = ⟨x,y⟩ ∧ 
+((x = a -> y = k) ∨ (x = k -> y = a) ∨ (x ≠ a ∧ x ≠ k ∧ y ≠ a ∧ y ≠ k)).
+take cartesian_product_exists A A.
+ex_el H.
+take ZF2_subsets (fun p => ∃x::A. ∃y::A. p = ⟨x,y⟩ ∧ 
+((x = a -> y = k) ∨ (x = k -> y = a) ∨ (x ≠ a ∧ x ≠ k ∧ y ≠ a ∧ y ≠ k))) c.
+ex_el H0.
+ex_in b.
+split_rev.
+intro.
+split.
+intro.
+take H0 x.
+left H2 H1.
+both H3.
+apply H5.
+intro.
+take H0 x.
+apply_b H2.
+split.
+ex_el H1.
+both H1.
+ex_el H3.
+both H3.
+both H4.
+take H x.
+apply_b H4.
+ex_in x0.
+split.
+ass.
+ex_in y.
+split.
+ass.
+ass.
+apply H1.
+assert (function_on_into b A A).
+split.
+split.
+split.
+intro.
+intro.
+take H0 x.
+left H2 H1.
+both H3.
+ex_el H5.
+both H5.
+ex_el H6.
+both H6.
+both H7.
+ex_in x0.
+ex_in y.
+ass.
+intros x y z.
+intro.
+both H1.
+take H0 ⟨ x, y ⟩.
+left H1 H2.
+both H4.
+ex_el H6.
+both H6.
+ex_el H7.
+both H7.
+both H8.
+apply pair_property in H7.
+both H7.
+(* too complicated !!!!!!!!!!!!! 
+
+but I did half of job
+https://chatgpt.com/c/6a69cbaa-2ffc-83ea-8ed9-2dcd0c5dce63
+*)
+Admitted.
+
+

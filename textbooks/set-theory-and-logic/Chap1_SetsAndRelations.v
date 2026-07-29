@@ -3099,7 +3099,7 @@ Notation "f : X -> Y" := (function_on_into f X Y)(at level 81, left associativit
 
 Definition one_to_one (s: Set) := (∀a. ∀b. ∀y. ((⟨a, y⟩ ∈ s ∧ ⟨b, y⟩ ∈ s) -> a = b)).
 
-Definition one_to_one_correspondence (f A B: Set) :=
+Definition bijection (f A B: Set) :=
 (function f) ∧ (on f A) ∧ (onto f B) ∧ (one_to_one f).
 
 Ltac left_and_take x y := 
@@ -3146,7 +3146,7 @@ ass.
 ass.
 Qed.
 
-Definition similar (A B: Set) := ∃f. one_to_one_correspondence f A B.
+Definition similar (A B: Set) := ∃f. bijection f A B.
 
 Notation "A ~ B" := 
 (similar A B) (at level 60, left associativity).
@@ -4498,9 +4498,9 @@ apply_b H0.
 ass.
 Qed.
 
-Definition identity_relation_is_one_to_one_correspondence (X i: Set)
-(H: identity_relation_prop X i): one_to_one_correspondence i X X.
-unfold one_to_one_correspondence.
+Definition identity_relation_is_bijection (X i: Set)
+(H: identity_relation_prop X i): bijection i X X.
+unfold bijection.
 unfold identity_relation_prop in H.
 split.
 split.
@@ -4624,14 +4624,14 @@ Definition similar_reflective (A: Set): A ~ A.
 unfold similar.
 take identity_relation_exists A.
 ex_el H.
-take identity_relation_is_one_to_one_correspondence A i H.
+take identity_relation_is_bijection A i H.
 ex_in i.
 ass.
 Qed.
 
-Definition one_to_one_correspondence_to_into (f A B: Set)
-(H: (one_to_one_correspondence f A B)):  function_on_into f A B.
-unfold one_to_one_correspondence in H.
+Definition bijection_to_into (f A B: Set)
+(H: (bijection f A B)):  function_on_into f A B.
+unfold bijection in H.
 both H.
 both H0.
 both H.
@@ -4739,7 +4739,7 @@ pose proof H as HH.
 both H.
 both H0.
 both H.
-take one_to_one_correspondence_to_into f A B HH.
+take bijection_to_into f A B HH.
 take inverse_exists f A B H.
 ex_el H4.
 ex_in f_inv.
@@ -4825,11 +4825,11 @@ ass.
 ass.
 Qed.
 
-Definition composition_of_one_to_one_correspondences
+Definition composition_of_bijections
 (A B C f g: Set)
-(H : one_to_one_correspondence f A B)
-(H1 : one_to_one_correspondence g B C):
-one_to_one_correspondence (g ∘ f) A C .
+(H : bijection f A B)
+(H1 : bijection g B C):
+bijection (g ∘ f) A C .
 extract_iota_from_goal (g ∘ f).
 rename s into comp.
 split.
@@ -5086,7 +5086,7 @@ ex_el H.
 ex_el H1.
 rename f0 into g.
 ex_in (g ∘ f).
-apply (composition_of_one_to_one_correspondences A B).
+apply (composition_of_bijections A B).
 ass.
 ass.
 Qed.
@@ -5401,74 +5401,6 @@ assumption.
 assumption.
 Qed.
 
-
-Definition there_is_no_one_to_one_function_from_n_back: 
-∀k::N. ¬∃f. function_on_into f (S k) k ∧  (one_to_one f).
-apply PN5_induction.
-intro.
-ex_el H.
-left H.
-left H0.
-right H0.
-both H1.
-unfold on in H4.
-take function_application f (S 0) 0 H0.
-take H1 0.
-take zero_is_in_one.
-take H5 H6.
-ex_el H7.
-unfold into in H2.
-take element_of_function_in_range f (S 0) 0 0 b H0 H7.
-take empty_set_el b.
-apply H9.
-assumption.
-intro.
-intros.
-intro.
-ex_el H1.
-rename f into h.
-both H1.
-rename x into k.
-take function_application _ _ _ H2 (S k).
-assert (∀ x. x ∈ (S x)).
-intro.
-unfold S.
-apply union_in_2.
-apply every_set_is_in_unit_set.
-take H4 (S k).
-take H1 H5.
-ex_el H6.
-rename b into a.
-right H2.
-unfold into in H7.
-take element_of_function_in_range _ _ _ (S k) a H2.
-take H8 H6.
-take PN2_succ k.
-change (a ∈ S k) with (a < S k) in H9.
-take elimitane_S_and_lt a.
-take PN2_succ k H.
-take every_number_inside_nn_is_nn (S k) H12 a H9.
-take H11 H13.
-take H14 k H H9.
-unfold le in H15.
-(* a < k ∨ a = k 
-  Shall be clean and correst up until now
-*)
-disj H15.
-
-take identity_relation_exists (S k).
-ex_el H15.
-rename i into sksk.
-take identity_relation_is_one_to_one_correspondence (S k) sksk H15.
-(* construction is too long, can resume later...
-proceed with building step by step the requred set
-https://chatgpt.com/c/6a65a87d-9454-83ea-86e1-14961d7df121
-alternative: https://chatgpt.com/c/6a674c05-b640-83ea-9726-f8edaf797339
-
-Why return back? Nice function construction exercise, very valuable
-*)
-Admitted.
-
 Definition derive_middle_disjunct_when_others_fail (A B C: Prop) 
 (H: A ∨ B ∨ C) (H2: ¬A) (H3: ¬C): B.
 take disj_el_alt_2 (A ∨ B) C.
@@ -5487,8 +5419,8 @@ ex_in S.
 apply eq_refl.
 Qed.
 
-Definition one_to_one_correspondence_is_into(f A B: Set) :
-(one_to_one_correspondence f A B) -> into f B.
+Definition bijection_is_into(f A B: Set) :
+(bijection f A B) -> into f B.
 intro.
 both H.
 both H0.
@@ -5582,6 +5514,23 @@ repl H5.
 split; assumption.
 Qed.
 
+Definition cartesian_product_el_2 (p A B: Set):  
+(p ∈ A × B) -> ∃a. ∃b. p = ⟨a, b⟩ ∧ a ∈ A ∧ b ∈ B.
+intro.
+extract_iota (A × B) H.
+take iota_prop p.
+left H0 H.
+ex_el H1.
+both H1.
+ex_el H3.
+both H3.
+ex_in x.
+ex_in y.
+split.
+split; ass.
+ass.
+Qed.
+
 Ltac a := assumption.
 
 Ltac one_to_one_in :=
@@ -5595,8 +5544,223 @@ intro z;
 intro temp;
 both temp.
 
+Definition pair_unord_el(x A B: Set): x ∈ {A, B} -> x = A ∨ x = B.
+intro.
+extract_iota ({A, B}) H.
+take iota_prop x.
+left H0 H.
+apply H1.
+Qed.
+
+Definition f_on_into_appl_ex (f: Set) (X Y: Set) (x: Set) (x_in_X: x ∈ X) (H: function_on_into f X Y) 
+:
+∃1y. (y ∈ Y) ∧ (⟨x,y⟩ ∈ f).
+both H.
+both H0.
+both H.
+split.
+unfold on in H2.
+extract_iota (domain f) H2.
+repl H2 in iota_prop.
+take iota_prop x.
+left H x_in_X.
+ex_el H4.
+ex_in y.
+split.
+unfold into in H1.
+take H1 y.
+apply H5.
+apply range_in.
+ex_in x.
+a.
+a.
+intros a b.
+intros HH HHH.
+both HH.
+both HHH.
+take H3 x a b.
+apply H7.
+split; ass.
+Qed.
+
+Definition f_on_into_appl (f: Set) (X Y: Set) 
+ (x: Set) (x_in_X: x ∈ X) (H: function_on_into f X Y) := 
+ι _ (f_on_into_appl_ex f X Y x x_in_X H).
+
+Ltac grab_x_in_domain_proof f x :=
+  lazymatch goal with
+  | H : (function_on_into f ?A ?B) |- _ => 
+      lazymatch goal with
+      | H2 : (x ∈ A) |- _ => exact H2
+
+      | _ => fail "Unable to grab inner"
+      end
+  | _ => fail "Unable to grab outer"
+  end.
+
+Notation "f $ x" := (f_on_into_appl f (ltac:(grab_function_domain f)) 
+(ltac:(grab_function_range f)) x (ltac:(assumption))
+(ltac:(assumption)))(only parsing, at level 70). 
+
+Notation "f $ x" := (f_on_into_appl f _ _ x _ _)(only printing).
+
+
+Definition identity_relation_el(p X: Set) (H: p ∈ identity_relation X): ∃x:: X. p = ⟨x, x⟩.
+extract_iota (identity_relation X) H.
+unfold identity_relation_prop in iota_prop.
+take iota_prop p.
+left H0 H.
+apply H1.
+Qed.
+
+Definition identity_relation_in(p X: Set): (∃x:: X. p = ⟨x, x⟩) -> (p ∈ identity_relation X).
+intro.
+extract_iota_from_goal (identity_relation X).
+unfold identity_relation_prop in iota_prop.
+take iota_prop p.
+apply_b H0.
+ass.
+Qed.
+
+Definition composition_el(g f x z: Set): ⟨x, z⟩ ∈ g ∘ f ->
+∃y. ⟨x,y⟩ ∈ f ∧ ⟨y,z⟩ ∈ g. 
+intro.
+extract_iota (g ∘ f) H.
+take iota_prop (⟨ x, z ⟩ ).
+left H0 H.
+ex_el H1.
+ex_el H1.
+both H1.
+apply pair_property in H2.
+both H2.
+ex_el H3.
+both H3.
+repl H1.
+repl H4.
+ex_in y.
+split.
+a.
+a.
+Qed.
+
+Definition composition_in(g f x z: Set):
+(∃y. ⟨x,y⟩ ∈ f ∧ ⟨y,z⟩ ∈ g) -> ⟨x, z⟩ ∈ g ∘ f.
+intro.
+extract_iota_from_goal (g ∘ f).
+take iota_prop (⟨ x, z ⟩).
+apply_b H0.
+ex_in x.
+ex_in z.
+split.
+apply eq_refl.
+apply H.
+Qed.
+
+Definition if_function_is_own_inverse_then_bijection (A f: Set) (H: function_on_into f A A):
+(composition f f = identity_relation A) -> bijection f A A.
+intro.
+split.
+split.
+pick H.
+split.
+a.
+a.
+unfold onto.
+apply eq_in.
+intro.
+intro.
+apply range_el in H1.
+ex_el H1.
+pick H.
+unfold into in into0.
+take into0 x.
+apply H2.
+apply range_in.
+ex_in x0.
+a.
+intro y.
+intro.
+apply range_in.
+pick H.
+unfold on in on0.
+take H1.
+repl <- on0 in H2.
+apply domain_el in H2.
+ex_el H2.
+rename y0 into x.
+ex_in x.
+assert (⟨y,y⟩ ∈ identity_relation A).
+apply identity_relation_in.
+ex_in y.
+split.
+ass.
+apply eq_refl.
+repl <- H0 in H3.
+apply composition_el in H3.
+ex_el H3.
+both H3.
+right function0.
+take H3 y x y0.
+assert ((⟨ y, x ⟩ ∈ f ∧ ⟨ y, y0 ⟩ ∈ f)).
+split.
+ass.
+ass.
+take H6 H7.
+repl H8.
+ass.
+intro.
+intro.
+intro.
+intro.
+both H1.
+rename x into a.
+rename x0 into b.
+rename x1 into f_a.
+assert (⟨a,a⟩ ∈ identity_relation A).
+apply identity_relation_in.
+ex_in a.
+split.
+pick H.
+unfold on in on0.
+repl <- on0.
+apply domain_in.
+ex_in f_a.
+a.
+apply eq_refl.
+repl <- H0 in H1.
+apply composition_el in H1.
+ex_el H1.
+both H1.
+pick H.
+right function0.
+take H1 a f_a y.
+assert (⟨ a, f_a ⟩ ∈ f ∧ ⟨ a, y ⟩ ∈ f).
+split.
+ass.
+ass.
+take H6 H7.
+repl <- H8 in H5.
+repl <- H8 in H4.
+assert (⟨ b, a ⟩ ∈ (f ∘ f)).
+apply composition_in.
+ex_in f_a.
+split; ass.
+repl H0 in H9.
+apply identity_relation_el in H9.
+ex_el H9.
+both H9.
+apply pair_property in H11.
+both H11.
+repl H9.
+repl H12.
+apply eq_refl.
+Qed.
+
+Ltac split_rev := apply conj_symm;split.
+
+
 Definition restricting_bijection_gives_injection (f A B A': Set):
-(one_to_one_correspondence f A B) -> (A' ⊆ A) 
+(bijection f A B) -> (A' ⊆ A) 
 -> ∃g. function_on_into g A' B ∧ one_to_one g.
 intro.
 intro.
@@ -5609,7 +5773,7 @@ split.
 split.
 assumption.
 assumption.
-take one_to_one_correspondence_is_into f A B HH.
+take bijection_is_into f A B HH.
 apply H.
 take ex_bridge (restriction f A B A' H1 H0).
 ex_el H2.
@@ -5709,6 +5873,185 @@ a.
 a.
 Qed.
 
+Definition subset_of_cartesian_short_exists (A B: Set)(P: Set -> Set -> Prop): 
+∃1 c. c ⊆ A × B ∧ ∀x::A. ∀y::B. ⟨x, y⟩ ∈ c ⇔ P x y.
+split_rev.
+intros a b.
+intros H HH.
+both H.
+both HH.
+apply eq_in.
+intro x.
+intro.
+take (H0 x) H3.
+apply cartesian_product_el_2 in H4.
+ex_el H4.
+ex_el H4.
+both H4.
+both H5.
+take H1 a0 H7 b0 H6.
+take H2 a0 H7 b0 H6.
+apply biimpl_symm in H8.
+take biimpl_trans _ _ _ H5 H8.
+repl H4.
+left H9.
+apply H10.
+repl H4 in H3.
+ass.
+intro x.
+intro.
+take H x H3.
+apply cartesian_product_el_2 in H4.
+ex_el H4.
+ex_el H4.
+both H4.
+both H5.
+take H1 a0 H7 b0 H6.
+take H2 a0 H7 b0 H6.
+apply biimpl_symm in H8.
+take biimpl_trans _ _ _ H5 H8.
+repl H4.
+right H9.
+apply H10.
+repl H4 in H3.
+ass.
+take ZF2_subsets (fun p => ∃a::A. ∃b::B. p = ⟨a,b⟩ 
+∧ P a b) (A × B).
+ex_el H.
+ex_in b.
+split.
+intro k.
+take H k.
+intro.
+left H0 H1.
+both H2.
+ass.
+intro.
+intro.
+intro.
+intro.
+take H ⟨ x, x0 ⟩.
+split.
+intro.
+left H2 H3.
+both H4.
+ex_el H6.
+both H6.
+ex_el H7.
+both H7.
+both H8.
+apply pair_property in H7.
+both H7.
+repl H8.
+repl H10.
+ass.
+intro.
+apply_b H2.
+split.
+apply cartesian_product_in.
+ass.
+ass.
+ex_in x.
+split.
+ass.
+ex_in x0.
+split.
+ass.
+split.
+apply eq_refl.
+ass.
+Qed.
+
+
+Definition there_is_no_one_to_one_function_from_n_back: 
+∀k::N. ¬∃f. function_on_into f (S k) k ∧  (one_to_one f).
+apply PN5_induction.
+intro.
+ex_el H.
+left H.
+left H0.
+right H0.
+both H1.
+unfold on in H4.
+take function_application f (S 0) 0 H0.
+take H1 0.
+take zero_is_in_one.
+take H5 H6.
+ex_el H7.
+unfold into in H2.
+take element_of_function_in_range f (S 0) 0 0 b H0 H7.
+take empty_set_el b.
+apply H9.
+assumption.
+intro.
+intros.
+intro.
+ex_el H1.
+rename f into h.
+both H1.
+rename x into k.
+take function_application _ _ _ H2 (S k).
+assert (∀ x. x ∈ (S x)).
+intro.
+unfold S.
+apply union_in_2.
+apply every_set_is_in_unit_set.
+take H4 (S k).
+take H1 H5.
+ex_el H6.
+rename b into a.
+right H2.
+unfold into in H7.
+take element_of_function_in_range _ _ _ (S k) a H2.
+take H8 H6.
+take PN2_succ k.
+change (a ∈ S k) with (a < S k) in H9.
+take elimitane_S_and_lt a.
+take PN2_succ k H.
+take every_number_inside_nn_is_nn (S k) H12 a H9.
+take H11 H13.
+take H14 k H H9.
+unfold le in H15.
+(* a < k ∨ a = k 
+  Shall be clean and correst up until now
+*)
+disj H15.
+take subset_of_cartesian_short_exists (S k) (S k) 
+(fun x => fun y => 
+((x = a) ∧ (y = k)) ∨ ((x = k) ∧ (y = a)) ∨
+((x ≠ a ∧ x ≠ k) ∧ y = x)).
+ex_el H15.
+rename c into sigma.
+both H15.
+assert (bijection sigma (S k) (S k)).
+split.
+split.
+split.
+split.
+intro.
+intro.
+take H17 x H15.
+apply cartesian_product_el_2 in H19.
+ex_el H19.
+ex_el H19.
+both H19.
+both H20.
+ex_in a0.
+ex_in b.
+ass.
+(* 
+super long but possible 
+shall be OKAY
+https://chatgpt.com/c/6a69cbaa-2ffc-83ea-8ed9-2dcd0c5dce63
+
+ construction is too long, can resume later...
+proceed with building step by step the requred set
+https://chatgpt.com/c/6a65a87d-9454-83ea-86e1-14961d7df121
+alternative: https://chatgpt.com/c/6a674c05-b640-83ea-9726-f8edaf797339
+*)
+Admitted.
+
+
 
 Definition two_similar_nn_are_equal(a b: Set) 
 (a_in_N: a ∈ N) (b_in_N: b ∈ N) (H: a ~ b): a = b.
@@ -5796,11 +6139,11 @@ assumption.
 Qed.
 
 
+
 Definition card(s: Set)(H: finite s):= ι _ (card_ex s H).
 
 Notation "| A |" := (card A (ltac:(assumption)))(at level 0, A at level 9, only parsing).
 Notation "| A |" := (card A _)(at level 0, A at level 9, only printing).
-
 
 
 
