@@ -1,3 +1,11 @@
+Definition connected_graph(V E: Set) := ∀u::V. ∀v::V. ∃p. ∃l. (path p l V E u v).
+Definition subsets2_ex(A: Set) : 
+
+Definition subsets2(A: Set):= ι _ (subsets2_ex A).
+
+Definition undirected_graph(V E: Set) := E ⊆ subsets2 V.
+
+
 Definition inverse_of_one_to_one (f A B f_inv: Set) 
 (H: function_on_into f A B) (G: one_to_one f) (P: inverse_property f f_inv):
 function_on_into f_inv B A.

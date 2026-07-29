@@ -5327,8 +5327,6 @@ Definition path(p k V E u v: Set) :=
 ∀ si_in_domain: (S i ∈ (set_from_0_to_n_minus_1 (S k))).
 pair (sequence_el p (S k) V p_is_seq i i_in_domain) (sequence_el p (S k) V p_is_seq (S i) si_in_domain) ∈ E.
 
-Definition connected(G: Set) := ∃V. ∃E. G = pair V E ∧ 
-∀u::V. ∀v::V. ∃p. ∃l. (path p l V E u v).
 
 Definition finite(s: Set) := ∃n::N. similar n s. 
 
@@ -5457,6 +5455,7 @@ unfold le in H15.
   Shall be clean and correst up until now
 *)
 disj H15.
+
 take identity_relation_exists (S k).
 ex_el H15.
 rename i into sksk.
@@ -5470,12 +5469,307 @@ Why return back? Nice function construction exercise, very valuable
 *)
 Admitted.
 
+Definition derive_middle_disjunct_when_others_fail (A B C: Prop) 
+(H: A ∨ B ∨ C) (H2: ¬A) (H3: ¬C): B.
+take disj_el_alt_2 (A ∨ B) C.
+take H0 H H3.
+take disj_el_alt_1 A B.
+apply H4.
+apply H1.
+apply H2.
+Qed.
+
+Definition restriction(f X Y A: Set) (H: function_on_into f X Y) (H2: A ⊆ X) :=
+f ∩ (A × Y).
+
+Definition ex_bridge (S: Set): ∃x. x = S.
+ex_in S.
+apply eq_refl.
+Qed.
+
+Definition one_to_one_correspondence_is_into(f A B: Set) :
+(one_to_one_correspondence f A B) -> into f B.
+intro.
+both H.
+both H0.
+both H.
+unfold into.
+unfold onto in H2.
+repl H2.
+apply subset_refl.
+Qed.
+
+Definition every_element_of_cartesian_is_ordered_pair (x A B: Set):
+x ∈ A × B -> ordered_pair x.
+intro.
+extract_iota (A × B) H.
+take iota_prop x.
+left H0 H.
+ex_el H1.
+both H1.
+ex_el H3.
+both H3.
+ex_in x0.
+ex_in y.
+apply H4.
+Qed.
+
+Definition domain_el (f x: Set): x ∈ domain f -> ∃ y . ⟨ x, y ⟩ ∈ f.
+intro.
+extract_iota (domain f) H.
+take iota_prop x.
+left H0 H.
+apply H1.
+Qed.
+
+Definition domain_in (f x: Set): (∃ y . ⟨ x, y ⟩ ∈ f) -> x ∈ domain f.
+intro.
+ex_el H.
+extract_iota_from_goal (domain f).
+take iota_prop x.
+apply_b H0.
+ex_in y.
+apply H.
+Qed.
+
+Definition range_in (f y: Set): (∃ x . ⟨ x, y ⟩ ∈ f) -> y ∈ range f.
+intro.
+ex_el H.
+extract_iota_from_goal (range f).
+take iota_prop y.
+apply_b H0.
+ex_in x.
+apply H.
+Qed.
+
+Definition range_el (f y: Set): y ∈ range f -> (∃ x . ⟨ x, y ⟩ ∈ f).
+intro.
+extract_iota (range f) H.
+take iota_prop y.
+left H0 H.
+apply H1.
+Qed.
+
+Definition cartesian_product_in (a b A B: Set): a ∈ A -> b ∈ B -> 
+⟨a,b⟩ ∈ A × B.
+intros.
+extract_iota_from_goal (A × B).
+take iota_prop (⟨ a, b ⟩).
+apply_b H1.
+ex_in a.
+split.
+apply H.
+ex_in b.
+split.
+apply H0.
+apply eq_refl.
+Qed.
+
+Definition cartesian_product_el (a b A B: Set):  
+(⟨a,b⟩ ∈ A × B) -> a ∈ A ∧ b ∈ B.
+intro.
+extract_iota (A × B) H.
+take iota_prop ⟨ a, b ⟩.
+left H0 H.
+ex_el H1.
+both H1.
+ex_el H3.
+both H3.
+apply pair_property in H4.
+both H4.
+repl H3.
+repl H5.
+split; assumption.
+Qed.
+
+Ltac a := assumption.
+
+Ltac one_to_one_in :=
+let x := fresh "x" in
+let y := fresh "y" in
+let z := fresh "z" in
+let temp := fresh "temp" in
+intro x;
+intro y;
+intro z;
+intro temp;
+both temp.
+
+Definition restricting_bijection_gives_injection (f A B A': Set):
+(one_to_one_correspondence f A B) -> (A' ⊆ A) 
+-> ∃g. function_on_into g A' B ∧ one_to_one g.
+intro.
+intro.
+assert (function_on_into f A B).
+pose proof H as HH.
+both H.
+both H1.
+both H.
+split.
+split.
+assumption.
+assumption.
+take one_to_one_correspondence_is_into f A B HH.
+apply H.
+take ex_bridge (restriction f A B A' H1 H0).
+ex_el H2.
+unfold restriction in H2.
+ex_in x.
+rename x into g.
+split.
+split.
+split.
+split.
+intro.
+intro.
+unfold ordered_pair.
+repl H2 in H3.
+apply intersection_el in H3.
+both H3.
+take every_element_of_cartesian_is_ordered_pair x A' B H5.
+apply H3.
+intros x y z.
+intro.
+both H3.
+repl H2 in H4.
+repl H2 in H5.
+apply intersection_el in H4, H5.
+both H4.
+both H5.
+left H.
+left H5.
+left H8.
+right H9.
+take H10 x y z.
+apply H11.
+split; assumption.
+unfold on.
+apply eq_in.
+intro.
+intro.
+apply domain_el in H3.
+ex_el H3.
+repl H2 in H3.
+apply intersection_el in H3.
+both H3.
+extract_iota (A' × B) H5.
+take iota_prop (⟨ x, y ⟩).
+left H3 H5.
+ex_el H6.
+both H6.
+ex_el H8.
+both H8.
+apply pair_property in H9.
+both H9.
+repl H8.
+apply H7.
+intro.
+intro.
+apply domain_in.
+take H0 x H3.
+take function_application f A B H1 x H4.
+ex_el H5.
+ex_in b.
+repl H2.
+apply intersection_in.
+split.
+apply H5.
+right H1.
+unfold into in H6.
+assert (b ∈ B).
+take H6 b.
+apply H7.
+apply range_in.
+ex_in x.
+assumption.
+apply cartesian_product_in.
+apply H3.
+a.
+intro.
+intro.
+apply range_el in H3.
+ex_el H3.
+repl H2 in H3.
+apply intersection_el in H3.
+both H3.
+apply cartesian_product_el in H5.
+both H5.
+a.
+one_to_one_in.
+repl H2 in H3.
+repl H2 in H4.
+apply intersection_el in H3, H4.
+both H3.
+both H4.
+right H.
+take H4 x y z.
+apply H8.
+split.
+a.
+a.
+Qed.
+
 
 Definition two_similar_nn_are_equal(a b: Set) 
 (a_in_N: a ∈ N) (b_in_N: b ∈ N) (H: a ~ b): a = b.
-
-
-Admitted.
+take trichotomy_for_set_inclusion_only_disj a a_in_N b b_in_N.
+take derive_middle_disjunct_when_others_fail (a ∈ b) (a = b) (b ∈ a).
+rename a into m.
+rename b into n.
+take H1 H0.
+assert (n ∉ m -> m ∉ n -> m = n).
+intros.
+take H2 H4 H3.
+apply H5.
+apply H3.
+clear H0 H1 H2.
+intro.
+assert (((S n) ⊆ m)).
+unfold S.
+intro.
+intro.
+apply union_el in H1.
+disj H1.
+take every_natual_number_is_transitive m a_in_N.
+unfold transitive_set in H1.
+take H1 x n.
+apply H4.
+split.
+assumption.
+assumption.
+take element_of_unit_set x n H2.
+repl H1.
+assumption.
+unfold similar in H.
+ex_el H.
+take restricting_bijection_gives_injection f m n (S n) H H1.
+take there_is_no_one_to_one_function_from_n_back n b_in_N.
+apply H4.
+a.
+intro.
+assert (((S m) ⊆ n)).
+unfold S.
+intro.
+intro.
+apply union_el in H5.
+disj H5.
+take every_natual_number_is_transitive n b_in_N.
+unfold transitive_set in H5.
+take H5 x m.
+apply H7.
+split.
+a. a.
+take element_of_unit_set x m H6.
+repl H5.
+a.
+apply similar_symmetric in H.
+unfold similar in H.
+ex_el H.
+take restricting_bijection_gives_injection f n m (S m) H H5.
+take there_is_no_one_to_one_function_from_n_back m a_in_N.
+apply H7.
+a.
+Qed.
 
 Definition card_ex(s: Set)(H: finite s) : ∃1n. n∈N ∧ similar n s.
 split.
@@ -5500,6 +5794,12 @@ assumption.
 assumption.
 assumption.
 Qed.
+
+
+Definition card(s: Set)(H: finite s):= ι _ (card_ex s H).
+
+Notation "| A |" := (card A (ltac:(assumption)))(at level 0, A at level 9, only parsing).
+Notation "| A |" := (card A _)(at level 0, A at level 9, only printing).
 
 
 
