@@ -34,6 +34,11 @@ Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) uc
 Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) uconstr(f) uconstr(g) uconstr(h) uconstr(i) :=
   take_core (a b c d e f g h i).
 
+Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) uconstr(f) uconstr(g) uconstr(h) uconstr(i) uconstr(j) :=
+  take_core (a b c d e f g h i j).
+
+Tactic Notation "take" uconstr(a) uconstr(b) uconstr(c) uconstr(d) uconstr(e) uconstr(f) uconstr(g) uconstr(h) uconstr(i) uconstr(j) uconstr(p) :=
+  take_core (a b c d e f g h i j p).
 
 Axiom intuitive_abstraction: forall A: (Set -> Prop), 
 ∃b. ∀ x. ((x ∈ b) ⇔ (A x)).
@@ -811,7 +816,7 @@ apply H1.
 ass.
 Qed.
 
-Theorem intersection_in: ∀A. ∀B. ∀x. (x ∈ A) ∧ (x ∈ B) -> x ∈ (A ∩ B).
+Theorem intersection_in_alt: ∀A. ∀B. ∀x. (x ∈ A) ∧ (x ∈ B) -> x ∈ (A ∩ B).
 intros A B x.
 intro.
 extract_iota_from_goal ((A ∩ B)).
@@ -820,6 +825,15 @@ right H0.
 apply H1.
 ass.
 Qed.
+
+Theorem intersection_in (A B x: Set) (H1: x ∈ A) (H2: x ∈ B): x ∈ (A ∩ B).
+extract_iota_from_goal ((A ∩ B)).
+take iota_prop x.
+right H.
+apply H0.
+split; ass.
+Qed.
+
 
 Theorem union_el: ∀A. ∀B. ∀x. x ∈ (A ∪ B) -> (x ∈ A) ∨ (x ∈ B).
 intros A B x.
@@ -855,19 +869,19 @@ apply union_in.
 apply (disj_el _ _ _ H1).
 intro.
 left.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 ass.
 ass.
 intro.
 right.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 ass.
 ass.
 intro.
 apply union_el in H.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 apply (disj_el _ _ _ H).
 intro.
@@ -903,7 +917,7 @@ take intersection_el _ _ _ H.
 left H0.
 apply H1.
 intro.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 apply H.
 apply H.
@@ -1316,7 +1330,7 @@ apply intersection_el in H0.
 left H0.
 apply H1.
 intro.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 apply H0.
 apply eq_el_1 in H.
@@ -1344,7 +1358,7 @@ apply eq_el_1 in H.
 take H x.
 apply (@any_set_in_empty_set_causes_contradiction x).
 apply H1.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 ass.
 ass.
@@ -1503,14 +1517,14 @@ apply intersection_el in H2.
 left H2.
 right H2.
 take union_in_1 B C x H4.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 ass.
 ass.
 intro.
 take H x H2.
 take union_in_2 B C x H2.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 ass.
 ass.
@@ -1523,7 +1537,7 @@ apply union_el in H3.
 apply (disj_el _ _ _ H3).
 intro.
 left.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 ass.
 ass.
@@ -1690,7 +1704,7 @@ take H4 x.
 take union_in_1 A C x H0.
 take H6 H7.
 take conj_in _ _ H0 H8.
-take intersection_in A B x H9.
+take intersection_in_alt A B x H9.
 take H5 H10.
 apply ac_el in H11.
 apply H11.
@@ -1773,16 +1787,16 @@ apply eq_in; intros x H.
 Lemma intersection_assoc: ∀A. ∀B. ∀C. (A ∩ (B ∩ C)) = ((A ∩ B) ∩ C). 
 intros A B C.
 eq_in.
-apply intersection_in.
+apply intersection_in_alt.
 apply intersection_el in H.
 both_old H.
 apply intersection_el in H1.
 both_old H1.
 split.
-apply intersection_in.
+apply intersection_in_alt.
 split; ass.
 ass.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 apply intersection_el in H.
 both_old H.
@@ -1793,7 +1807,7 @@ apply intersection_el in H.
 both_old H.
 apply intersection_el in H0.
 both_old H0.
-apply intersection_in.
+apply intersection_in_alt.
 split; ass.
 Qed.
 
@@ -1821,13 +1835,13 @@ Qed.
 Lemma intersection_comm: ∀A. ∀B. (A ∩ B) = (B ∩ A). 
 intros A B.
 eq_in.
-apply intersection_in.
+apply intersection_in_alt.
 apply intersection_el in H.
 both_old H.
 split.
 ass.
 ass.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 apply intersection_el in H.
 both_old H.
@@ -1842,7 +1856,7 @@ Lemma union_intersection_distr: ∀A. ∀B. ∀C.
 (A ∪ (B ∩ C)) = ((A ∪ B) ∩ (A ∪ C)). 
 intros A B C.
 eq_in.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 apply union_in.
 apply union_el in H.
@@ -1874,7 +1888,7 @@ disj H1.
 left.
 ass.
 right.
-apply intersection_in.
+apply intersection_in_alt.
 split; ass.
 Qed.
 
@@ -1892,17 +1906,17 @@ apply union_el in H1.
 disj H1.
 apply union_in.
 left.
-apply intersection_in.
+apply intersection_in_alt.
 split; ass.
 apply union_in.
 right.
-apply intersection_in.
+apply intersection_in_alt.
 split; ass.
 apply union_el in H.
 disj H.
 apply intersection_el in H0.
 both H0.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 ass.
 apply union_in.
@@ -1910,7 +1924,7 @@ left.
 ass.
 apply intersection_el in H0.
 both H0.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 ass.
 apply union_in.
@@ -1941,7 +1955,7 @@ eq_in.
 apply intersection_el in H0.
 left H0.
 ass.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 ass.
 apply (H x).
@@ -2034,7 +2048,7 @@ split.
 apply (u2 x H).
 intro.
 take conj_in _ _ H2 H.
-take intersection_in A B x H3.
+take intersection_in_alt A B x H3.
 take eq_el_1 _ _ H1 x H4.
 apply empty_set_el in H5.
 ass.
@@ -2146,7 +2160,7 @@ apply intersection_el in H.
 left H.
 ass.
 intros x H.
-apply intersection_in.
+apply intersection_in_alt.
 split; ass.
 Qed.
 
@@ -2204,7 +2218,7 @@ eq_in.
 apply intersection_el in H.
 left H.
 ass.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 ass.
 apply union_in.
@@ -2244,7 +2258,7 @@ apply deMorganNotAnd in H2.
 ass.
 Qed.
 
-Lemma intersection_in_neg: ∀A. ∀B. ∀x. ((x ∉ A) ∨ (x ∉ B)) 
+Lemma intersection_in_alt_neg: ∀A. ∀B. ∀x. ((x ∉ A) ∨ (x ∉ B)) 
 -> (x ∉ (A ∩ B)).
 intros A B x H.
 extract_iota_from_goal (A ∩ B).
@@ -2268,7 +2282,7 @@ apply rc_el in H.
 both H.
 apply union_el_neg in H1.
 both H1.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 apply rc_in.
 split.
@@ -2336,7 +2350,7 @@ eq_in.
 apply intersection_el in H0.
 left H0.
 ass.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 ass.
 apply (H x H0).
@@ -2721,7 +2735,7 @@ take universal_set_absorption C U u3.
 ass.
 Qed.
 
-Lemma intersection_in_subset: ∀A. ∀B. ∀U.
+Lemma intersection_in_alt_subset: ∀A. ∀B. ∀U.
 (A ⊆ U) -> (B ⊆ U) -> (A ∩ B) ⊆ U.
 intros A B U u1 u2.
 intros x H.
@@ -2767,8 +2781,8 @@ take deMorganNotIntersection ((A ∩ uB) ∩ C)
 clear H.
 take rc_in_subset B U bU.
 repl <- P in H.
-take intersection_in_subset _ _ _ aU H.
-take intersection_in_subset _ _ _ H1 cU.
+take intersection_in_alt_subset _ _ _ aU H.
+take intersection_in_alt_subset _ _ _ H1 cU.
 take H0 H2.
 clear H0.
 Admitted.
@@ -2883,7 +2897,6 @@ Admitted.
 Definition relation_from_x_to_y (p X Y: Set):= (relation p) ∧ (p ⊆ (X × Y)).
 Definition relation_from_z_to_z (p Z: Set):= ∃X. ∃Y.
 (relation_from_x_to_y p X Y) ∧ ((X ∪ Y) ⊆ Z).
-Definition relation_in_z (p Z: Set) := relation_from_x_to_y p Z Z.
 
 Definition universal_relation_in_x (X: Set) := (X × X).
 Definition void_relation := ∅.
@@ -3335,7 +3348,7 @@ Ltac grab_function_domain f :=
 Ltac grab_function_range f :=
   lazymatch goal with
   | H : (function_on_into f ?A ?B) |- _ => exact B
-  | _ => fail "Unable to grab function domain"
+  | _ => fail "Unable to grab function range"
   end.
 
 (* Don't use it !!! Why:
@@ -5245,11 +5258,11 @@ finished _
 
 Definition gt (a b: Set) := b ∈ a.
 
-Notation "a > b" := (gt a b)(at level 70).
+Notation "a > b" := (gt a b)(at level 70):direct_relations.
 
 Definition ge (a b: Set) := (a > b) ∨ (a = b).
 
-Notation "a ≥ b" := (ge a b)(at level 70).
+Notation "a ≥ b" := (ge a b)(at level 70):direct_relations.
 
 Theorem nn_is_ge_zero: forall k : Set, k ∈ N -> k ≥ 0.
 intro.
@@ -5454,7 +5467,7 @@ left H0 H.
 apply H1.
 Qed.
 
-Definition domain_in (f x: Set): (∃ y . ⟨ x, y ⟩ ∈ f) -> x ∈ domain f.
+Definition domain_in_old (f x: Set): (∃ y . ⟨ x, y ⟩ ∈ f) -> x ∈ domain f.
 intro.
 ex_el H.
 extract_iota_from_goal (domain f).
@@ -5464,9 +5477,27 @@ ex_in y.
 apply H.
 Qed.
 
-Definition range_in (f y: Set): (∃ x . ⟨ x, y ⟩ ∈ f) -> y ∈ range f.
+Definition domain_in (f x y: Set): ⟨ x, y ⟩ ∈ f -> x ∈ domain f.
+intro.
+extract_iota_from_goal (domain f).
+take iota_prop x.
+apply_b H0.
+ex_in y.
+apply H.
+Qed.
+
+Definition range_in_old (f y: Set): (∃ x . ⟨ x, y ⟩ ∈ f) -> y ∈ range f.
 intro.
 ex_el H.
+extract_iota_from_goal (range f).
+take iota_prop y.
+apply_b H0.
+ex_in x.
+apply H.
+Qed.
+
+Definition range_in (f y x: Set): ⟨ x, y ⟩ ∈ f -> y ∈ range f.
+intro.
 extract_iota_from_goal (range f).
 take iota_prop y.
 apply_b H0.
@@ -5570,7 +5601,7 @@ split.
 unfold into in H1.
 take H1 y.
 apply H5.
-apply range_in.
+apply range_in_old.
 ex_in x.
 a.
 a.
@@ -5598,11 +5629,11 @@ Ltac grab_x_in_domain_proof f x :=
   | _ => fail "Unable to grab outer"
   end.
 
-Notation "f $ x" := (f_on_into_appl f (ltac:(grab_function_domain f)) 
+Notation "f ⦅ x ⦆" := (f_on_into_appl f (ltac:(grab_function_domain f)) 
 (ltac:(grab_function_range f)) x (ltac:(assumption))
-(ltac:(assumption)))(only parsing, at level 70). 
+(ltac:(assumption)))(only parsing, at level 71, left associativity). 
 
-Notation "f $ x" := (f_on_into_appl f _ _ x _ _)(only printing).
+Notation "f ⦅ x ⦆" := (f_on_into_appl f _ _ x _ _)(only printing).
 
 
 Definition identity_relation_el(p X: Set) (H: p ∈ identity_relation X): ∃x:: X. p = ⟨x, x⟩.
@@ -5613,6 +5644,8 @@ left H0 H.
 apply H1.
 Qed.
 
+Definition id_el(p X: Set):= identity_relation_el p X.
+
 Definition identity_relation_in(p X: Set): (∃x:: X. p = ⟨x, x⟩) -> (p ∈ identity_relation X).
 intro.
 extract_iota_from_goal (identity_relation X).
@@ -5621,6 +5654,9 @@ take iota_prop p.
 apply_b H0.
 ass.
 Qed.
+
+Definition id_in(p X: Set):= identity_relation_in p X.
+
 
 Definition composition_el(g f x z: Set): ⟨x, z⟩ ∈ g ∘ f ->
 ∃y. ⟨x,y⟩ ∈ f ∧ ⟨y,z⟩ ∈ g. 
@@ -5675,12 +5711,12 @@ pick H.
 unfold into in into0.
 take into0 x.
 apply H2.
-apply range_in.
+apply range_in_old.
 ex_in x0.
 a.
 intro y.
 intro.
-apply range_in.
+apply range_in_old.
 pick H.
 unfold on in on0.
 take H1.
@@ -5723,7 +5759,7 @@ split.
 pick H.
 unfold on in on0.
 repl <- on0.
-apply domain_in.
+apply domain_in_old.
 ex_in f_a.
 a.
 apply eq_refl.
@@ -5829,13 +5865,13 @@ repl H8.
 apply H7.
 intro.
 intro.
-apply domain_in.
+apply domain_in_old.
 take H0 x H3.
 take function_application f A B H1 x H4.
 ex_el H5.
 ex_in b.
 repl H2.
-apply intersection_in.
+apply intersection_in_alt.
 split.
 apply H5.
 right H1.
@@ -5843,7 +5879,7 @@ unfold into in H6.
 assert (b ∈ B).
 take H6 b.
 apply H7.
-apply range_in.
+apply range_in_old.
 ex_in x.
 assumption.
 apply cartesian_product_in.
@@ -5962,6 +5998,11 @@ apply eq_refl.
 ass.
 Qed.
 
+Definition bijection_with_exchanged_elements_exists(A a k: Set): ∃f. 
+∃(f_is_func: function_on_into f A A). 
+(∀x. ∀x_in_A: (x ∈ A). ((x = a) ∧ 
+(f⦅x⦆ = k) ∨ ((x = k) ∧ (f⦅x⦆ = a)) ∨ ((x ≠ a ∧ x ≠ k) ∧ (f⦅x⦆ = x)))).
+Abort.
 
 Definition there_is_no_one_to_one_function_from_n_back: 
 ∀k::N. ¬∃f. function_on_into f (S k) k ∧  (one_to_one f).
@@ -6016,6 +6057,7 @@ unfold le in H15.
   Shall be clean and correst up until now
 *)
 disj H15.
+
 take subset_of_cartesian_short_exists (S k) (S k) 
 (fun x => fun y => 
 ((x = a) ∧ (y = k)) ∨ ((x = k) ∧ (y = a)) ∨
@@ -6024,22 +6066,10 @@ ex_el H15.
 rename c into sigma.
 both H15.
 assert (bijection sigma (S k) (S k)).
-split.
-split.
-split.
-split.
-intro.
-intro.
-take H17 x H15.
-apply cartesian_product_el_2 in H19.
-ex_el H19.
-ex_el H19.
-both H19.
-both H20.
-ex_in a0.
-ex_in b.
-ass.
+
 (* 
+ex_in a b c. !!!
+
 super long but possible 
 shall be OKAY
 https://chatgpt.com/c/6a69cbaa-2ffc-83ea-8ed9-2dcd0c5dce63
@@ -6145,8 +6175,1117 @@ Definition card(s: Set)(H: finite s):= ι _ (card_ex s H).
 Notation "| A |" := (card A (ltac:(assumption)))(at level 0, A at level 9, only parsing).
 Notation "| A |" := (card A _)(at level 0, A at level 9, only printing).
 
+Definition S_el(A B: Set): A ∈ S B -> A ∈ B ∨ A = B.
+intro.
+unfold S in H.
+apply union_el in H.
+disj H.
+left.
+ass.
+apply unit_set_el in H0.
+right.
+ass.
+Qed.
+
+Definition S_in(A B: Set): (A ∈ B ∨ A = B) -> A ∈ S B.
+intro.
+unfold S.
+apply union_in.
+disj H.
+left.
+ass.
+right.
+apply unit_set_in.
+ass.
+Qed.
+
+Definition n_properties: is_successor_set N
+∧ (∀ z . is_successor_set z -> N ⊆ z).
+split.
+extract_iota_from_goal N.
+both iota_prop.
+ass.
+extract_iota_from_goal N.
+both iota_prop.
+ass.
+Qed.
+
+(* Active development: August 14, 2026 - _ *)
+Definition compatible(f g: Set) := ∀x::((domain f) ∩ (domain g)). ∃y. ⟨x,y⟩ ∈ f ∧ ⟨x,y⟩ ∈ g.
+
+Definition set_of_functions(s: Set) := ∀f::s. function f.
+
+Definition big_union_el (a b: Set): (a ∈ (⋃ b)) -> ∃s. a ∈ s ∧ s ∈ b.
+intro.
+extract_iota ((⋃ b)) H.
+take iota_prop a.
+left H0 H.
+apply H1.
+Qed.
+
+Ltac introsx :=
+lazymatch goal with
+| |- ∀ xxx . _ => 
+(intro xxx; introsx)
+| |- _ -> _ => 
+(intro; introsx)
+| _ => idtac
+end.
+
+Ltac intros_agressive := intro; introsx.
+
+Tactic Notation "intros" := intros_agressive. 
+
+Ltac big_union_el H :=
+match type of H with
+| ?e ∈ (⋃ ?s) => 
+  apply big_union_el in H; 
+  ex_el H;
+  both H
+end.
+
+Definition union_of_compatible_functions_is_a_function (s: Set) 
+(s_set_of_functions: set_of_functions s) (pairwise_compatible: (∀f::s. ∀g::s. compatible f g)): 
+((function (⋃ s))).
+split.
+intro.
+intro.
+apply big_union_el in H.
+unfold ordered_pair.
+ex_el H.
+both H.
+take s_set_of_functions s0.
+take H H1.
+left H2.
+take H3 x H0.
+ass.
+intros.
+both H.
+big_union_el H0.
+big_union_el H1.
+take s_set_of_functions s0 H2.
+take s_set_of_functions s1 H3.
+take pairwise_compatible s0 H2 s1 H3.
+unfold compatible in H5.
+take H.
+take element_of_function_in_domain s0 .
+apply domain_in in H6.
+take H0.
+apply domain_in in H8.
+take intersection_in _ _ x H6 H8.
+take H5 x H9.
+ex_el H10.
+both H10.
+right H1.
+take H10 x y y0.
+assert (y = y0).
+apply H13.
+split; ass.
+repl <- H14 in H12.
+take H0.
+take H12.
+right H4.
+take H17 x y z.
+apply H18.
+split; ass.
+Qed.
+
+Close Scope direct_relations.
 
 
+(* 
+MATH 320 - Set Theory - Lecture 3.3 
+https://www.youtube.com/watch?v=PbYMvjI9oMA&list=PLuiPz6iU5SQ_3Gubdqa1JHBvM0GBFcIV0&index=9
+*)
+
+Definition relation_on (p X: Set) := relation_from_x_to_y p X X.
+
+Definition reflexive(E X: Set) := ∀x::X. ⟨x,x⟩ ∈ E.
+Definition anti_symmetric(E X: Set) := ∀x::X. ∀y::X. ⟨x,y⟩ ∈ E -> ⟨y,x⟩ ∈ E -> x = y.
+Definition asymmetric(E X: Set) := ∀x::X. ∀y::X. ⟨x,y⟩ ∈ E -> ⟨y,x⟩ ∉ E.
+Definition transitive(E X: Set) := ∀x::X. ∀y::X. ∀z::X. ⟨x,y⟩ ∈ E -> ⟨y,z⟩ ∈ E -> ⟨x,z⟩ ∈ E.
+
+Definition partial_order_relation (E X: Set) := 
+(relation_on E X) ∧ (reflexive E X) ∧ (anti_symmetric E X) ∧ (transitive E X).
+
+Definition strict_partial_order_relation (E X: Set) := 
+(relation_on E X) ∧ (asymmetric E X) ∧ (transitive E X).
+
+Notation "⦅ X , E ⦆ 'is' 'a' 'partially' 'ordered' 'set'" := (partial_order_relation E X)(at level 70).
+
+Notation "⦅ X , E ⦆ 'is' 'a' 'strictly' 'partially' 'ordered' 'set'" := (strict_partial_order_relation E X)(at level 70).
+
+Definition induced_order_prop(E F X: Set) := ∀x::X. ∀y::X. ⟨x,y⟩ ∈ E ⇔ (⟨x,y⟩ ∈ F ∨ x = y).
+
+Definition strict_partial_order_to_ordinary (X F E: Set) (H: strict_partial_order_relation F X)
+(H2: relation_on E X) (H3: induced_order_prop E F X): partial_order_relation E X.
+unfold partial_order_relation.
+split.
+split.
+split.
+ass.
+both H.
+both H0.
+intro.
+intro.
+take H3 x H0 x H0.
+apply_b H5.
+right.
+apply eq_refl.
+intro.
+intros.
+both H.
+both H6.
+unfold asymmetric in H8.
+take H3 x H0 y H1.
+take H3 y H1 x H0.
+left H6 H4.
+left H9 H5.
+clear H6 H9.
+disj H10.
+disj H11.
+take H8 x H0 y H1 H6.
+take H10 H9.
+apply H11.
+apply eq_symm.
+apply H9.
+disj H11.
+apply H6.
+apply H6.
+both H.
+unfold transitive.
+intros.
+take H3 x H y H4.
+left H8 H6.
+disj H9.
+take H3 y H4 z H5.
+left H9 H7.
+disj H11.
+take H1 x H y H4 z H5 H10 H12.
+take H3 x H z H5.
+apply_b H13.
+left.
+apply H11.
+repl <- H12.
+apply H6.
+repl H10.
+apply H7.
+Qed.
+
+Definition induced_strict_order_prop(E F X: Set) := ∀x::X. ∀y::X. ⟨x,y⟩ ∈ E ⇔ (⟨x,y⟩ ∈ F ∧ x ≠ y).
+
+Definition partial_order_to_strict (X F E: Set) (H: partial_order_relation F X)
+(H2: relation_on E X) (H3: induced_strict_order_prop E F X): strict_partial_order_relation E X.
+unfold strict_partial_order_relation.
+split.
+split.
+apply H2.
+unfold asymmetric.
+intros.
+take H3 x H0 y H1.
+left H5 H4.
+both H6.
+intro.
+take H3 y H1 x H0.
+left H9 H6.
+both H10.
+both H.
+both H10.
+unfold anti_symmetric in H14.
+take H14 x H0 y H1 H7 H11.
+apply H8.
+ass.
+unfold transitive.
+intros.
+both H.
+take H3 x H0 y H1.
+left H H5.
+both H9.
+take H3 y H1 z H4.
+left H9 H6.
+both H12.
+take H8 x H0 y H1 z H4 H10 H13.
+take H3 x H0 z H4.
+apply_b H15.
+split.
+ass.
+intro.
+repl <- H15 in H13.
+take H10.
+take H13.
+right H7.
+take H18 x H0 y H1 H16 H17.
+left H H5.
+right H20.
+apply H21.
+ass.
+Qed.
+
+Ltac cartesian_product_el_2 H := 
+let P1 := fresh "H" in
+let P2 := fresh "H" in
+apply cartesian_product_el_2 in H;
+ex_el H; ex_el H;
+pose proof H as P1;
+pose proof H as P2;
+apply conj_el_1 in H;
+apply conj_el_1 in H;
+apply conj_el_1 in P1;
+apply conj_el_2 in P1;
+apply conj_el_2 in P2.
+
+Definition induced_partial_order_exists (X F: Set) (H: strict_partial_order_relation F X): 
+∃1E. relation_on E X ∧ induced_order_prop E F X ∧ partial_order_relation E X.
+unfold strict_partial_order_relation in H.
+split.
+take union2_exists F (id X).
+ex_el H0.
+rename u into E.
+assert (relation_on E X).
+unfold relation_on.
+unfold relation_from_x_to_y.
+split.
+intros.
+take H0 x.
+left H2 H1.
+disj H3.
+left H.
+left H3.
+right H5.
+left H5.
+unfold relation in H7.
+take H7 x H4.
+apply H8.
+apply id_el in H4.
+ex_el H4.
+both H4.
+ex_in x0.
+ex_in x0.
+ass.
+intro.
+intro.
+take H0 x.
+left H2 H1.
+disj H3.
+left H.
+left H3.
+right H5.
+take H6 x H4.
+ass.
+apply id_el in H4.
+ex_el H4.
+both H4.
+repl H5.
+apply cartesian_product_in.
+ass.
+ass.
+assert (induced_order_prop E F X).
+unfold induced_order_prop.
+intro.
+intro.
+rename H2 into HH2.
+intro.
+intro.
+rename H2 into HHH2.
+split.
+rename x0 into y.
+take H0 ⟨ x, y ⟩.
+intro.
+left H2 H3.
+disj H4.
+left.
+ass.
+right.
+apply id_el in H5.
+ex_el H5.
+both H5.
+apply pair_property in H6.
+both H6.
+repl H5.
+repl H7.
+apply eq_refl.
+intro.
+disj H2.
+rename x0 into y.
+take H0 ⟨ x, y ⟩.
+apply_b H2.
+left.
+ass.
+repl H3.
+rename x0 into y.
+take H0 ⟨ y, y ⟩.
+apply_b H2.
+right.
+apply id_in.
+ex_in x.
+split. ass.
+repl H3.
+apply eq_refl.
+ex_in E.
+take strict_partial_order_to_ordinary X F E H H1 H2.
+split.
+split.
+ass.
+ass.
+ass.
+intros a b c d.
+both c.
+both d.
+both H0.
+both H2.
+both H.
+both H2.
+unfold relation_on in H4, H0.
+unfold relation_from_x_to_y  in H4, H0.
+right H4.
+right H0.
+unfold induced_order_prop in H5, H6.
+apply eq_in.
+intro p.
+intro.
+take H2 p H10.
+cartesian_product_el_2 H11.
+repl H11.
+take H6 a0 H12 b0 H13.
+apply_b H14.
+take H5 a0 H12 b0 H13.
+left H14.
+apply H15.
+repl <- H11.
+ass.
+intro p.
+intro.
+take H9 p H10.
+cartesian_product_el_2 H11.
+repl H11.
+take H5 a0 H12 b0 H13.
+apply_b H14.
+take H6 a0 H12 b0 H13.
+left H14.
+apply H15.
+repl <- H11.
+ass.
+Qed.
+
+Definition induced_partial_order (X F: Set) (H: strict_partial_order_relation F X):=
+ι _ (induced_partial_order_exists X F H).
+
+Definition comparable(a b E: Set) := ⟨a,b⟩ ∈ E ∨ ⟨b,a⟩ ∈ E.
+Definition incomporable(a b E: Set) := ¬ (comparable a b E).
+
+Definition strictly_comparable(a b E: Set) := ⟨a,b⟩ ∈ E ∨ ⟨b,a⟩ ∈ E ∨ a = b.
+
+Definition linear_order_relation(E X: Set) :=
+(partial_order_relation E X) ∧ ∀a::X. ∀b::X. comparable a b E.
+
+Definition strict_linear_order_relation(E X: Set) :=
+(strict_partial_order_relation E X) ∧ ∀a::X. ∀b::X. strictly_comparable a b E.
+
+Definition membership_exists (X Y: Set): ∃1s. ∀p. p ∈ s ⇔ ∃x::X. ∃y::Y. p = ⟨x,y⟩ ∧ x ∈ y.
+split.
+take cartesian_product_exists X Y.
+ex_el H.
+take ZF2_subsets (fun p => ∃x::X. ∃y::Y. p = ⟨x,y⟩ ∧ x ∈ y) c.
+ex_el H0.
+ex_in b.
+intro.
+split.
+intro.
+take H0 x.
+left H2 H1.
+right H3.
+apply H4.
+intro.
+take H0 x.
+apply_b H2.
+split.
+ex_el H1.
+both H1.
+ex_el H3.
+both H3.
+both H4.
+take H x.
+apply_b H4.
+ex_in x0.
+split.
+ass.
+ex_in y.
+split;ass.
+ass.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Definition membership(X Y: Set) := ι _ (membership_exists X Y).
+
+(* to get Set->Set->Prop representation *)
+Definition membership_appl (X Y x y: Set) := ⟨x,y⟩ ∈ (membership X Y).
+
+Definition lt_n_set := membership N N.
+
+Notation "<" := (lt_n_set)(at level 70).
+
+Definition lt_n(x y: Set) := ⟨x,y⟩ ∈ <.
+
+Declare Scope natural_numbers.
+Open Scope natural_numbers.
+
+Notation "a < b" := (lt_n a b)(at level 70):natural_numbers.
+
+Definition le_n (a b: Set) := (a < b) ∨ (a = b).
+
+Notation "a ≤ b" := (le_n a b)(at level 70):natural_numbers.
+
+Definition lt_n_in (x y: Set) (H1: x ∈ N) (H2: y ∈ N): x ∈ y -> x < y.
+intro.
+unfold lt_n.
+unfold lt_n_set.
+extract_iota_from_goal (membership N N).
+take (iota_prop (⟨ x, y ⟩)).
+apply_b H0.
+ex_in x.
+split.
+ass.
+ex_in y.
+split.
+ass.
+split.
+apply eq_refl.
+ass.
+Qed.
+
+Definition le_n_refl(n: Set) (H: n ∈ N): n ≤ n.
+unfold le_n.
+right.
+apply eq_refl.
+Qed.
 
 
+Definition zero_lt_nn(n: Set): n ∈ N -> 0 ≤ n.
+intro.
+take nn_is_ge_zero n H.
+unfold ge in H0.
+unfold gt in H0.
+disj H0.
+unfold le_n.
+left.
+apply lt_n_in.
+apply PN1_empty_set.
+ass.
+ass.
+repl H1.
+apply le_n_refl.
+apply PN1_empty_set.
+Qed.
+
+Definition power_set_in (X k: Set) (H: k ⊆ X): k ∈ power_set X.
+extract_iota_from_goal (power_set X).
+take iota_prop k.
+apply_b H0.
+ass.
+Qed.
+
+
+Definition exercise18 (X E: Set) (H: ∃a::X. ∃b::X. a ≠ b) 
+(H2: relation_on E (power_set X)) (H3: ∀x::(power_set X). ∀y::(power_set X). (⟨x,y⟩ ∈ E ⇔ x ⊆ y)):
+(partial_order_relation E (power_set X)) ∧ (¬ (linear_order_relation E (power_set X))).
+split.
+unfold partial_order_relation.
+split.
+split.
+split.
+ass.
+unfold reflexive.
+intros.
+take H3 x H0 x H0.
+apply_b H1.
+apply subset_refl.
+unfold anti_symmetric.
+intros.
+take H3 x H0 y H1.
+left H6 H4.
+take H3 y H1 x H0 .
+left H8 H5.
+apply eq_in.
+ass.
+ass.
+intros.
+take H3 x H0 y H1.
+left H7 H5.
+take H3 y H1 z H4.
+left H9 H6.
+take H3 x H0 z H4.
+apply_b H11.
+take subset_trans x y z.
+apply H11.
+ass.
+ass.
+intro.
+unfold linear_order_relation in H0.
+right H0.
+ex_el H.
+both H.
+ex_el H5.
+both H5.
+unfold comparable in H1.
+take unit_set_exists a.
+take unit_set_exists b.
+ex_el H5.
+ex_el H7.
+assert (p ∈ power_set X).
+apply power_set_in.
+intro.
+intro.
+take H5 x.
+left H9 H8.
+repl H10.
+ass.
+assert (p0 ∈ power_set X).
+apply power_set_in.
+intro.
+intro.
+take H7 x.
+left H10 H9.
+repl H11.
+ass.
+take H1 p H8 p0 H9.
+disj H10.
+take H3 p H8 p0 H9.
+left H10 H11.
+take H5 a.
+assert (a ∈ p).
+apply_b H13.
+apply eq_refl.
+take H12 a H14.
+take H7 a.
+left H16 H15.
+apply H6.
+ass.
+take H3 p0 H9 p H8 .
+left H10 H11.
+take H12 b.
+apply H6.
+take H7 b.
+take H5 b.
+left H15.
+apply eq_symm.
+apply H16.
+apply H13.
+right H14.
+apply H17.
+apply eq_refl.
+Qed.
+
+
+(* 
+MATH 320 - Set Theory - Lecture 4.1
+https://www.youtube.com/watch?v=9PK8BFQy6Lc&list=PLuiPz6iU5SQ_3Gubdqa1JHBvM0GBFcIV0&index=10
+
+exercise19 - did on paper
+*)
+
+Definition least(y Y X E: Set) := (partial_order_relation E X) ∧ y ∈ Y ∧
+Y ⊆ X ∧ ∀x:: Y. ⟨y, x⟩ ∈ E.
+Definition minimal(y Y X E: Set) := (partial_order_relation E X) ∧ y ∈ Y ∧
+Y ⊆ X ∧ ∀x:: Y. ⟨x, y⟩ ∈ E -> x = y.
+
+Definition greatest(y Y X E: Set) := (partial_order_relation E X) ∧ y ∈ Y ∧
+Y ⊆ X ∧ ∀x:: Y. ⟨x, y⟩ ∈ E.
+Definition maximal(y Y X E: Set) := (partial_order_relation E X) ∧ y ∈ Y ∧
+Y ⊆ X ∧ ∀x:: Y. ⟨y, x⟩ ∈ E -> x = y.
+
+
+Definition exercise20 (X E Y y: Set) (H: Y ⊆ X) (H2: ∀x::Y. ∀y::Y. comparable x y E) 
+(y_in_Y: y ∈ Y): (least y Y X E) -> (minimal y Y X E).
+intro.
+both H0.
+both H1.
+both H0.
+split.
+split.
+split;ass.
+ass.
+intros.
+take H3 x H0.
+both H1.
+right H8.
+take H4 x H0.
+take H4 y H5.
+take H1 x H10 y H11.
+apply H12.
+ass.
+ass.
+Qed.
+
+
+Definition nonempty(X: Set) := ∃x. x ∈ X.
+
+Definition well_order_relation (E X: Set) := 
+(linear_order_relation E X) ∧ (∀Y. Y ⊆ X -> nonempty Y -> ∃y. least y Y X E).
+
+Definition strict_well_order_relation (E X: Set) := 
+∃e_is_strict_partial_order: strict_partial_order_relation E X.
+(well_order_relation (induced_partial_order X E e_is_strict_partial_order) X).
+
+Notation "⦅ X , E ⦆ 'is' 'a' 'well-ordered' 'set'" := (well_order_relation E X)(at level 70).
+Notation "⦅ X , E ⦆ 'is' 'a' 'strictly' 'well-ordered' 'set'" := (strict_well_order_relation E X)(at level 70).
+
+Notation "⦅ X , E ⦆ 'is' 'a' 'linearly' 'ordered' 'set'" := (linear_order_relation E X)(at level 70).
+Notation "⦅ X , E ⦆ 'is' 'a' 'strictly' 'linearly' 'ordered' 'set'" := (strict_linear_order_relation E X)(at level 70).
+
+Definition pred_ex(X LE s: Set)
+: ∃1preds. ∀i. (i ∈ preds) ⇔ ((i ∈ X) ∧ (⟨i, s⟩ ∈ LE ∧ i ≠ s)).
+take ZF2_subsets (fun i=> (⟨ i, s ⟩ ∈ LE ∧ i ≠ s)) X.
+split.
+apply H.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Definition pred(X LE s: Set) := ι _ (pred_ex X LE s).
+
+Definition succ_ex(X LE s: Set)
+: ∃1preds. ∀i. (i ∈ preds) ⇔ ((i ∈ X) ∧ (⟨s, i⟩ ∈ LE ∧ i ≠ s)).
+take ZF2_subsets (fun i=> (⟨ s, i ⟩ ∈ LE ∧ i ≠ s)) X.
+split.
+apply H.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+Definition succ(X LE s: Set) := ι _ (succ_ex X LE s).
+
+Definition pred_in(X LE s x: Set) (H: ((x ∈ X) ∧ (⟨x, s⟩ ∈ LE ∧ x ≠ s))): x ∈ pred X LE s.
+extract_iota_from_goal (pred X LE s).
+take iota_prop x.
+apply_b H0.
+ass.
+Qed.
+
+Definition pred_el(X LE s x: Set) (H: x ∈ pred X LE s): ((x ∈ X) ∧ (⟨x, s⟩ ∈ LE ∧ x ≠ s)).
+extract_iota (pred X LE s) H.
+take iota_prop x.
+left H0 H.
+ass.
+Qed.
+
+Definition non_maximal_strict(x X LT: Set) := ∃y::X. ⟨x,y⟩ ∈ LT.
+
+Definition successor(X LE s s_succ: Set) := least s_succ (succ X LE s) X LE.
+
+Definition initial_segment (X LE I: Set) :=
+I ⊆ X ∧  ∀i::I. (pred X LE i) ⊆ I.
+
+Definition proper_initial_segment (X LE I: Set) := (initial_segment X LE I) ∧ I ≠ X.
+
+(* every proper initial segment of a strictly well-ordered set 
+is indeed the predecessors of some element *)
+
+Definition not_eq_el (A B: Set) (H: A ≠ B): ∃x. x ∈ A ∨ x ∈ B. 
+apply ex_in_alt.
+intro.
+apply H.
+apply eq_in.
+intros.
+take H0 x.
+take H2.
+apply deMorganNotOr in H2.
+left H2.
+take H4 H1.
+apply H5.
+intro.
+intro.
+take H0 x.
+apply deMorganNotOr in H2.
+both H2.
+apply (H4 H1).
+Qed.
+
+(* closed downwards *)
+Definition every_proper_initial_segment_is_pred(X LE I: Set)(H: well_order_relation LE X) 
+(H2: proper_initial_segment X LE I): ∃s::X. I = (pred X LE s).
+take proper_subset_exists_element I X.
+assert (I ⊂ X).
+split.
+left H2.
+unfold initial_segment in H1.
+left H1.
+ass.
+right H2.
+ass.
+take H0 H1.
+ex_el H3.
+both H3.
+rename x into x_temp.
+assert (x_temp ∈ (X - I)).
+apply relative_complement_in.
+split; ass.
+assert ((X - I) ⊆ X).
+intros.
+apply relative_complement_el in H6.
+left H6.
+ass.
+right H.
+take H7 (X - I) H6.
+assert (nonempty (X - I)).
+ex_in x_temp.
+apply H3.
+take H8 H9.
+ex_el H10.
+unfold least in H10.
+both H10.
+both H11.
+both H10.
+clear H4 H5 H3 x_temp.
+rename y into s.
+ex_in s.
+split.
+apply relative_complement_el in H14.
+both H14.
+ass.
+apply eq_in.
+intro x.
+intro.
+apply pred_in.
+split.
+left H1.
+take H4 x H3.
+ass.
+left H.
+right H4.
+assert (x ∈ X).
+left H1.
+take H10 x H3.
+ass.
+take H14.
+apply relative_complement_el in H15.
+both H15.
+take H5 x H10 s H16.
+unfold comparable in H15.
+split.
+disj H15.
+ass.
+assert (⊥).
+left H2.
+unfold initial_segment in H15.
+right H15.
+take H19 x H3.
+take H20 s.
+apply H17.
+apply H21.
+apply pred_in.
+split.
+ass.
+split.
+ass.
+intro.
+take H17.
+repl H22 in H17.
+apply H17.
+ass.
+apply H15.
+intro.
+repl <- H18 in H17.
+apply H17.
+ass.
+intro.
+intro.
+apply pred_el in H3.
+both H3.
+both H5.
+take H12 x.
+assert (x ∉ (X - I)).
+intro.
+take H5 H15.
+left H11.
+right H17.
+assert (s ∈ X).
+apply relative_complement_el in H14.
+both H14.
+ass.
+take H18 x H4 s H19 H3 H16.
+apply H10.
+ass.
+apply relative_complement_el_alt in H15.
+disj H15.
+apply (H16 H4).
+ass.
+Qed.
+
+
+(* 
+MATH 320 - Set Theory - Lecture 4.2
+https://www.youtube.com/watch?v=6Cs9F_pqQno&list=PLuiPz6iU5SQ_3Gubdqa1JHBvM0GBFcIV0&index=11
+*)
+
+Definition linear_order_is_reflective (X E: Set) (H: linear_order_relation E X):
+reflexive E X.
+left H.
+left H0.
+left H1.
+right H2.
+ass.
+Qed.
+
+Definition partial_order_is_reflective (X E: Set) (H: partial_order_relation E X):
+reflexive E X.
+left H.
+left H0.
+right H1.
+ass.
+Qed.
+
+Ltac refl H :=
+let HH := fresh "P" in 
+match type of H with
+| linear_order_relation ?E ?X => (pose proof (linear_order_is_reflective X E H) as HH); unfold reflexive in HH
+| partial_order_relation ?E ?X => (pose proof (partial_order_is_reflective X E H) as HH); unfold reflexive in HH
+end.
+
+Definition get_domain (f P Q: Set) (H: function_on_into f P Q):
+domain f = P.
+left H.
+right H0.
+unfold on in H1.
+ass.
+Qed.
+
+Definition get_range (f P Q: Set) (H: function_on_into f P Q):
+range f ⊆ Q.
+right H.
+apply H0.
+Qed.
+
+Ltac dom H :=
+let HH := fresh "P" in 
+match type of H with
+| function_on_into ?f ?P ?Q=> (pose proof (get_domain f P Q H) as HH)
+end.
+
+Ltac ran H :=
+let HH := fresh "P" in 
+match type of H with
+| function_on_into ?f ?P ?Q=> (pose proof (get_range f P Q H) as HH)
+end.
+
+Definition partial_order_is_antisymmetric(X E: Set) (H: partial_order_relation E X):
+anti_symmetric E X.
+left H.
+right H0.
+ass.
+Qed.
+
+Ltac antisymm H :=
+let HH := fresh "P" in 
+match type of H with
+| partial_order_relation ?E ?X => (pose proof (partial_order_is_antisymmetric X E H) as HH); unfold anti_symmetric in HH
+end.
+
+Definition in_linear_order_least_same_as_min (X E Y: Set) (H: linear_order_relation E X)
+(H2: Y ⊆ X): ∀y. (least y Y X E) ⇔ (minimal y Y X E).
+intro.
+unfold least.
+unfold minimal.
+split.
+intro.
+both H0.
+both H1.
+both H0.
+split.
+split.
+split.
+ass.
+ass.
+ass.
+intros.
+take H3 x0 H0.
+left H1.
+right H8.
+apply H9.
+take H4 x H5.
+take H4 x0 H0.
+ass.
+take H4 x H5.
+ass.
+ass.
+ass.
+intro.
+both H0.
+both H1.
+both H0.
+split.
+split.
+split.
+ass.
+ass.
+ass.
+intro y.
+intro.
+take H3 y H0.
+right H.
+unfold comparable in H7.
+take H4 x H5.
+take H4 y H0.
+take H7 x H8 y H9.
+disj H10.
+ass.
+take H6 H11.
+repl H10.
+left H1.
+left H12.
+refl H1.
+take P x H8.
+ass.
+Qed.
+
+Definition order_preserving (P Q E1 E2 f: Set)
+(H3: function_on_into f P Q) := 
+∀x. ∀x_in_p:x∈P. ∀y. ∀y_in_p:y∈P. ⟨x,y⟩ ∈ E1 ⇔ ⟨f⦅x⦆, f⦅y⦆⟩ ∈ E2.
+
+Definition f_appl_in(P Q f x y: Set) 
+(H1: function_on_into f P Q) (H2: ⟨ x, y ⟩ ∈ f) (H3: x ∈ P): 
+y = f_on_into_appl f P Q x H3 H1.
+extract_iota_from_goal (f_on_into_appl f P Q x H3 H1). 
+both iota_prop.
+left H1.
+left H4.
+right H5.
+take H6 x y s.
+apply H7.
+split.
+ass.
+ass.
+Qed.
+
+
+Definition any_order_preserving_map_is_one_to_one(P Q E1 E2 f: Set) (H3: function_on_into f P Q) 
+(H4: order_preserving P Q E1 E2 f H3)
+(PP1: partial_order_relation E1 P)
+(PP2: partial_order_relation E2 Q)
+: one_to_one f.
+unfold order_preserving in H4.
+unfold one_to_one.
+intros.
+both H.
+rename y into z.
+rename b into y.
+take domain_in f x z H0.
+dom H3.
+repl P0 in H.
+take domain_in f y z H1.
+dom H3.
+repl P1 in H2.
+clear P0 P1.
+take H4 x H y H2.
+take f_appl_in P Q f x z H3 H0 H.
+take f_appl_in P Q f y z H3 H1 H2.
+repl <- H6 in H5.
+repl <- H7 in H5.
+refl PP2.
+take P0 z.
+take range_in f z x H0.
+take get_range f P Q H3.
+take H10 z H9.
+take H8 H11.
+right H5.
+take H13 H12.
+antisymm PP1.
+take P1 x H y H2 H14.
+apply H15.
+take H4 y H2 x H.
+repl <- H6 in H16.
+repl <- H7 in H16.
+apply_b H16.
+ass.
+Qed.
+
+Definition any_function_is_in_its_range(f P Q: Set):
+∀F: (function_on_into f P Q). ∀x. ∀xp:x∈P. f ⦅ x ⦆ ∈ range f.
+intro.
+intros.
+apply (range_in f (f ⦅ x0 ⦆) x0).
+extract_iota_from_goal (f ⦅ x0 ⦆).
+both iota_prop.
+ass.
+Qed.
+
+Definition functions_preserve_equality(f P Q: Set): 
+∀F:function_on_into f P Q. ∀x. ∀xp:x∈P. ∀y. ∀yp:y∈P. 
+(x = y) -> ((f⦅x⦆) = (f⦅y⦆)).
+intro F.
+intros.
+extract_iota_from_goal (f ⦅ x ⦆).
+extract_iota_from_goal (f ⦅ y ⦆).
+both iota_prop.
+both iota_prop0.
+left F.
+left H4.
+right H5.
+repl <- H in H3.
+take H6 x s s0.
+apply H7.
+split.
+ass.
+ass.
+Qed.
+
+
+Definition exercise21 (P Q LE1 LE2 f: Set) 
+(H1: linear_order_relation LE1 P) (H2: linear_order_relation LE2 Q):
+∀f_is_func: function_on_into f P Q. 
+(∀x. ∀xp: x ∈ P. ∀y. ∀yp: y ∈ P. (⟨x,y⟩ ∈ LE1 ∧ x ≠ y) ⇔ (⟨f⦅x⦆, f⦅y⦆⟩ ∈ LE2 ∧  x ≠ y))
+⇔(∀x. ∀xp: x ∈ P. ∀y. ∀yp: y ∈ P. ⟨x,y⟩ ∈ LE1 ⇔ ⟨f⦅x⦆, f⦅y⦆⟩ ∈ LE2).
+intro F.
+split.
+intro.
+intros.
+take H x xp y yp.
+split.
+intro.
+take exc_thrd (x = y).
+disj H4.
+refl H2.
+take P0 (f ⦅ x ⦆).
+ran F.
+take H3.
+take any_function_is_in_its_range f P Q F x xp.
+take P1 (f ⦅ x ⦆) H7.
+take H4 H8.
+take functions_preserve_equality f P Q F x xp y yp H5.
+repl <- H10.
+ass.
+take conj_in _ _ H3 H5.
+left H0 H4.
+both H6.
+ass.
+intro.
+take exc_thrd (x = y).
+disj H4.
+repl H5.
+refl H1.
+take P0 y yp.
+ass.
+right H0.
+take conj_in _ _ H3 H5.
+take H4 H6.
+both H7.
+ass.
+intro.
+intros.
+take H x xp y yp.
+split.
+intro.
+both H3.
+left H0.
+split.
+apply H3.
+ass.
+ass.
+intro.
+both H3.
+right H0.
+split.
+apply H3.
+ass.
+ass.
+Qed.
+ 
+(* https://youtu.be/6Cs9F_pqQno?list=PLuiPz6iU5SQ_3Gubdqa1JHBvM0GBFcIV0&t=856 *)
 

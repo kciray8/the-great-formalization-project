@@ -1538,3 +1538,20 @@ pose proof C H0.
 apply H1.
 Defined.
 
+Definition exportationAndImportation (A B C: Prop): (A -> B -> C) ⇔ ((A ∧ B) -> C).
+unfold biimpl.
+apply conj_in.
+intro.
+intro.
+pose proof H0.
+apply conj_el_1 in H0.
+apply conj_el_2 in H1.
+pose proof H H0 H1.
+apply H2.
+intro.
+intro.
+intro.
+pose proof conj_in A B H0 H1.
+pose proof H H2.
+apply H3.
+Qed.

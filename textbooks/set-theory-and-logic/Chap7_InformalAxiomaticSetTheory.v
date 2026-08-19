@@ -367,6 +367,8 @@ Defined.
 
 Definition union (c: Set): Set := ι _ (union_exists c).
 
+Notation " ⋃ a " := (union a )(at level 81, left associativity).
+
 Definition union2_exists (a b: Set): ∃1u. (∀ x. ((x ∈ u) ⇔ ((x ∈ a) ∨ (x ∈ b)))).
 pose proof pair_unord_exists a b.
 left H.
@@ -2266,7 +2268,10 @@ apply H5.
 apply (eq_refl n).
 Defined.
 
-(* TODO repeat again to understand better*)
+(*
+Attempt 1 - 74 lines of code 
+Attempt 2 - 51 lines of code (done on august 12, 2026)
+*)
 Definition PN5_induction: forall (P: Set->Prop), 
 (P 0) -> (∀x :: N. P x -> (P (S x))) ->  (∀x :: N. P x).
 intros.
@@ -2344,11 +2349,13 @@ Defined.
 
 Definition lt (a b: Set) := a ∈ b.
 
-Notation "a < b" := (lt a b)(at level 70).
+Declare Scope direct_relations.
+Open Scope direct_relations.
+Notation "a < b" := (lt a b)(at level 70):direct_relations.
 
 Definition le (a b: Set) := (a < b) ∨ (a = b).
 
-Notation "a ≤ b" := (le a b)(at level 70).
+Notation "a ≤ b" := (le a b)(at level 70):direct_relations.
 
 Definition ordinary_induction:= forall (P: Set->Prop), 
 (P 0) -> 
@@ -3494,7 +3501,7 @@ intro.
 apply (disj_in_1 _ _ H2).
 Defined.
 
-Definition functional_application_works_for_equality 
+Definition functional_application_works_for_equality_deprecated 
 {f X Y: Set} (f_is_func: is_function f X Y) 
 (a: Set) (a_in_X: a ∈ X)  
 (b: Set) (b_in_X: b ∈ X) (equality: a = b): 
@@ -3680,7 +3687,7 @@ assert (P -> f_U = f_V).
 intro.
 unfold f_U.
 unfold f_V.
-pose proof functional_application_works_for_equality f_is_func 
+pose proof functional_application_works_for_equality_deprecated f_is_func 
 U U_in_x V V_in_x (H H4).
 apply H5.
 pose proof contrapositive H4.
@@ -4773,4 +4780,3 @@ pose proof (eq_symm _ _ H15).
 pose proof (eq_trans _ _ _ H16 H17).
 apply H18.
 Defined.
-
