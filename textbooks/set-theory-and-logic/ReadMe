@@ -8,6 +8,8 @@ coqc  -noinit -Q . BASE Chap1_SetsAndRelations.v
 Search _ is:Axiom in MathLogic.
 Print Assumptions empty_set_el.
 Set Printing Parentheses.
+Disable Notation "∃"(all).
+Disable Notation "⦅"(all).
 
 =Unicode Characters=
 ∈

@@ -257,7 +257,7 @@ apply (H u).
 apply v.
 Defined.
 
-Definition ex_el (P: Set->Prop) (u: (∃ x . P x)) 
+Definition ex_el {T: Type} (P: T->Prop) (u: (∃ x . P x)) 
 (A: Prop) (v : ∀x. (P x ⇒ A)): A.
 unfold ex.
 intros.

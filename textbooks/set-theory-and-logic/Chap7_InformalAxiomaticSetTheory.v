@@ -2357,12 +2357,12 @@ Definition le (a b: Set) := (a < b) ∨ (a = b).
 
 Notation "a ≤ b" := (le a b)(at level 70):direct_relations.
 
-Definition ordinary_induction:= forall (P: Set->Prop), 
+Definition ordinary_induction_prop:= forall (P: Set->Prop), 
 (P 0) -> 
 (∀x :: N. P x -> (P (S x))) ->  
 (∀x :: N. P x).
 
-Definition strong_induction:= forall (P: Set->Prop), 
+Definition strong_induction_prop:= forall (P: Set->Prop), 
 (P 0) -> 
 (∀x :: N. (∀k :: N. (k ≤ x) -> P k) -> (P (S x))) -> 
 (∀x :: N. P x).
@@ -2530,9 +2530,9 @@ apply H2.
 Defined.
 
 Definition ordinary_induction_is_equivalent_to_strong_induction:
-ordinary_induction ⇔ strong_induction.
-unfold ordinary_induction.
-unfold strong_induction.
+ordinary_induction_prop ⇔ strong_induction_prop.
+unfold ordinary_induction_prop.
+unfold strong_induction_prop.
 apply (conj_in _ _).
 intro.
 intro.
