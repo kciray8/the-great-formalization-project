@@ -3196,7 +3196,7 @@ right H1.
 apply H.
 Qed.
 
-Definition appl_ex (f: Set) (X Y: Set) (H: function_on_into f X Y) (x: Set) 
+Definition appl_ex_deprecated (f: Set) (X Y: Set) (H: function_on_into f X Y) (x: Set) 
 (x_in_X: x ∈ X):
  ∃1y. (y ∈ Y) ∧ (⟨x,y⟩ ∈ f).
 apply (conj_in _ _).
@@ -3234,9 +3234,9 @@ ass.
 ass.
 Defined.
 
-Definition appl (f: Set) (X Y: Set) 
+Definition appl_deprecated (f: Set) (X Y: Set) 
 (H: function_on_into f X Y) (x: Set) (x_in_X: x ∈ X) := 
-ι _ (appl_ex f X Y H x x_in_X).
+ι _ (appl_ex_deprecated f X Y H x x_in_X).
 
 Theorem composition_ex(g f: Set): ∃1c. ∀p. (p ∈ c) ⇔ 
 ∃x. ∃z. (p = ⟨x, z⟩) ∧ ∃y. ⟨x,y⟩ ∈ f ∧ ⟨y,z⟩ ∈ g.
@@ -5326,7 +5326,7 @@ Definition sequence_el_ex (s: Set) (n A: Set) (H: sequence_len_in s n A)
 (x: Set) (x_in_X: x ∈ (set_from_0_to_n_minus_1 n)):
  ∃1y. (y ∈ A) ∧ (pair x y ∈ s).
 unfold sequence_len_in in H.
-take appl_ex s (set_from_0_to_n_minus_1 n) A H x x_in_X.
+take appl_ex_deprecated s (set_from_0_to_n_minus_1 n) A H x x_in_X.
 apply H0.
 Qed.
 
@@ -5632,10 +5632,6 @@ apply H7.
 split; ass.
 Qed.
 
-Definition f_on_into_appl (f: Set) (X Y: Set) 
- (x: Set) (x_in_X: x ∈ X) (H: function_on_into f X Y) := 
-ι _ (f_on_into_appl_ex f X Y x x_in_X H).
-
 Ltac grab_x_in_domain_proof f x :=
   lazymatch goal with
   | H : (function_on_into f ?A ?B) |- _ => 
@@ -5647,11 +5643,88 @@ Ltac grab_x_in_domain_proof f x :=
   | _ => fail "Unable to grab outer"
   end.
 
-Notation "f ⦅ x ⦆" := (f_on_into_appl f (ltac:(grab_function_domain f)) 
-(ltac:(grab_function_range f)) x (ltac:(assumption))
-(ltac:(assumption)))(only parsing, at level 71, left associativity). 
+Ltac subset x P :=
+let H := fresh "H" in
+pose proof ZF2_subsets P x as H;
+cbv beta in H;
+ex_el H.
 
-Notation "f ⦅ x ⦆" := (f_on_into_appl f _ _ x _ _)(only printing).
+Definition pair_unord_in1(y x: Set): x ∈ {x, y}.
+extract_iota_from_goal ({x, y}).
+take iota_prop x.
+apply_b H.
+left.
+apply eq_refl.
+Qed.
+
+Definition pair_unord_in2(x y: Set): y ∈ {x, y}.
+extract_iota_from_goal ({x, y}).
+take iota_prop y.
+apply_b H.
+right.
+apply eq_refl.
+Qed.
+
+Definition relational_image_ex(f x: Set) : 
+∃1s. ∀y. y ∈ s ⇔ ⟨x,y⟩ ∈ f.
+take union_exists f.
+ex_el H.
+take union_exists u.
+ex_el H0.
+subset u0 (fun y => ⟨x,y⟩ ∈ f).
+split.
+ex_in b.
+intro.
+split.
+intro.
+take H1 x0.
+left H3 H2.
+both H4.
+ass.
+intro.
+take H1 x0.
+apply_b H3.
+split.
+take H0 x0.
+apply_b H3.
+ex_in {x, x0}.
+split.
+apply pair_unord_in2.
+take H ({x, x0}).
+apply_b H3.
+ex_in ⟨ x, x0 ⟩.
+split.
+apply pair_unord_in2.
+ass.
+ass.
+apply any_biimpl_set_is_no_more_than_one.
+Qed.
+
+
+Definition relational_image(f x: Set):= ι _ (relational_image_ex f x).
+
+Definition relational_image_el(f x y: Set): y ∈ relational_image f x -> ⟨x,y⟩ ∈ f.
+intro.
+extract_iota (relational_image f x) H.
+take iota_prop y.
+left H0 H.
+ass.
+Qed.
+
+Definition relational_image_in(f x y: Set): ⟨x,y⟩ ∈ f -> y ∈ relational_image f x.
+intro.
+extract_iota_from_goal (relational_image f x).
+take iota_prop y.
+apply_b H0.
+ass.
+Qed.
+
+
+
+(* Metamath trick to avoid dependency on proof objects which is a source of troubles *)
+Definition appl(f x: Set) := ⋃(relational_image f x).
+
+Notation "f ⦅ x ⦆" := (appl f x)(at level 20, left associativity). 
 
 
 Definition identity_relation_el(p X: Set) (H: p ∈ identity_relation X): ∃x:: X. p = ⟨x, x⟩.
@@ -6229,7 +6302,7 @@ ass.
 Qed.
 
 (* Active development: August 14, 2026 - _ *)
-Definition compatible(f g: Set) := ∀x::((domain f) ∩ (domain g)). ∃y. ⟨x,y⟩ ∈ f ∧ ⟨x,y⟩ ∈ g.
+Definition compatible_deprecated(f g: Set) := ∀x::((domain f) ∩ (domain g)). ∃y. ⟨x,y⟩ ∈ f ∧ ⟨x,y⟩ ∈ g.
 
 Definition set_of_functions(s: Set) := ∀f::s. function f.
 
@@ -6271,8 +6344,8 @@ match type of H with
   both H
 end.
 
-Definition union_of_compatible_functions_is_a_function (s: Set) 
-(s_set_of_functions: set_of_functions s) (pairwise_compatible: (∀f::s. ∀g::s. compatible f g)): 
+Definition union_of_compatible_functions_is_a_function_deprecated (s: Set) 
+(s_set_of_functions: set_of_functions s) (pairwise_compatible: (∀f::s. ∀g::s. compatible_deprecated f g)): 
 ((function (⋃ s))).
 split.
 intro.
@@ -6293,7 +6366,7 @@ big_union_el H1.
 take s_set_of_functions s0 H2.
 take s_set_of_functions s1 H3.
 take pairwise_compatible s0 H2 s1 H3.
-unfold compatible in H5.
+unfold compatible_deprecated in H5.
 take H.
 take element_of_function_in_domain s0 .
 apply domain_in in H6.
@@ -6316,6 +6389,8 @@ take H17 x y z.
 apply H18.
 split; ass.
 Qed.
+
+
 
 Close Scope direct_relations.
 
@@ -6747,6 +6822,15 @@ Definition power_set_in (X k: Set) (H: k ⊆ X): k ∈ power_set X.
 extract_iota_from_goal (power_set X).
 take iota_prop k.
 apply_b H0.
+ass.
+Qed.
+
+Definition power_set_el (X k: Set): k ∈ power_set X -> k ⊆ X.
+intro.
+extract_iota (power_set X) H.
+take iota_prop k.
+left H0.
+apply H1.
 ass.
 Qed.
 
@@ -7222,151 +7306,87 @@ Definition order_preserving (P Q E1 E2 f: Set)
 (H3: function_on_into f P Q) := 
 ∀x. ∀x_in_p:x∈P. ∀y. ∀y_in_p:y∈P. ⟨x,y⟩ ∈ E1 ⇔ ⟨f⦅x⦆, f⦅y⦆⟩ ∈ E2.
 
-Definition f_appl_in(P Q f x y: Set) 
-(H1: function_on_into f P Q) (H2: ⟨ x, y ⟩ ∈ f) (H3: x ∈ P): 
-y = f_on_into_appl f P Q x H3 H1.
-extract_iota_from_goal (f_on_into_appl f P Q x H3 H1). 
-both iota_prop.
-left H1.
-left H4.
-right H5.
-take H6 x y s.
-apply H7.
+Definition big_union_of_unit_set (y: Set): (⋃ {`y}) = y.
+apply eq_in.
+intros.
+apply big_union_el in H.
+ex_el H.
+both H.
+apply unit_set_el in H1.
+repl H1 in H0.
+ass.
+intros.
+apply big_union_in.
+ex_in y.
+split.
+ass.
+apply every_set_is_in_unit_set.
+Qed.
+
+Definition appl_prop_on (f X x: Set) (f_is_func_on: function_on f X) 
+(x_in_X: x ∈ X): ∃y. f⦅x⦆ = y ∧ ⟨x,y⟩ ∈ f.
+right f_is_func_on.
+take H.
+unfold on in H0.
+apply eq_el_2 in H0.
+take H0 x x_in_X.
+apply domain_el in H1.
+ex_el H1.
+ex_in y.
+split.
+unfold appl.
+take H1.
+apply relational_image_in in H2.
+assert (relational_image f x = {`y}).
+apply eq_in.
+intros.
+apply unit_set_in.
+apply relational_image_el in H3.
+left f_is_func_on.
+right H4.
+rename H5 into P.
+take P x y x0.
+apply eq_symm.
+apply H5.
 split.
 ass.
 ass.
-Qed.
-
-
-Definition any_order_preserving_map_is_one_to_one(P Q E1 E2 f: Set) (H3: function_on_into f P Q) 
-(H4: order_preserving P Q E1 E2 f H3)
-(PP1: partial_order_relation E1 P)
-(PP2: partial_order_relation E2 Q)
-: one_to_one f.
-unfold order_preserving in H4.
-unfold one_to_one.
-intros.
-both H.
-rename y into z.
-rename b into y.
-take domain_in f x z H0.
-dom H3.
-repl P0 in H.
-take domain_in f y z H1.
-dom H3.
-repl P1 in H2.
-clear P0 P1.
-take H4 x H y H2.
-take f_appl_in P Q f x z H3 H0 H.
-take f_appl_in P Q f y z H3 H1 H2.
-repl <- H6 in H5.
-repl <- H7 in H5.
-refl PP2.
-take P0 z.
-take range_in f z x H0.
-take get_range f P Q H3.
-take H10 z H9.
-take H8 H11.
-right H5.
-take H13 H12.
-antisymm PP1.
-take P1 x H y H2 H14.
-apply H15.
-take H4 y H2 x H.
-repl <- H6 in H16.
-repl <- H7 in H16.
-apply_b H16.
+intro.
+intro.
+apply unit_set_el in H3.
+repl H3.
+ass.
+repl H3.
+apply big_union_of_unit_set.
 ass.
 Qed.
 
-Definition any_function_is_in_its_range(f P Q: Set):
-∀F: (function_on_into f P Q). ∀x. ∀xp:x∈P. f ⦅ x ⦆ ∈ range f.
+
+Definition appl_prop (f X Y x: Set) (f_is_func: function_on_into f X Y) 
+(x_in_X: x ∈ X): ∃y. f⦅x⦆ = y ∧ ⟨x,y⟩ ∈ f.
+assert (function_on f X).
+split.
+left f_is_func.
+both H.
+ass.
+left f_is_func.
+right H.
+ass.
+take appl_prop_on f X x H x_in_X.
+ass.
+Qed.
+
+
+
+Definition appl_in_range(f P Q: Set):
+∀F: (function_on_into f P Q). ∀x. ∀xp:x∈P. f⦅x⦆ ∈ range f.
 intro.
 intros.
 apply (range_in f (f ⦅ x0 ⦆) x0).
-extract_iota_from_goal (f ⦅ x0 ⦆).
-both iota_prop.
-ass.
-Qed.
-
-Definition functions_preserve_equality(f P Q: Set): 
-∀F:function_on_into f P Q. ∀x. ∀xp:x∈P. ∀y. ∀yp:y∈P. 
-(x = y) -> ((f⦅x⦆) = (f⦅y⦆)).
-intro F.
-intros.
-extract_iota_from_goal (f ⦅ x ⦆).
-extract_iota_from_goal (f ⦅ y ⦆).
-both iota_prop.
-both iota_prop0.
-left F.
-left H4.
-right H5.
-repl <- H in H3.
-take H6 x s s0.
-apply H7.
-split.
-ass.
-ass.
-Qed.
-
-
-Definition exercise21 (P Q LE1 LE2 f: Set) 
-(H1: linear_order_relation LE1 P) (H2: linear_order_relation LE2 Q):
-∀f_is_func: function_on_into f P Q. 
-(∀x. ∀xp: x ∈ P. ∀y. ∀yp: y ∈ P. (⟨x,y⟩ ∈ LE1 ∧ x ≠ y) ⇔ (⟨f⦅x⦆, f⦅y⦆⟩ ∈ LE2 ∧  x ≠ y))
-⇔(∀x. ∀xp: x ∈ P. ∀y. ∀yp: y ∈ P. ⟨x,y⟩ ∈ LE1 ⇔ ⟨f⦅x⦆, f⦅y⦆⟩ ∈ LE2).
-intro F.
-split.
-intro.
-intros.
-take H x xp y yp.
-split.
-intro.
-take exc_thrd (x = y).
-disj H4.
-refl H2.
-take P0 (f ⦅ x ⦆).
-ran F.
-take H3.
-take any_function_is_in_its_range f P Q F x xp.
-take P1 (f ⦅ x ⦆) H7.
-take H4 H8.
-take functions_preserve_equality f P Q F x xp y yp H5.
-repl <- H10.
-ass.
-take conj_in _ _ H3 H5.
-left H0 H4.
-both H6.
-ass.
-intro.
-take exc_thrd (x = y).
-disj H4.
-repl H5.
-refl H1.
-take P0 y yp.
-ass.
-right H0.
-take conj_in _ _ H3 H5.
-take H4 H6.
-both H7.
-ass.
-intro.
-intros.
-take H x xp y yp.
-split.
-intro.
-both H3.
-left H0.
-split.
-apply H3.
-ass.
-ass.
-intro.
-both H3.
-right H0.
-split.
-apply H3.
-ass.
+take appl_prop f P Q x0 x xp.
+ex_el H.
+both H.
+repl H0.
 ass.
 Qed.
 
@@ -7913,19 +7933,6 @@ ass.
 ass.
 Qed.
 
-Definition compatible_symm(t u: Set): compatible t u -> compatible u t.
-unfold compatible.
-intros.
-take intersection_symm (domain u) (domain t).
-repl H1 in H0.
-take H x H0.
-el H2.
-ex_in y.
-split.
-ass.
-ass.
-Qed.
-
 Definition induction_applied(x: Set) (x_in_N: x ∈ N): forall (P: Set->Prop), 
 (P 0) -> (∀x :: N. P x -> (P (S x))) -> P x.
 intros.
@@ -7984,29 +7991,6 @@ Qed.
 
 Notation "'asm'" := (ltac:(assumption)).
 
-Definition function_application_in_range(f X Y k: Set):
-∀k_in_X: k ∈ X. ∀f_is_func: function_on_into f X Y. (f ⦅ k ⦆) ∈ Y.
-intros.
-extract_iota_from_goal (f ⦅ k ⦆).
-both iota_prop.
-ran f_is_func.
-take (range_in f s k).
-take H1 H0.
-take P s H2.
-ass.
-Qed.
-
-Axiom proof_irrelevance: forall P: Prop, 
-forall H1:P, forall H2:P, 
-forall statement: P->Prop, (statement H1) -> (statement H2).
-
-Definition pair_unord_in1(y x: Set): x ∈ {x, y}.
-extract_iota_from_goal ({x, y}).
-take iota_prop x.
-apply_b H.
-left.
-apply eq_refl.
-Qed.
 
 Definition pair_unord_of_two_pairs_is_function(a b: Set): function {⟨ 0, a ⟩, ⟨ 1, b ⟩}.
 split.
@@ -8092,607 +8076,79 @@ right.
 apply eq_refl.
 Qed.
 
-Definition recursion_theorem(f x X: Set) (x_nonempty: nonempty X) (x_in_X: x ∈ X):  
-∀f_is_func:function_on_into f X X.
-∃1g. function_on_into g N X ∧ ⟨0,x⟩ ∈ g ∧ 
-∀n. ∀n_in_N:n ∈ N. ∃g_is_func:function_on_into g N X. 
-∃(gn_in_X: (g⦅n⦆)∈X). ∃(Sn_in_n: (S n)∈N). 
-(g⦅(S n)⦆) = (f⦅(g⦅n⦆)⦆).
-intro.
-take cartesian_product_exists N X.
-ex_el H.
-take power_set_exists c.
-ex_el H0.
-rename b into p.
-take ZF2_subsets (fun t => ⟨0,x⟩ ∈ t ∧ ∃n::N.
-∃t_is_func:function_on_into t (S n) X. (∀k. ∀k_in_n:k ∈ (S n). 
-∃(tk_in_X: (t⦅k⦆)∈X). ∃(Sk_in_Sn: (S k) ∈ (S n)).
- t⦅(S k)⦆ = (f⦅(t⦅k⦆)⦆))) p.
-ex_el H1.
+Definition compatible(f g: Set) := ∀x::((domain f) ∩ (domain g)). f⦅x⦆ = g⦅x⦆.
+
+Definition union_of_compatible_functions_is_a_function (s: Set) 
+(s_set_of_functions: set_of_functions s) 
+(pairwise_compatible: (∀f::s. ∀g::s. compatible f g)): 
+((function (⋃ s))).
+take union_of_compatible_functions_is_a_function_deprecated s s_set_of_functions.
+apply H.
+intros.
+take pairwise_compatible x H0 g H1.
+unfold compatible in H2.
+unfold compatible_deprecated.
+intros.
+take H2 x0 H3.
+take s_set_of_functions x H0.
+assert (function_on x (domain x)).
+split.
+ass.
+unfold on.
+apply eq_refl.
+apply intersection_el in H3.
+both H3.
+take appl_prop_on x (domain x) x0 H6 H7.
+ex_el H3.
+both H3.
+ex_in y.
+split.
+ass.
+assert (function_on g (domain g)).
+split.
+take s_set_of_functions g H1.
+ass.
+apply eq_refl.
+take appl_prop_on g (domain g) x0 H3 H8.
+ex_el H11.
+both H11.
+repl H4 in H9.
+apply eq_symm in H9.
+take eq_trans _ _ _ H9 H12.
+repl H11.
+ass.
+Qed.
+
+Definition recursion_theorem(f x X: Set) (x_nonempty: nonempty X) (x_in_X: x ∈ X)
+(F: function_on_into f X X):  
+∃1g. function_on_into g N X ∧ g⦅0⦆ = x ∧ 
+∀n::N. (g⦅(S n)⦆) = (f⦅(g⦅n⦆)⦆).
+subset (power_set(N × X)) (fun t => (function t) ∧ t⦅0⦆ = x ∧ 
+∃n::N. t⦅0⦆ = x ∧ ∀k::N. (t⦅(S k)⦆) = (f⦅(t⦅k⦆)⦆)).
 rename b into G.
+assert (∀t. t ∈ G -> ((function t) ∧ t ⦅ 0 ⦆ = x ∧ (∃ n :: N . t ⦅ 0 ⦆ = x ∧ (∀ k :: N . t ⦅ S k ⦆ =
+f ⦅ t ⦅ k ⦆ ⦆)))).
+intro.
+take H x0.
+left H0.
+intro.
+take H1 H2.
+both H3.
+ass.
+rename H0 into G_prop.
 split.
 ex_in (⋃ G).
 split.
 split.
 split.
 split.
-take union_of_compatible_functions_is_a_function G.
-apply H2.
-unfold set_of_functions.
+apply union_of_compatible_functions_is_a_function.
+(* proof of set_of_functions G*)
 intros.
-split.
-intros.
-unfold ordered_pair.
-take H1 x1.
-left H5 H3.
-left H6.
-take H0 x1.
-left H8 H7.
-take H9 x2 H4.
-take H x2.
-left H11 H10.
-el H12.
-ex_in x3.
-ex_in y.
+take G_prop x0 H0.
+el H1.
 ass.
-intros.
-both H4.
-take H1 x1.
-left H4 H3.
-right H7.
-both H8.
-ex_el H10.
-both H10.
-ex_el H11.
-left t_is_func.
-left H10.
-right H12.
-take H13 x2 y z.
-apply H14.
-split.
-ass.
-ass.
-intros.
-rename x1 into t.
-rename g into u.
-clear H2.
-spawn n (domain t).
-spawn m (domain u).
-assert (n ∈ N).
-take H1 t.
-left H6 H3.
-right H7.
-both H8.
-el H10.
-left t_is_func.
-right H8.
-unfold on in H10.
-repl <- H2 in H10.
-repl H10.
-apply PN2_succ.
-ass.
-assert (m ∈ N).
-take H1 u.
-left H7 H4.
-right H8.
-both H9.
-el H11.
-left t_is_func.
-right H9.
-unfold on in H11.
-repl <- H5 in H11.
-repl H11.
-apply PN2_succ.
-ass.
-assert (((∀n'. ∀m'. ∀t'. ∀u'. ((n' = domain t') ∧ (m' = domain u') ∧ 
-(n' ∈ m') ∧ t' ∈ G ∧ u' ∈ G) -> compatible t' u')) -> compatible t u).
-intro.
-take trichotomy_for_set_inclusion_only_disj n H6 m H7.
-disj H9.
-disj H10.
-take H8 n m t u.
-apply H10.
-split.
-split.
-split.
-split.
-ass.
-ass.
-ass.
-ass.
-ass.
-(* n = m case *)
-unfold compatible.
-intros.
-apply intersection_el in H10.
-both H10.
-take H11.
-repl <- H2 in H10.
-clear H8.
-take H2.
-repl <- H9 in H5.
-repl H9 in H8.
-take H5.
-apply eq_symm in H13.
-take eq_trans _ _ _ H13 H2.
-clear H7 H9 H8 m H13.
-(* preparing t and u definitions *)
-take H1 u.
-left H7 H4.
-el H8.
-clear H7.
-take H1 t.
-left H7 H3.
-el H8.
-clear H7.
-(* go on*)
-dom  t_is_func.
-dom  t_is_func0.
-apply eq_symm in P.
-take H12.
-repl <- P in H7.
-assert (S n0 =  S n1).
-repl_in_goal P.
-repl_in_goal_backward P0.
-ass.
-apply (PN4_injection n0 L1 n1 L4) in H8.
-assert ((S n0) ∈ N).
-apply PN2_succ.
-ass.
-assert (domain u ⊆ N).
-intro.
-intro.
-apply domain_el in H13.
-ex_el H13.
-take H0 u.
-left H15 L.
-take H16 (⟨ x2, y ⟩) H13.
-take H (⟨ x2, y ⟩).
-left H18 H17.
-el H19.
-apply pair_property in R2.
-both R2.
-repl H19.
-ass.
-take H7.
-repl P in H15.
-take H13 x1 H15.
-(* now we know x1 ∈ N *)
-take PN5_induction (fun x1 => ∃ y . ⟨ x1, y ⟩ ∈ t ∧ ⟨ x1, y ⟩ ∈ u).
-assert ((∃ y . ⟨ 0, y ⟩ ∈ t ∧ ⟨ 0, y ⟩ ∈ u)).
-ex_in x.
-split.
-ass.
-ass.
-assert ((∀ x :: N. (∃ y . ⟨ x, y ⟩ ∈ t ∧ ⟨ x, y ⟩ ∈ u) ->
-(∃ y . ⟨ S x, y ⟩ ∈ t ∧ ⟨ S x, y ⟩ ∈ u))).
-clear H17.
-intros.
-ex_el H19.
-both H19.
-take H20.
-apply domain_in in H19.
-repl P0 in H19.
-take f_appl_in _ _ _ x2 y t_is_func0 H20 H19.
-take H21.
-apply domain_in in H23.
-repl <- P in H23.
-take f_appl_in _ _ _ x2 y t_is_func H21 H23.
-apply eq_symm in H24.
-take eq_trans _ _ _ H24 H22.
-take R x2 H23.
-el H26.
-take R0 x2 H19.
-el H27.
-take functions_preserve_equality f X X x0 (u ⦅ x2 ⦆) 
-tk_in_X (t ⦅ x2 ⦆) tk_in_X0 H25.
-take eq_trans _ _ _ H26 H28.
-apply eq_symm in H29.
-take eq_trans _ _ _ H27 H29.
-take H30.
-extract_iota (t ⦅ S x2 ⦆) H30.
-extract_iota (u ⦅ S x2 ⦆) H30.
-both iota_prop.
-both iota_prop0.
-repl H30 in H33.
-ex_in s0.
-split.
-ass.
-ass.
-take H17 H18 H19.
-take H20 x1 H16.
-ass.
-take H8 m n u t.
-apply compatible_symm.
-apply H9.
-split.
-split.
-split.
-split.
-ass.
-ass.
-ass.
-ass.
-ass.
-apply H8.
-intros.
-clear H8.
-el H9.
-clear H6 H7 H2 H5 m n H3 H4 t u.
-rename t' into t.
-rename u' into u.
-rename x1 into n.
-rename m' into m.
-take H1 u.
-left H2 R.
-take H1 t.
-left H4 R0.
-clear H2 H4.
-el H3.
-el H5.
-assert (domain t ⊆ N).
-intro z.
-intro.
-apply domain_el in H2.
-ex_el H2.
-take H0 t.
-left H3 L3.
-take H4 (⟨ z, y ⟩) H2.
-take H (⟨ z, y ⟩ ).
-left H6 H5.
-el H7.
-apply pair_property in R6.
-both R6.
-repl H7.
-ass.
-rename H2 into domain_of_t.
-assert (domain u ⊆ N).
-intro z.
-intro.
-apply domain_el in H2.
-ex_el H2.
-take H0 u.
-left H3 L.
-take H4 (⟨ z, y ⟩) H2.
-take H (⟨ z, y ⟩ ).
-left H6 H5.
-el H7.
-apply pair_property in R6.
-both R6.
-repl H7.
-ass.
-rename H2 into domain_of_u.
-move R1 after domain_of_u.
-take R1.
-repl R2 in H2.
-take domain_of_u n H2.
-assert (m ∈ N).
-dom t_is_func.
-repl <- R2 in P.
-repl P.
-apply PN2_succ.
-ass.
-rename H4 into HH4.
-assert (n ⊆ m).
-take every_natural_number_is_complete m HH4 n R1.
-ass.
-unfold compatible.
-apply DN_el.
-intro.
-apply not_all_implies_ex in H5.
-ex_el H5.
-apply negation_of_implication in H5.
-both H5.
-apply not_ex_implies_all_not in H7.
-apply intersection_el in H6.
-both H6.
-take ZF2_subsets (fun k => ∃p1:k ∈ S n1. ∃p2:k ∈ S n0. (t⦅k⦆) ≠ (u⦅k⦆)) (S n). 
-ex_el H6.
-assert (b ⊆ N).
-intros.
-take H6 x2.
-left H10 H9.
-left H11.
-repl L0 in H12.
-apply union_el in H12.
-disj H12.
-take domain_of_t x2 H13.
-apply H12.
-apply unit_set_el in H13.
-repl H13.
-repl_in_goal_backward L0.
-ass.
-assert (nonempty b).
-ex_in x1.
-take H6 x1.
-apply_b H10.
-split.
-repl L0.
-apply union_in.
-left.
-ass.
-assert (x1 ∈ S n1).
-dom t_is_func0.
-repl_in_goal_backward P.
-ass.
-assert (x1 ∈ S n0).
-dom t_is_func.
-repl_in_goal_backward P.
-ass.
-ex_in H10.
-ex_in H11.
-intro.
-extract_iota ((t ⦅ x1 ⦆)) H12.
-extract_iota ((u ⦅ x1 ⦆)) H12.
-both iota_prop0.
-both iota_prop.
-repl H12 in H16.
-take H7 s0.
-apply H17.
-split.
-ass.
-ass.
-take n_lt_is_strictly_well_ordered.
-right H11.
-take H12 b H9 H10.
-ex_el H13.
-unfold least_strict in H13.
-el H13.
-rename y into k'.
-take H6 k'.
-left H13 R7.
-el H14.
-clear H13.
-assert (k' ≠ 0).
-intro.
-assert ((t ⦅ k' ⦆) = (u ⦅ k' ⦆)).
-extract_iota_from_goal (t ⦅ k' ⦆).
-extract_iota_from_goal (u ⦅ k' ⦆).
-el iota_prop.
-el iota_prop0.
-repl H13 in R9.
-repl H13 in R10.
-take L1.
-take L4.
-fun_prop t_is_func.
-take P 0 s0 x.
-assert (⟨ 0, s0 ⟩ ∈ u ∧ ⟨ 0, x ⟩ ∈ u).
-split.
-ass.
-ass.
-take H16 H17.
-fun_prop t_is_func0.
-take P0 0 s x.
-assert  (⟨ 0, s ⟩ ∈ t ∧ ⟨ 0, x ⟩ ∈ t).
-split.
-ass.
-ass.
-take H19 H20.
-apply eq_symm in H18.
-take eq_trans _ _ _ H21 H18.
-ass.
-apply R8.
-ass.
-assert (k' ∈ N).
-dom t_is_func.
-take domain_of_u k'.
-apply H14.
-repl P.
-ass.
-apply N_el in H14.
-disj H14.
-apply H13.
-ass.
-ex_el H15.
-both H15.
-rename p0 into k.
-assert (S n1 ⊆ N).
-intros.
-dom t_is_func0.
-repl <- P in H15.
-take domain_of_t x2 H15.
-ass.
-assert (k' ∈ N).
-take H15 k'.
-apply H17.
-ass.
-assert (k ∈ S n1).
-take p1.
-repl <- H16 in H18.
-apply Sm_in_Sn_implies_m_in_Sn.
-ass.
-ass.
-ass.
-assert (k ∈ S n0).
-take p2.
-repl <- H16 in H19.
-apply Sm_in_Sn_implies_m_in_Sn.
-ass.
-ass.
-ass.
-assert ((t ⦅ k ⦆) = (u ⦅ k ⦆)).
-apply DN_el.
-intro.
-assert (k ∈ b).
-take H6 k.
-apply_b H21.
-split.
-take L7.
-repl <- H16 in H21.
-apply Sm_in_Sn_implies_m_in_Sn.
-ass.
-ass.
-ass.
-ex_in H18.
-ex_in H19.
-ass.
-take R5 k H21.
-disj H22.
-repl <- H16 in H23.
-take m_Sm_implies_contradiction k H14.
-apply H22.
-ass.
-repl <- H16 in H23.
-change (⟨ S k, k ⟩ ∈ <) with (S k < k) in H23.
-assert (k < S k).
-apply lt_n_in.
-ass.
-apply PN2_succ.
-ass.
-apply union_in.
-right.
-apply every_set_is_in_unit_set.
-left L6.
-both H24.
-unfold asymmetric in H26.
-assert (S k ∈ N).
-repl_in_goal H16.
-ass.
-take H26 k H14 (S k) H24 H22.
-apply H27.
-ass.
-take function_application_in_range t (S n1) X k H18 t_is_func0.
-take function_application_in_range u (S n0) X k H19 t_is_func.
-take R4 k asm.
-el H22.
-take functions_preserve_equality f X X x0 (t ⦅ k ⦆) H21
-(u ⦅ k ⦆) H22 H20.
-el H23.
-take R3 k H19.
-el H25.
-apply eq_symm in H25.
-take proof_irrelevance _ H21 tk_in_X
-(fun HHH: t ⦅ k ⦆ ∈ X => f_on_into_appl f X X (f_on_into_appl t (S n1) X k H18 t_is_func0)
-HHH x0 =
-f_on_into_appl f X X (f_on_into_appl u (S n0) X k H19 t_is_func) H22
-x0) H24.
-take eq_trans _ _ _ H23 H26.
-take H25.
-(* H22 -> tk_in_X0 *)
-take proof_irrelevance _ H22 tk_in_X0
-(fun HHH: u ⦅ k ⦆ ∈ X => f_on_into_appl t (S n1) X (S k) Sk_in_Sn t_is_func0 =
-f_on_into_appl f X X (f_on_into_appl u (S n0) X k H19 t_is_func) HHH
-x0) H27.
-take eq_trans _ _ _ H29 H28.
-move R8 after H30.
-apply R8.
-clear R8.
-take eq_subs (fun z => ∀a: z ∈ S n1. ∀b: z ∈ S n0. (t ⦅ z ⦆) = (u ⦅ z ⦆)) (S k) k' H16.
-assert (∀ a: S k ∈ S n1. ∀ b: S k ∈ S n0. (t ⦅ S k ⦆) = (u ⦅ S k ⦆)).
-intro.
-intro.
-take proof_irrelevance _ Sk_in_Sn x2.
-apply H32.
-take proof_irrelevance _ Sk_in_Sn0 x3.
-apply H33.
-ass.
-take H31 H32.
-apply H33.
-unfold on.
-apply eq_in.
-intro.
-intro.
-apply domain_el in H2.
-ex_el H2.
-apply big_union_el in H2.
-el H2.
-take H1 s.
-left H2 R.
-el H3.
-take H0 s.
-left H3 L0.
-take H4 (⟨ x1, y ⟩) L.
-take H ⟨ x1, y ⟩.
-left H6 H5.
-el H7.
-apply pair_property in R2.
-el R2.
-repl L5.
-ass.
-intros.
-apply (induction_applied x1 H2).
-apply (domain_in _ 0 x).
-apply big_union_in.
-(* Here I found a very ugly bug: the author specified for all k ∈ S(n) for n-step computation,
-so 0-step computation isn't {(0,x)} but {(0,x), (1, f(x))}
-But let it be this way and see if the proof will fit in
-*)
-spawn comp ({⟨ 0, x ⟩, ⟨ 1, f⦅x⦆ ⟩}).
-ex_in comp.
-split.
-repl H3.
-apply pair_unord_in1.
-take H1 comp.
-apply_b H4.
-split.
-take H0 comp.
-apply_b H4.
-intros.
-take H x2.
-apply_b H5.
-repl H3 in H4.
-apply pair_unord_el in H4.
-disj H4.
-ex_in 0.
-split.
-apply PN1_empty_set.
-ex_in x.
-split.
-ass.
-ass.
-ex_in 1.
-split.
-apply PN2_succ.
-apply PN1_empty_set.
-ex_in (f ⦅ x ⦆).
-split.
-apply function_application_in_range.
-ass.
-split.
-repl H3.
-apply pair_unord_in1.
-ex_in 0.
-split.
-apply PN1_empty_set.
-assert (function_on_into comp (S 0) X).
-split.
-split.
-repl H3.
-apply pair_unord_of_two_pairs_is_function.
-unfold on.
-repl H3.
-apply eq_in.
-intros.
-apply domain_el in H4.
-ex_el H4.
-apply pair_unord_el in H4.
-disj H4.
-apply pair_property in H5.
-both H5.
-repl H4.
-apply n_in_Sn.
-apply S_in.
-(* Proof is broken because of the typo k ∈ S(n) instead of k ∈ n *)
-Admitted.
-
-
-(* To do: switch to Isabelle and/or lean, see how they solve problem with automation 
-& repeate proof again later
-
-*)
-
-
-
-
-
-
-
-
-
-
-
-
-
+(* proof of pairwise compatibility *)
 
 
 
