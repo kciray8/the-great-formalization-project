@@ -36,7 +36,7 @@ exact (u A).
 Defined.
 
 Definition neg (A: Prop) := (A ⇒ ⊥): Prop.
-Notation "¬ A" := (neg A) (at level 50).
+Notation "¬ A" := (neg A) (at level 50, format "¬ A").
 
 Definition neg_in (A: Prop) (u: A -> ⊥) : (¬ A).
 exact u.
@@ -224,7 +224,7 @@ Definition all {T: Type} (P: T->Prop) := forall x: T, P x.
 
 Declare Scope type_scope.
 Notation "'∀' x . p" := (all (fun x => p))
-  (at level 200, x binder).
+  (at level 200, x binder, format "∀ x .  p").
 
 Definition all_in (P: Set->Prop) (u: forall x: Set, P x) : ∀ x. P x.
 unfold all.
@@ -245,7 +245,7 @@ Definition ex {T: Type} (P: T->Prop) := forall A: Prop,  (∀ x. (P x ⇒ A)) �
 Declare Scope type_scope.
 
 Notation "'∃' x . p" := (ex (fun x => p))
-  (at level 200, x binder, right associativity).
+  (at level 200, x binder, right associativity, format "∃ x .  p").
 
 Definition ex_in {T: Type} (P: T->Prop) (u: T) (v: P u): ∃ x . P x.
 unfold ex.

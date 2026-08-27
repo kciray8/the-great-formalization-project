@@ -6,10 +6,10 @@ Notation "a ∈ b" := (In a b)(at level 81, left associativity).
 Notation "a ∉ b" := (¬(a ∈ b))(at level 81, left associativity).
 
 Notation "∀ x :: S . p" := (all (fun x => ((x ∈ S) -> p)))
-  (at level 200, x binder).
+  (at level 200, x binder, format "∀ x :: S .  p").
 
 Notation "∃ x :: S . p" := (ex (fun x => ((x ∈ S) ∧ p)))
-  (at level 200, x binder, right associativity).
+  (at level 200, x binder, right associativity, format "∃ x :: S .  p").
 
 (* not working! *)
 Definition biimpl_el_left {A: Prop} {s: Set} {x: Set} 

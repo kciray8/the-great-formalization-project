@@ -5424,8 +5424,13 @@ apply H1.
 apply H2.
 Qed.
 
-Definition restriction(f X Y A: Set) (H: function_on_into f X Y) (H2: A ⊆ X) :=
+(* bad definition !!!! *)
+Definition restriction_deprecated(f X Y A: Set) (H: function_on_into f X Y) (H2: A ⊆ X) :=
 f ∩ (A × Y).
+
+Definition restriction(f A: Set) := f ∩ (A × (range f)).
+
+Notation "f ↾ A" := (restriction f A)(at level 71, left associativity).
 
 Definition ex_bridge (S: Set): ∃x. x = S.
 ex_in S.
@@ -5724,7 +5729,8 @@ Qed.
 (* Metamath trick to avoid dependency on proof objects which is a source of troubles *)
 Definition appl(f x: Set) := ⋃(relational_image f x).
 
-Notation "f ⦅ x ⦆" := (appl f x)(at level 20, left associativity). 
+Notation "f ⦅ x ⦆" := (appl f x)
+(at level 20, left associativity, format "f ⦅ x ⦆"). 
 
 
 Definition identity_relation_el(p X: Set) (H: p ∈ identity_relation X): ∃x:: X. p = ⟨x, x⟩.
@@ -5902,9 +5908,9 @@ assumption.
 assumption.
 take bijection_is_into f A B HH.
 apply H.
-take ex_bridge (restriction f A B A' H1 H0).
+take ex_bridge (restriction_deprecated f A B A' H1 H0).
 ex_el H2.
-unfold restriction in H2.
+unfold restriction_deprecated in H2.
 ex_in x.
 rename x into g.
 split.
@@ -6801,7 +6807,7 @@ apply eq_refl.
 Qed.
 
 
-Definition zero_lt_nn(n: Set): n ∈ N -> 0 ≤ n.
+Definition zero_le_nn(n: Set): n ∈ N -> 0 ≤ n.
 intro.
 take nn_is_ge_zero n H.
 unfold ge in H0.
@@ -7706,7 +7712,7 @@ split.
 ass.
 intros.
 take subset_N x H.
-take zero_lt_nn x H1.
+take zero_le_nn x H1.
 disj H2.
 right.
 apply H3.
@@ -7946,7 +7952,7 @@ apply all_el_alt.
 ass.
 Qed.
 
-Definition m_Sm_implies_contradiction(m: Set) (m_in_N: m ∈ N): ¬(m = S m).
+Definition m_eq_Sm_implies_contradiction(m: Set) (m_in_N: m ∈ N): ¬(m = S m).
 intro.
 unfold S in H.
 apply eq_el_2 in H.
@@ -8119,15 +8125,420 @@ repl H11.
 ass.
 Qed.
 
-Definition recursion_theorem(f x X: Set) (x_nonempty: nonempty X) (x_in_X: x ∈ X)
-(F: function_on_into f X X):  
-∃1g. function_on_into g N X ∧ g⦅0⦆ = x ∧ 
-∀n::N. (g⦅(S n)⦆) = (f⦅(g⦅n⦆)⦆).
-subset (power_set(N × X)) (fun t => (function t) ∧ t⦅0⦆ = x ∧ 
-∃n::N. t⦅0⦆ = x ∧ ∀k::N. (t⦅(S k)⦆) = (f⦅(t⦅k⦆)⦆)).
+Definition n_in_N_implies_n_subset_N (n: Set) (H: n ∈ N): n ⊆ N.
+apply (induction_applied n).
+ass.
+apply empty_set_is_subset_of_any.
+intros.
+intros.
+apply S_el in H2.
+disj H2.
+take H1 x0 H3.
+ass.
+repl H3.
+ass.
+Qed.
+
+Ltac eq_refl := apply eq_refl.
+
+Definition Sm_in_n_implies_m_in_n (m n: Set) (H:n ∈ N): S m ∈ n -> m ∈ n.
+intro.
+take n_in_Sn m.
+take every_natual_number_is_transitive n H m (S m).
+apply H2.
+split; ass.
+Qed.
+
+Definition n_step_computation(t n x X f: Set) :=
+t⦅0⦆ = x ∧ ∀k::n. (t⦅(S k)⦆) = (f⦅(t⦅k⦆)⦆).
+
+Definition functional_equality(f1 f2 A B: Set) 
+(H1: function_on_into f1 A B) (H2: function_on_into f2 A B): 
+(∀x::A. f1⦅x⦆ = f2⦅x⦆) -> f1 = f2.
+intro.
+apply eq_in.
+intros.
+left H1.
+left H3.
+left H4.
+take H5 x H0.
+unfold ordered_pair in H6.
+el H6.
+repl H6.
+right H3.
+unfold on in H7.
+repl H6 in H0.
+take domain_in f1 a b H0.
+apply eq_el_1 in H7.
+take H7 a H8.
+take H a H9.
+take appl_prop _ _ _ a H1 H9.
+ex_el H11.
+both H11.
+assert (b = y).
+right H4.
+take H11 a b y.
+apply H14.
+split; ass.
+repl H11.
+apply eq_symm in H12.
+take eq_trans _ _ _ H12 H10.
+take appl_prop _ _ _ a H2 H9.
+ex_el H15.
+both H15.
+repl <- H10 in H16.
+take eq_trans _ _ _ H12 H16.
+repl H15.
+ass.
+intros.
+left H2.
+left H3.
+left H4.
+take H5 x H0.
+unfold ordered_pair in H6.
+el H6.
+repl H6.
+right H3.
+unfold on in H7.
+repl H6 in H0.
+take domain_in f2 a b H0.
+apply eq_el_1 in H7.
+take H7 a H8.
+take H a H9.
+take appl_prop _ _ _ a H2 H9.
+ex_el H11.
+both H11.
+assert (b = y).
+right H4.
+take H11 a b y.
+apply H14.
+split; ass.
+repl H11.
+take eq_trans _ _ _ H10 H12.
+take appl_prop _ _ _ a H1 H9.
+ex_el H15.
+both H15.
+repl H10 in H16.
+apply eq_symm in H12.
+take eq_trans _ _ _ H12 H16.
+repl H15.
+ass.
+Qed.
+
+Definition restriction_to_subset_is_still_a_function
+(f X Y A g: Set) (H: function_on_into f X Y) (H2: A ⊆ X) (Hg: g = (f ↾ A)):
+function_on_into g A Y.
+repl Hg.
+unfold restriction.
+split.
+split.
+split.
+intro.
+intro.
+apply intersection_el in H0.
+both H0.
+left H.
+left H0.
+left H4.
+take H5 x H1.
+ass.
+intros.
+el H0.
+apply intersection_el in L, R.
+el L.
+el R.
+fun_prop H.
+take P x y z.
+apply H0.
+split. 
+ass.
+ass.
+apply eq_in.
+intros.
+apply domain_el in H0.
+ex_el H0.
+apply intersection_el in H0.
+both H0.
+apply cartesian_product_el in H3.
+left H3.
+ass.
+intros.
+dom H.
+apply eq_el_2 in P.
+take H2 x H0.
+take P x H1.
+apply domain_el in H3.
+ex_el H3.
+apply (domain_in (f ∩ A × (range f)) x y).
+apply intersection_in.
+ass.
+apply cartesian_product_in.
+ass.
+assert (y ∈ range f) as rrr.
+apply range_in in H3.
+ass.
+ass.
+intros.
+apply range_el in H0.
+ex_el H0.
+apply intersection_el in H0.
+both H0.
+apply cartesian_product_el in H3.
+both H3.
+rename x into y.
+rename x0 into x.
+ran H.
+take P y H4.
+ass.
+Qed.
+
+Definition restriction_el_1 (p f A: Set): p ∈ f ↾ A -> p ∈ f.
+intro.
+unfold restriction in H.
+apply intersection_el in H.
+both H.
+ass.
+Qed.
+
+Definition restriction_appl_same_as_original
+(f X Y A g: Set) (H: function_on_into f X Y) (H2: A ⊆ X) (Hg: g = (f ↾ A)):
+∀x::A. g⦅x⦆ = f⦅x⦆.
+intros.
+take restriction_to_subset_is_still_a_function f X Y A g H H2 Hg.
+take H2 x H0.
+take appl_prop _ _ _ x H H3.
+ex_el H4.
+both H4.
+repl_in_goal H5.
+take appl_prop _ _ _ x H1 asm.
+ex_el H4.
+both H4.
+repl_in_goal H7.
+apply eq_el_1 in Hg.
+take Hg _ H8.
+apply restriction_el_1 in H4.
+fun_prop H.
+take P x y0 y.
+apply H9.
+split; ass.
+Qed.
+
+Definition m_in_n_implies_Sm_in_Sn 
+(m: Set) (m_is_natual_number: m ∈ N) 
+(n: Set) (n_is_natual_number: n ∈ N)
+: (m ∈ n) -> ((S m) ∈ (S n)).
+take m_in_n_equiv_Sm_in_Sn m asm n asm.
+left H.
+apply H0.
+Qed.
+
+Definition m_in_n_n_in_N_implies_m_in_N (m n: Set) (H: m ∈ n) (H2: n ∈ N): m ∈ N.
+generalize dependent m.
+intro.
+apply (induction_applied n).
+ass.
+intro.
+apply any_set_in_empty_set_causes_contradiction in H.
+apply H.
+intros.
+apply S_el in H1.
+disj H1.
+take H0 H3.
+ass.
+repl_in_goal H3.
+ass.
+Qed.
+
+(* https://chatgpt.com/c/6a8d2c77-ea30-83ea-add3-5ba36473a278 *)
+Definition two_n_step_computations_are_equal(n x X Y f: Set) (H: n ∈ N):
+∀t. ∀u. function_on_into t (S n) Y -> function_on_into u (S n) Y ->
+n_step_computation t n x X f -> n_step_computation u n x X f -> t = u.
+unfold n_step_computation.
+apply (induction_applied n).
+ass.
+intros.
+both H2.
+both H3.
+apply (functional_equality _ _ _ _ H0 H1).
+intros.
+apply S_el in H3.
+disj H3.
+apply any_set_in_empty_set_causes_contradiction in H7.
+apply H7.
+repl H7.
+repl_in_goal H4.
+repl_in_goal H2.
+eq_refl.
+intros.
+apply (functional_equality _ _ _ _ H2 H3).
+assert (∀x1. x1 ∈ S x0 -> t⦅x1⦆ = u⦅x1⦆) as first_part.
+intro.
+intro.
+assert (S x0 ⊆ S (S x0)).
+intros.
+apply S_in.
+left.
+ass.
+spawn t' (restriction t (S x0)).
+spawn u' (restriction u (S x0)).
+take restriction_to_subset_is_still_a_function t (S (S x0)) Y (S x0) t'
+asm H7 asm.
+take restriction_to_subset_is_still_a_function u (S (S x0)) Y (S x0) u'
+asm H7 asm.
+take H1 t' u' asm asm.
+both H4.
+both H5.
+assert (0 ∈ S x0).
+apply S_in.
+take exc_thrd (0 = x0).
+disj H5.
+right.
+ass.
+left.
+assert (x0 ≠ 0).
+intro.
+apply eq_symm in H5.
+apply (H16 H5).
+take zero_in_every_natual_number x0 asm asm.
+ass. 
+take restriction_appl_same_as_original _ _ _ (S x0) t' H2 H7 asm.
+take restriction_appl_same_as_original _ _ _ (S x0) u' H3 H7 asm.
+assert ((t'⦅0⦆ = x
+∧ (∀k::x0. t'⦅S k⦆ = f⦅t'⦅k⦆⦆))) as one.
+split.
+take H16 0 asm.
+repl_in_goal H18.
+ass.
+intros.
+assert (x2 ∈ S x0).
+apply S_in.
+left. 
+ass.
+take H14 x2 H19.
+take H18.
+apply m_in_n_implies_Sm_in_Sn in H21.
+take H16 (S x2) asm.
+repl_in_goal H22.
+take H16 (x2) asm.
+repl_in_goal H23.
+ass.
+take H0.
+take m_in_n_n_in_N_implies_m_in_N _ _ H21 H22.
+ass.
+ass.
+assert ((u'⦅0⦆ = x ∧ (∀k::x0. u'⦅S k⦆ = f⦅u'⦅k⦆⦆))) as two.
+split.
+take H17 0 asm.
+repl_in_goal H18.
+ass.
+intros.
+assert (x2 ∈ S x0).
+apply S_in.
+left. 
+ass.
+take H15 x2 H19.
+take H18.
+apply m_in_n_implies_Sm_in_Sn in H21.
+take H17 (S x2) asm.
+repl_in_goal H22.
+take H17 (x2) asm.
+repl_in_goal H23.
+ass.
+take H0.
+take m_in_n_n_in_N_implies_m_in_N _ _ H21 H22.
+ass.
+ass.
+take H12 one two.
+take H17 x1 asm.
+take H16 x1 asm.
+repl_in_goal_backward H19.
+repl_in_goal_backward H20.
+repl H18.
+eq_refl.
+(* split *)
+intros.
+apply S_el in H6.
+disj H6.
+take first_part asm.
+apply H6.
+ass.
+both H4.
+both H5.
+assert (x0 ∈ S x0).
+apply S_in.
+right.
+eq_refl.
+take H8 x0 H5.
+take H9 x0 H5.
+repl H7.
+repl H10.
+repl H11.
+take first_part x0 asm.
+repl H12.
+eq_refl.
+Qed.
+
+Definition function_on_into_in(f X Y: Set): 
+((∀x::f. (∃a. ∃b. x = ⟨ a, b ⟩)) ∧
+(∀x. (∃y. ⟨x,y⟩ ∈ f) -> x ∈ X) ∧ 
+(∀x. x ∈ X -> (∃y. ⟨x,y⟩ ∈ f)) ∧
+(∀x. (∀y. (∀z. (⟨ x, y ⟩ ∈ f ∧ ⟨ x, z ⟩ ∈ f) -> y = z))) ∧
+(∀y. (∃x. ⟨x,y⟩ ∈ f) -> y ∈ Y)) ->
+function_on_into f X Y.
+intro.
+el H.
+split.
+split.
+split.
+apply L0.
+ass.
+unfold on.
+apply eq_in.
+intros.
+apply domain_el in H.
+ex_el H.
+take R2 x.
+apply H0.
+ex_in y.
+ass.
+intros.
+take R1 x.
+take H0 H.
+ex_el H1.
+apply (domain_in f x y).
+ass.
+intros.
+apply range_el in H.
+ex_el H.
+take R x.
+apply H0.
+ex_in x0.
+ass.
+Qed.
+
+Definition S0_el(x: Set): x ∈ S 0 -> x = 0.
+intro.
+apply S_el in H.
+disj H.
+apply any_set_in_empty_set_causes_contradiction in H0.
+apply H0.
+ass.
+Qed.
+
+Definition S0_in(x: Set): x = 0 -> x ∈ S 0.
+intro.
+apply S_in.
+right.
+ass.
+Qed.
+
+Definition recursion_theorem(f x X: Set) (x_in_X: x ∈ X) (F: function_on_into f X X):  
+∃1g. function_on_into g N X ∧ g⦅0⦆ = x ∧ ∀n::N. (g⦅(S n)⦆) = (f⦅(g⦅n⦆)⦆).
+subset (power_set(N × X)) (fun t => t⦅0⦆ = x ∧ 
+∃n::N. (function_on_into t (S n) X) ∧ t⦅0⦆ = x ∧ ∀k::n. (t⦅(S k)⦆) = (f⦅(t⦅k⦆)⦆)).
 rename b into G.
-assert (∀t. t ∈ G -> ((function t) ∧ t ⦅ 0 ⦆ = x ∧ (∃ n :: N . t ⦅ 0 ⦆ = x ∧ (∀ k :: N . t ⦅ S k ⦆ =
-f ⦅ t ⦅ k ⦆ ⦆)))).
+assert (∀t. t ∈ G -> (t ⦅ 0 ⦆ = x ∧ 
+(∃ n :: N . (function_on_into t (S n) X) ∧ t ⦅ 0 ⦆ = x ∧ (∀ k :: n . t ⦅ S k ⦆ = f ⦅ t ⦅ k ⦆ ⦆)))).
 intro.
 take H x0.
 left H0.
@@ -8135,7 +8546,23 @@ intro.
 take H1 H2.
 both H3.
 ass.
-rename H0 into G_prop.
+rename H0 into GP1.
+assert (∀t::G. t ⊆ N × X).
+intros.
+take H x0.
+left H1 H0.
+left H2.
+apply power_set_el in H3.
+ass.
+assert (∀x1. ∀y1. ∀t. ⟨x1,y1⟩ ∈ t -> t ∈ G -> x1 ∈ N).
+intros.
+take H0 t H2.
+take H3 ⟨ x0, y1 ⟩ H1.
+apply cartesian_product_el in H4.
+left H4.
+ass.
+rename H0 into GP2.
+rename H1 into NN.
 split.
 ex_in (⋃ G).
 split.
@@ -8145,10 +8572,730 @@ split.
 apply union_of_compatible_functions_is_a_function.
 (* proof of set_of_functions G*)
 intros.
-take G_prop x0 H0.
+take GP1 x0 H0.
 el H1.
+left L2.
+left H1.
 ass.
 (* proof of pairwise compatibility *)
+intro t.
+intro.
+intro u.
+intro.
+unfold compatible.
+intros.
+apply intersection_el in H2.
+both H2.
+spawn n (domain t).
+spawn m (domain u).
+take H3.
+take H4.
+repl <- H2 in H6.
+repl <- H5 in H7.
+assert (n ∈ N).
+take GP1 t H0.
+right H8.
+clear H8.
+ex_el H9.
+both H9.
+left H10.
+left H9.
+clear H10 H9.
+take H8.
+apply PN2_succ in H9.
+dom H11.
+repl H2.
+repl P.
+ass.
+assert (m ∈ N).
+take GP1 u H1.
+right H9.
+clear H9.
+ex_el H10.
+both H10.
+left H11.
+left H10.
+take H9.
+apply PN2_succ in H13.
+dom H12.
+repl H5.
+repl P.
+ass.
+assert (x0 ∈ N) as x0_in_N.
+apply domain_el in H3.
+ex_el H3.
+take NN x0 y t H3 H0.
+ass.
+(* prepare all I need here *)
+take GP1 t H0.
+both H10.
+ex_el H12.
+both H12.
+both H13.
+both H12.
+clear H15.
+take GP1 u H1.
+both H12.
+ex_el H16.
+both H16.
+both H17.
+both H16.
+clear H19.
+assert (n = S n0).
+dom H13.
+repl_in_goal_backward P.
+ass.
+assert (m = S n1).
+dom H17.
+repl_in_goal_backward P.
+ass.
+rename n1 into m0.
+take trichotomy_for_set_inclusion_only_disj m asm n asm.
+apply disj_comm in H20.
+disj H20.
+(* case n ∈ m*)
+assert (n ⊆ m).
+intros.
+take every_natual_number_is_transitive m asm x1 n.
+apply H22.
+split; ass.
+subset n (fun k => t⦅k⦆ ≠ u⦅k⦆).
+apply DN_el.
+intro.
+assert (nonempty b).
+ex_in x0.
+take H22 x0.
+apply_b H24.
+split.
+ass.
+ass.
+assert (b ⊆ N).
+intros.
+take H22 x1.
+left H26 H25.
+both H27.
+apply n_in_N_implies_n_subset_N in H8.
+take H8 x1.
+apply H27.
+ass.
+take n_lt_is_strictly_well_ordered.
+right H26.
+take H27 b H25 H24.
+ex_el H28.
+rename y into k'.
+unfold least_strict in H28.
+el H28.
+clear R0 L.
+assert (k' ∈ n).
+take H22 k'.
+left H28 R1.
+left H29.
+ass.
+assert (k' ∈ N) as k_in_N.
+take H25.
+take H29 k'.
+apply H30.
+ass.
+assert(k' ≠ 0).
+intro.
+take H22 k'.
+left H30 R1.
+right H31.
+apply H32.
+repl_in_goal H29.
+repl H11.
+repl H15.
+eq_refl.
+take k_in_N.
+apply N_el in H30.
+disj H30.
+apply H29.
+ass.
+ex_el H31.
+both H31.
+rename p into k.
+assert (t⦅k⦆ = u⦅k⦆).
+apply DN_el.
+intro.
+take H22 k.
+right H33.
+assert ((k ∈ n ∧ t⦅k⦆ ≠ u⦅k⦆)).
+split.
+take H28.
+repl <- H32 in H35.
+take H30.
+apply Sm_in_n_implies_m_in_n.
+ass.
+ass.
+ass.
+take H34 H35.
+change (∀x::b. x = k' ∨ k' < x) in R.
+take R k H36.
+disj H37.
+repl <- H32 in H38.
+apply (m_eq_Sm_implies_contradiction k asm).
+ass.
+repl <- H32 in H38.
+assert (k < S k).
+apply lt_n_in.
+ass.
+apply PN2_succ.
+ass.
+apply union_in.
+right.
+apply every_set_is_in_unit_set.
+take n_lt_is_strictly_lineary_ordered.
+left H39.
+left H40.
+right H41.
+assert (S k ∈ N).
+apply PN2_succ.
+ass.
+take H42 k asm (S k) H43 H37.
+apply H44.
+ass.
+
+assert (k ∈ n0) as k_in_n0.
+take H28.
+repl H16 in H33.
+repl <- H32 in H33.
+apply Sm_in_Sn_implies_m_in_Sn in H33.
+apply S_el in H33.
+disj H33.
+ass.
+take H28.
+repl <- H32 in H33.
+repl H16 in H33.
+repl H34 in H33.
+repl H34 in H30. 
+assert (S n0 ∈ N).
+apply PN2_succ.
+ass.
+take no_natural_number_is_member_of_itself (S n0) H35.
+apply (H36 H33).
+ass.
+ass. 
+assert (k ∈ m0) as k_in_m0.
+assert (k' ∈ m) as H33.
+take H20 k' H28.
+ass.
+repl H19 in H33.
+repl <- H32 in H33.
+apply Sm_in_Sn_implies_m_in_Sn in H33.
+apply S_el in H33.
+disj H33.
+ass.
+take H28.
+take H20 k' H33.
+repl H19 in H35.
+repl <- H32 in H35.
+repl H34 in H35.
+take PN2_succ m0 H12.
+take no_natural_number_is_member_of_itself (S m0) asm.
+apply (H37 H35).
+ass.
+ass.
+
+(* problem here*)
+take H14 k asm.
+assert (f⦅t⦅k⦆⦆ = f⦅u⦅k⦆⦆).
+repl H31.
+eq_refl.
+assert (S k ∈ N).
+apply PN2_succ.
+ass.
+take H18 k asm.
+take H22 k'.
+left H37 R1.
+right H38.
+apply H39.
+repl_in_goal_backward H32.
+repl_in_goal H33.
+repl_in_goal H36.
+ass.
+(* case m ∈ n*)
+disj H21.
+assert (m ⊆ n).
+intros.
+take every_natual_number_is_transitive n asm x1 m.
+apply H22.
+split; ass.
+subset m (fun k => t⦅k⦆ ≠ u⦅k⦆).
+apply DN_el.
+intro.
+assert (nonempty b).
+ex_in x0.
+take H22 x0.
+apply_b H24.
+split.
+ass.
+ass.
+assert (b ⊆ N).
+intros.
+take H22 x1.
+left H26 H25.
+both H27.
+apply n_in_N_implies_n_subset_N in H9.
+take H9 x1.
+apply H27.
+ass.
+take n_lt_is_strictly_well_ordered.
+right H26.
+take H27 b H25 H24.
+ex_el H28.
+rename y into k'.
+unfold least_strict in H28.
+el H28.
+clear R0 L.
+assert (k' ∈ m).
+take H22 k'.
+left H28 R1.
+left H29.
+ass.
+assert (k' ∈ N) as k_in_N.
+take H25.
+take H29 k'.
+apply H30.
+ass.
+assert(k' ≠ 0).
+intro.
+take H22 k'.
+left H30 R1.
+right H31.
+apply H32.
+repl_in_goal H29.
+repl H11.
+repl H15.
+eq_refl.
+take k_in_N.
+apply N_el in H30.
+disj H30.
+apply H29.
+ass.
+ex_el H31.
+both H31.
+rename p into k.
+assert (t⦅k⦆ = u⦅k⦆).
+apply DN_el.
+intro.
+take H22 k.
+right H33.
+assert ((k ∈ m ∧ t⦅k⦆ ≠ u⦅k⦆)).
+split.
+take H28.
+repl <- H32 in H35.
+take H30.
+apply Sm_in_n_implies_m_in_n.
+ass.
+ass.
+ass.
+take H34 H35.
+change (∀x::b. x = k' ∨ k' < x) in R.
+take R k H36.
+disj H37.
+repl <- H32 in H38.
+apply (m_eq_Sm_implies_contradiction k asm).
+ass.
+repl <- H32 in H38.
+assert (k < S k).
+apply lt_n_in.
+ass.
+apply PN2_succ.
+ass.
+apply union_in.
+right.
+apply every_set_is_in_unit_set.
+take n_lt_is_strictly_lineary_ordered.
+left H39.
+left H40.
+right H41.
+assert (S k ∈ N).
+apply PN2_succ.
+ass.
+take H42 k asm (S k) H43 H37.
+apply H44.
+ass.
+
+assert (k ∈ m0) as k_in_m0.
+take H28.
+repl H19 in H33.
+repl <- H32 in H33.
+apply Sm_in_Sn_implies_m_in_Sn in H33.
+apply S_el in H33.
+disj H33.
+ass.
+take H28.
+repl <- H32 in H33.
+repl H19 in H33.
+repl H34 in H33.
+repl H34 in H30. 
+assert (S m0 ∈ N).
+apply PN2_succ.
+ass.
+take no_natural_number_is_member_of_itself (S m0) H35.
+apply (H36 H33).
+ass.
+ass. 
+assert (k ∈ n0) as k_in_n0.
+assert (k' ∈ n) as H33.
+take H21 k' H28.
+ass.
+repl H16 in H33.
+repl <- H32 in H33.
+apply Sm_in_Sn_implies_m_in_Sn in H33.
+apply S_el in H33.
+disj H33.
+ass.
+take H28.
+take H21 k' H33.
+repl H16 in H35.
+repl <- H32 in H35.
+repl H34 in H35.
+take PN2_succ n0 H10.
+take no_natural_number_is_member_of_itself (S n0) asm.
+apply (H37 H35).
+ass.
+ass.
+
+take H14 k asm.
+assert (f⦅t⦅k⦆⦆ = f⦅u⦅k⦆⦆).
+repl H31.
+eq_refl.
+assert (S k ∈ N).
+apply PN2_succ.
+ass.
+take H18 k asm.
+take H22 k'.
+left H37 R1.
+right H38.
+apply H39.
+repl_in_goal_backward H32.
+repl_in_goal H33.
+repl_in_goal H36.
+ass.
+(* case n = m*)
+take PN5_induction (fun x0 => x0 ∈ domain t -> x0 ∈ domain u -> t⦅x0⦆ = u⦅x0⦆).
+assert ((0 ∈ domain t -> 0 ∈ domain u -> t⦅0⦆ = u⦅0⦆)).
+intros.
+repl H15.
+repl H11.
+eq_refl.
+assert ((∀x::N. (x ∈ domain t ->
+x ∈ domain u -> t⦅x⦆ = u⦅x⦆) ->
+S x ∈ domain t ->
+S x ∈ domain u -> t⦅S x⦆ = u⦅S x⦆)).
+intros.
+apply Sm_in_n_implies_m_in_n in H25.
+apply Sm_in_n_implies_m_in_n in H26.
+take H24 H25 H26.
+repl <- H2 in H25.
+take H25.
+repl H16 in H28.
+(* inductive hyp *)
+apply union_el in H28.
+disj H28.
+take H14 x1 H29.
+assert (n0 = m0).
+apply eq_symm in H19.
+repl H20 in H19.
+take eq_trans _ _ _ H19 H16.
+apply PN4_injection.
+ass.
+ass.
+apply eq_symm.
+ass.
+take H29.
+repl H30 in H31.
+take H18 x1 H31.
+repl H27 in H28.
+apply eq_symm in H32.
+take eq_trans _ _ _ H28 H32.
+ass.
+apply unit_set_el in H29.
+(* case x1 = n0 *)
+assert (n0 = m0).
+apply eq_symm in H19.
+repl H20 in H19.
+take eq_trans _ _ _ H19 H16.
+apply PN4_injection.
+ass.
+ass.
+apply eq_symm in H28.
+ass. 
+assert (n_step_computation t n0 x X f).
+split.
+ass.
+repl H16.
+ass.
+assert (n_step_computation u n0 x X f).
+split.
+ass.
+repl_in_goal H28.
+ass.
+repl <- H28 in H17.
+take two_n_step_computations_are_equal (n0) x X X f asm t u H13 asm.
+take H32 asm asm.
+repl H33.
+eq_refl.
+repl_in_goal_backward H5.
+ass.
+repl_in_goal_backward H2.
+ass.
+take H21 H22 H23.
+apply H24.
+ass.
+ass.
+ass.
+
+(* on (⋃ G) N *)
+unfold on.
+apply eq_in.
+intros.
+apply domain_el in H0.
+ex_el H0.
+apply big_union_el in H0.
+ex_el H0.
+both H0.
+take GP2 s H2.
+take H0 (⟨ x0, y ⟩) H1.
+apply cartesian_product_el in H3.
+left H3.
+ass.
+intros.
+apply (induction_applied x0).
+ass.
+apply (domain_in _ 0 x).
+apply big_union_in.
+spawn t ({`⟨0, x⟩}).
+ex_in t.
+split.
+repl H1.
+apply every_set_is_in_unit_set.
+take H t.
+apply_b H2.
+split.
+apply power_set_in.
+intros.
+repl H1 in H2.
+apply unit_set_el in H2.
+repl H2.
+apply cartesian_product_in.
+apply PN1_empty_set.
+ass.
+split.
+assert (t⦅0⦆ = x).
+take appl_prop_on t {`0} 0.
+assert (function_on t {`0}).
+split.
+split.
+intros.
+repl H1 in H3.
+apply element_of_unit_set in H3.
+repl H3.
+ex_in 0.
+ex_in x.
+eq_refl.
+intros.
+both H3.
+repl H1 in H4.
+repl H1 in H5.
+apply element_of_unit_set in H4.
+apply element_of_unit_set in H5.
+apply eq_symm in H5.
+take eq_trans _ _ _ H4 H5.
+apply pair_property in H3.
+both H3.
+ass.
+apply eq_in.
+intros.
+apply domain_el in H3.
+ex_el H3.
+repl H1 in H3.
+apply element_of_unit_set in H3.
+apply pair_property in H3.
+both H3.
+repl H4.
+apply every_set_is_in_unit_set.
+intros.
+apply element_of_unit_set in H3.
+repl H3.
+apply (domain_in t 0 x).
+repl H1.
+apply every_set_is_in_unit_set.
+take H2 H3. 
+assert (0 ∈ {`0}).
+apply every_set_is_in_unit_set.
+take H4 H5.
+ex_el H6.
+both H6.
+repl H1 in H8.
+apply element_of_unit_set in H8.
+apply pair_property in H8.
+el H8.
+repl_in_goal_backward R.
+ass.
+apply H2.
+ex_in 0.
+split.
+apply PN1_empty_set.
+split.
+assert (function_on_into t (S 0) X) as t_is_func.
+apply function_on_into_in.
+repeat split.
+intros.
+repl H1 in H2.
+apply unit_set_el in H2.
+ex_in 0.
+ex_in x.
+ass.
+intros.
+ex_el H2.
+apply S0_in.
+repl H1 in H2.
+apply unit_set_el in H2.
+apply pair_property in H2.
+both H2.
+ass.
+intros.
+apply S0_el in H2.
+repl_in_goal H2.
+repl_in_goal H1.
+ex_in x.
+apply unit_set_in.
+eq_refl.
+intros.
+both H2.
+repl H1 in H3.
+repl H1 in H4.
+apply unit_set_el in H3, H4.
+apply pair_property in H3, H4.
+both H3.
+both H4.
+repl H5.
+repl H6.
+eq_refl.
+intros.
+ex_el H2.
+repl H1 in H2.
+apply unit_set_el in H2.
+apply pair_property in H2.
+both H2.
+repl H4.
+ass.
+split.
+ass.
+(assert (0 ∈ S 0)).
+apply S0_in.
+eq_refl.
+take appl_prop t (S 0) X 0 t_is_func H2.
+ex_el H3.
+both H3.
+repl H1 in H5.
+apply unit_set_el in H5.
+apply pair_property in H5.
+both H5.
+repl_in_goal_backward H6.
+ass.
+intro.
+intro.
+apply any_set_in_empty_set_causes_contradiction in H2.
+apply H2.
+intro.
+intros.
+rename x1 into n.
+apply domain_el in H2.
+ex_el H2.
+apply big_union_el in H2.
+ex_el H2.
+both H2.
+rename s into t.
+apply domain_in in H3.
+assert (domain t ∈ N).
+take GP1 t H4.
+both H2.
+ex_el H6.
+both H6.
+el H7.
+dom L0.
+repl_in_goal P.
+apply PN2_succ.
+ass.
+take n_in_m_implies_Sn_in_m_OR_sn_eq_m (domain t) n H2 H3.
+(* key disjoint: S n ∈ domain t ∨ S n = domain t *)
+disj H5.
+apply domain_el in H6.
+ex_el H6.
+apply (domain_in _ (S n) y0).
+apply big_union_in.
+ex_in t.
+split; ass.
+rename H6 into key_H.
+apply (domain_in _ (S n) (f⦅t⦅n⦆⦆)).
+apply big_union_in.
+ex_in (t ∪ {`⟨(S n), f⦅t⦅n⦆⦆⟩}).
+split.
+apply union_in_2.
+apply unit_set_in.
+eq_refl.
+take H (t ∪ {`⟨ S n, f⦅t⦅n⦆⦆ ⟩}).
+apply_b H5.
+repeat split.
+apply power_set_in.
+intros.
+apply union_el in H5.
+disj H5.
+take GP2 t asm.
+take H5 x1 H6.
+ass.
+apply unit_set_el in H6.
+repl H6.
+apply cartesian_product_in.
+apply PN2_succ.
+ass.
+take GP1 t H4.
+both H5.
+ex_el H8.
+el H8.
+assert (n ∈ S n).
+apply S_in.
+right.
+eq_refl.
+assert (function_on_into t (S n) X).
+split.
+split.
+left L1.
+both H8.
+ass.
+unfold on.
+apply eq_symm.
+apply key_H.
+right L1.
+ass.
+assert (t⦅n⦆ ∈ X).
+take appl_prop _ _ _ n H8 H5.
+ex_el H9.
+both H9.
+repl_in_goal H10.
+ran H8.
+take P y0.
+apply H9.
+apply (range_in t y0 n).
+ass.
+take appl_prop _ _ _ (t⦅n⦆) F H9.
+ex_el H10.
+both H10.
+repl_in_goal H11.
+ran F.
+take P y0.
+apply H10.
+apply range_in in H12.
+ass.
+spawn t' (t ∪ {`⟨ S n, f⦅t⦅n⦆⦆ ⟩}).
+repl_in_goal_backward H5.
+(* created new function *)
+
+
+
 
 
 
