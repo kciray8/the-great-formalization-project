@@ -5730,8 +5730,10 @@ Qed.
 Definition appl(f x: Set) := ⋃(relational_image f x).
 
 Notation "f ⦅ x ⦆" := (appl f x)
-(at level 20, left associativity, format "f ⦅ x ⦆"). 
+(at level 20, x at level 200, left associativity, format "f ⦅ x ⦆"). 
 
+Notation "f ⦅ x , y ⦆" := (appl f ⟨x,y⟩)
+(at level 20, x at level 200, y at level 200, left associativity, format "f ⦅ x , y ⦆"). 
 
 Definition identity_relation_el(p X: Set) (H: p ∈ identity_relation X): ∃x:: X. p = ⟨x, x⟩.
 extract_iota (identity_relation X) H.
@@ -6307,7 +6309,7 @@ both iota_prop.
 ass.
 Qed.
 
-(* Active development: August 14, 2026 - _ *)
+(* Active development: August 14, 2026 - August 28, 2026 (15 days) *)
 Definition compatible_deprecated(f g: Set) := ∀x::((domain f) ∩ (domain g)). ∃y. ⟨x,y⟩ ∈ f ∧ ⟨x,y⟩ ∈ g.
 
 Definition set_of_functions(s: Set) := ∀f::s. function f.
@@ -7219,6 +7221,22 @@ range f ⊆ Q.
 right H.
 apply H0.
 Qed.
+
+Definition get_set_of_pairs(f P Q: Set) (H: function_on_into f P Q):
+∀x::f. (∃a. ∃b. x = ⟨ a, b ⟩).
+intros.
+left H.
+left H1.
+left H2.
+take H3 x H0.
+apply H4.
+Qed.
+
+Ltac set_of_pairs H :=
+let HH := fresh "P" in 
+match type of H with
+| function_on_into ?f ?P ?Q=> (pose proof (get_set_of_pairs f P Q H) as HH)
+end.
 
 Ltac dom H :=
 let HH := fresh "P" in 
@@ -8532,6 +8550,34 @@ right.
 ass.
 Qed.
 
+Ltac appl_2 f x :=
+let H := fresh "H" in
+  lazymatch goal with
+  | f_is_func : (function_on_into f ?A ?B) |- _ => 
+      lazymatch goal with
+      | x_in_domain : (x ∈ A) |- _ => 
+          (pose proof appl_prop f A B x f_is_func x_in_domain as H;
+          ex_el H; both H)
+      | _ => fail "Unable to grab x_in_domain"
+      end
+  | _ => fail "Unable to grab f_is_func"
+  end.
+
+Ltac appl f x :=
+let H := fresh "H" in
+let H2 := fresh "H" in
+let H3 := fresh "H" in
+  lazymatch goal with
+  | f_is_func : (function_on_into f ?A ?B) |- _ => 
+      lazymatch goal with
+      | x_in_domain : (x ∈ A) |- _ => 
+          (pose proof appl_prop f A B x f_is_func x_in_domain as H;
+          pose proof _ H  as H2)
+      | _ => fail "Unable to grab x_in_domain"
+      end
+  | _ => fail "Unable to grab f_is_func"
+  end.
+
 Definition recursion_theorem(f x X: Set) (x_in_X: x ∈ X) (F: function_on_into f X X):  
 ∃1g. function_on_into g N X ∧ g⦅0⦆ = x ∧ ∀n::N. (g⦅(S n)⦆) = (f⦅(g⦅n⦆)⦆).
 subset (power_set(N × X)) (fun t => t⦅0⦆ = x ∧ 
@@ -9232,12 +9278,160 @@ split; ass.
 rename H6 into key_H.
 apply (domain_in _ (S n) (f⦅t⦅n⦆⦆)).
 apply big_union_in.
-ex_in (t ∪ {`⟨(S n), f⦅t⦅n⦆⦆⟩}).
+spawn t' (t ∪ {`⟨ S n, f⦅t⦅n⦆⦆ ⟩}).
+rename H5 into TPrime.
+take GP1 t H4.
+both H5.
+rename H6 into t_0.
+ex_el H7.
+el H7.
+assert (n0 = n) as temp.
+dom L1.
+take eq_trans _ _ _ key_H P.
+take PN4_injection n asm n0 asm H5.
+apply eq_symm.
+ass.
+repl temp in L1.
+repl temp in R0.
+clear L temp n0.
+
+clear R.
+rename L1 into t_func.
+rename R0 into t_ind.
+assert (function_on_into t' (S (S n)) X) as TPrime_is_func.
+apply function_on_into_in.
+repeat split.
+intros.
+repl TPrime in H5.
+apply union_el in H5.
+disj H5.
+set_of_pairs t_func.
+apply (P x1 H6).
+ex_in (S n).
+ex_in (f⦅t⦅n⦆⦆).
+apply unit_set_el in H6.
+ass.
+intros.
+ex_el H5.
+repl TPrime in H5.
+apply union_el in H5.
+disj H5.
+dom t_func.
+apply eq_el_1 in P.
+take P x1.
+apply S_in.
+left.
+apply H5.
+apply domain_in in H6.
+ass.
+apply unit_set_el in H6.
+apply pair_property in H6.
+both H6.
+repl_in_goal H5.
+apply S_in.
+right.
+eq_refl.
+intros.
+apply S_el in H5.
+disj H5.
+repl_in_goal TPrime.
+ex_in (t⦅x1⦆).
+apply union_in.
+left.
+appl_2 t x1.
+repl_in_goal H7.
+ass.
+repl_in_goal H6.
+ex_in (f⦅t⦅n⦆⦆).
+repl TPrime.
+apply union_in.
+right.
+apply unit_set_in.
+eq_refl.
+intro.
+intros.
+both H5.
+repl TPrime in H6.
+repl TPrime in H7.
+apply union_el in H6, H7.
+disj H6.
+disj H7.
+fun_prop t_func.
+take P x1 x2 z.
+apply H7.
+split; ass.
+apply unit_set_el in H6.
+apply pair_property in H6.
+both H6.
+dom t_func.
+take P.
+apply eq_el_1 in P.
+take P (x1).
+apply domain_in in H5.
+take H9 H5.
+repl H7 in H10.
+apply PN2_succ in H1.
+take no_natural_number_is_member_of_itself (S n) asm.
+apply (H11 H10).
+disj H7.
+apply unit_set_el in H5.
+apply pair_property in H5.
+both H5.
+apply domain_in in H6.
+dom t_func.
+apply eq_el_1 in P.
+take P x1 H6.
+repl H7 in H5.
+apply PN2_succ in H1.
+take no_natural_number_is_member_of_itself (S n) asm.
+apply (H9 H5).
+apply unit_set_el in H5, H6.
+apply pair_property in H5, H6.
+both H5.
+both H6.
+repl_in_goal H8.
+repl_in_goal H9.
+eq_refl.
+intros.
+ex_el H5.
+repl TPrime in H5.
+apply  union_el in H5.
+disj H5.
+ran t_func.
+apply range_in in H6.
+take P x1 H6.
+ass.
+apply unit_set_el in H6.
+apply pair_property in H6.
+both H6.
+ran F.
+take P x1.
+apply H6.
+assert (n ∈ S n).
+apply S_in.
+right.
+eq_refl.
+appl_2 t n.
+repl <- H10 in H11.
+take H11.
+apply range_in in H11.
+apply domain_in in H9.
+ran t_func.
+take P0 (t⦅n⦆) H11.
+appl_2 f (t⦅n⦆).
+apply range_in in H15.
+repl H7.
+repl <- H14 in H15.
+ass.
+
+ex_in (t').
 split.
+repl_in_goal TPrime.
 apply union_in_2.
 apply unit_set_in.
 eq_refl.
 take H (t ∪ {`⟨ S n, f⦅t⦅n⦆⦆ ⟩}).
+repl_in_goal TPrime.
 apply_b H5.
 repeat split.
 apply power_set_in.
@@ -9290,12 +9484,135 @@ take P y0.
 apply H10.
 apply range_in in H12.
 ass.
-spawn t' (t ∪ {`⟨ S n, f⦅t⦅n⦆⦆ ⟩}).
-repl_in_goal_backward H5.
-(* created new function *)
+Admitted.
+
+Definition appl_in_trick(f x y: Set): 
+(⟨x,y⟩ ∈ f) -> (∀z. ⟨x,z⟩ ∈ f -> z = y) -> f⦅x⦆ = y.
+intros.
+apply eq_in.
+intros.
+apply big_union_el in H1.
+ex_el H1.
+both H1.
+apply relational_image_el in H3.
+take H0 s H3.
+repl_in_goal_backward H1.
+ass.
+intros.
+apply big_union_in.
+ex_in y.
+split.
+ass.
+apply relational_image_in.
+ass.
+Qed.
 
 
+Definition S_set_ex: ∃1f. (function_on_into f N N) ∧
+ ∀n::N. f⦅n⦆ = S n.
+split.
+take subset_of_cartesian_short_exists N N 
+(fun x => fun y => y = S x).
+ex_el H.
+both H.
+ex_in c.
+split.
+apply function_on_into_in.
+repeat split.
+intros.
+take H0 x H.
+apply cartesian_product_el_2 in H2.
+el H2.
+ex_in a.
+ex_in b.
+ass.
+intros.
+ex_el H.
+take H0 (⟨ x, y ⟩) H.
+apply cartesian_product_el in H2.
+both H2.
+ass.
+intros.
+take H1 x H (S x).
+ex_in (S x).
+assert (S x ∈ N).
+apply PN2_succ.
+ass.
+take H2 H3.
+apply_b H4.
+eq_refl.
+intros.
+both H.
+take H0 ⟨ x, y ⟩ H2.
+take H0 ⟨ x, z ⟩ H3.
+apply cartesian_product_el in H, H4.
+both H.
+both H4.
+take H1 x asm y asm.
+left H4 H2.
+take H1 x asm z asm.
+left H9 H3.
+repl H8.
+repl H10.
+eq_refl.
+intros.
+ex_el H.
+take H0 _ H.
+apply cartesian_product_el in H2.
+both H2.
+ass.
+intros.
+take H1 x H (S x).
+assert (S x ∈ N).
+apply PN2_succ.
+ass.
+take H2 H3.
+right H4.
+assert ((⟨ x, S x ⟩ ∈ c)).
+apply H5.
+eq_refl.
+apply appl_in_trick.
+ass.
+intros.
+take H0 (⟨ x, x0 ⟩) H7.
+apply cartesian_product_el in H8.
+both H8.
+take H1 x asm x0 asm.
+left H8.
+apply H11.
+ass.
+intros a b H1 H2.
+both H1.
+both H2.
+take functional_equality _ _ _ _ H H1.
+apply H2.
+intros.
+take H0 x asm.
+take H3 x asm.
+repl H5.
+repl H6.
+eq_refl.
+Qed.
 
+Definition S_set := ι _ S_set_ex.
 
+Definition S_set_func: function_on_into S_set N N.
+extract_iota_from_goal S_set.
+left iota_prop.
+ass.
+Qed.
+
+Definition fm_ex (m: Set) (H: m ∈ N): ∃1fm. function_on_into fm N N ∧ (fm⦅0⦆ = m) 
+∧ ∀n::N. (fm⦅S n ⦆ = S_set⦅fm⦅n⦆⦆).
+take recursion_theorem S_set m N H S_set_func.
+apply H0.
+Qed.
+
+Definition fm(m: Set)(H: m ∈ N)  := ι _ (fm_ex m H).
+
+Definition plus_set_ex: ∃1plus_set. 
+function_on_into plus_set (N×N) N ∧
+∀m::N. ∀n::N. plus_set⦅m,0⦆ = m ∧ (plus_set⦅m,S n⦆ = (S plus_set⦅m,n⦆)).
+Admitted.
 
 
