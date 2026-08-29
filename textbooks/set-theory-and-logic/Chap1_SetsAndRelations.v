@@ -2985,6 +2985,18 @@ clear H H3;
 rename H2 into H
 end.
 
+Ltac ex_el_named H Name :=
+match type of H with
+|∃ x. _ =>
+let H2 := fresh "H2" in
+apply (ex_el _ H);
+intros Name H2;
+move Name before H;
+move H2 before Name;
+clear H;
+rename H2 into H
+end.
+
 Ltac ex_unique_el H :=
 match type of H with
 |∃1 x. _ =>
@@ -7402,15 +7414,18 @@ Qed.
 
 
 
-Definition appl_in_range(f P Q: Set):
-∀F: (function_on_into f P Q). ∀x. ∀xp:x∈P. f⦅x⦆ ∈ range f.
+Definition appl_in_range(f P Q: Set) (H: function_on_into f P Q):
+∀x. ∀xp:x∈P. f⦅x⦆ ∈ Q.
 intro.
 intros.
-apply (range_in f (f ⦅ x0 ⦆) x0).
-take appl_prop f P Q x0 x xp.
-ex_el H.
-both H.
-repl H0.
+ran H.
+take P0 (f⦅x⦆).
+apply H0.
+apply (range_in f (f ⦅ x ⦆) x).
+take appl_prop f P Q x H x0.
+ex_el H1.
+both H1.
+repl H2.
 ass.
 Qed.
 
@@ -8567,12 +8582,19 @@ Ltac appl f x :=
 let H := fresh "H" in
 let H2 := fresh "H" in
 let H3 := fresh "H" in
+let xx := fresh "xx" in
   lazymatch goal with
   | f_is_func : (function_on_into f ?A ?B) |- _ => 
       lazymatch goal with
       | x_in_domain : (x ∈ A) |- _ => 
           (pose proof appl_prop f A B x f_is_func x_in_domain as H;
-          pose proof _ H  as H2)
+          ex_el_named H xx;
+          pose proof conj_el_1 _ _ H as H2;
+          pose proof conj_el_2 _ _ H as H3;
+          clear H;
+          repl <- H2 in H3;
+          clear H2;
+          clear xx)
       | _ => fail "Unable to grab x_in_domain"
       end
   | _ => fail "Unable to grab f_is_func"
@@ -9602,17 +9624,283 @@ left iota_prop.
 ass.
 Qed.
 
-Definition fm_ex (m: Set) (H: m ∈ N): ∃1fm. function_on_into fm N N ∧ (fm⦅0⦆ = m) 
-∧ ∀n::N. (fm⦅S n ⦆ = S_set⦅fm⦅n⦆⦆).
-take recursion_theorem S_set m N H S_set_func.
-apply H0.
+Ltac set_el H :=
+let H2:= fresh "H2" in
+let H3:= fresh "H3" in
+match type of H with
+| ?A ∈ ?B => 
+  lazymatch goal with
+  | H3 : (∀x. x ∈ B ⇔ _) |- _ => 
+  (pose proof H3 A as H2; left H2 H; clear H2)
+  | _ => fail "Unable to find (∀x. x ∈ B ⇔ _) in context"
+  end
+| _ => fail "H type not matched with ?A ∈ ?B"
+end.
+
+Definition S_set_el_appl(x: Set) (x_in_N: x ∈ N): S_set⦅x⦆ = S x.
+extract_iota_from_goal (S_set).
+both iota_prop.
+take H0 x asm.
+ass.
 Qed.
 
-Definition fm(m: Set)(H: m ∈ N)  := ι _ (fm_ex m H).
 
 Definition plus_set_ex: ∃1plus_set. 
 function_on_into plus_set (N×N) N ∧
-∀m::N. ∀n::N. plus_set⦅m,0⦆ = m ∧ (plus_set⦅m,S n⦆ = (S plus_set⦅m,n⦆)).
-Admitted.
+∀m::N. ∀n::N. plus_set⦅m,0⦆ = m ∧ (plus_set⦅m,(S n)⦆ = (S (plus_set⦅m,n⦆))).
+subset ((N×N)×N) (fun triple => ∃m::N. ∃n::N. ∃p::N. triple = ⟨m,n,p⟩∧
+∃fm. function_on_into fm N N ∧ fm⦅0⦆ = m ∧ (∀k::N. (fm⦅(S k)⦆ = S_set⦅fm⦅k⦆⦆)) ∧ fm⦅n⦆ = p).
+rename b into op.
+split.
+assert (function_on_into op (N × N) N) as op_func.
+apply function_on_into_in.
+repeat split.
+intros.
+take H x.
+left H1 H0.
+left H2.
+apply cartesian_product_el_2 in H3.
+el H3.
+ex_in a.
+ex_in b.
+ass.
+intros.
+ex_el H0.
+take H ⟨ x, y ⟩.
+left H1 H0.
+left H2.
+apply cartesian_product_el_2 in H3.
+el H3.
+apply pair_property in L0.
+both L0.
+repl H3.
+ass.
+intros.
+apply cartesian_product_el_2 in H0.
+el H0.
+repl L0.
+rename a into m.
+rename b into n.
+take recursion_theorem S_set m N R0 S_set_func.
+ex_el H0.
+el H0.
+rename g into fm.
+ex_in (fm⦅n⦆).
+take H (⟨ ⟨ m, n ⟩, fm⦅n⦆ ⟩).
+apply_b H0.
+repeat split.
+apply cartesian_product_in.
+apply cartesian_product_in.
+ass.
+ass.
+take appl_in_range _ _ _ L1 n R.
+ass.
+ex_in m.
+split.
+ass.
+ex_in n.
+split.
+ass.
+ex_in (fm⦅n⦆).
+split.
+take appl_in_range _ _ _ L1 n asm.
+ass.
+split.
+eq_refl.
+ex_in fm.
+split.
+split.
+split.
+ass.
+ass.
+ass.
+eq_refl.
+intros x y z H2.
+both H2.
+take H ⟨ x, y ⟩.
+left H2 H0.
+take H ⟨ x, z ⟩.
+left H4 H1.
+el H3.
+el H5.
+assert (n = n0) as n_eq_n0.
+apply pair_property in L9.
+apply pair_property in L3.
+el L3.
+el L9.
+repl L11 in L3.
+apply pair_property in L3.
+el L3.
+ass.
+assert (m = m0) as m_eq_m0.
+apply pair_property in L9.
+apply pair_property in L3.
+el L3.
+el L9.
+repl L11 in L3.
+apply pair_property in L3.
+el L3.
+ass.
+assert (fm = fm0).
+take recursion_theorem S_set m N L0 S_set_func.
+right H3.
+apply H5.
+split.
+split.
+ass.
+ass.
+ass.
+split.
+split.
+ass.
+repl_in_goal m_eq_m0.
+ass.
+ass.
+apply pair_property in L3.
+right L3.
+apply pair_property in L9.
+right L9.
+repl H5.
+repl H6.
+repl_in_goal_backward R3.
+repl_in_goal_backward R0.
+repl_in_goal H3.
+repl_in_goal n_eq_n0.
+eq_refl.
+intros.
+ex_el H0.
+take H ⟨ x0, x ⟩.
+left H1 H0.
+el H2.
+apply cartesian_product_el in L.
+both L.
+ass.
+ex_in op.
+split.
+ass.
+intros.
+split.
+assert (⟨x,0⟩ ∈ N × N).
+apply cartesian_product_in.
+ass.
+apply PN1_empty_set.
+appl op ⟨x,0⟩.
+set_el H5.
+el H4.
+apply pair_property in L3.
+both L3.
+repl_in_goal H4.
+repl_in_goal_backward R0.
+apply pair_property in H3.
+both H3.
+repl_in_goal H6.
+repl_in_goal_backward R1.
+repl_in_goal H7.
+eq_refl.
+assert (⟨x, S n⟩ ∈ (N × N)).
+apply cartesian_product_in.
+ass.
+apply PN2_succ.
+ass.
+assert (⟨x, n⟩ ∈ (N × N)).
+apply cartesian_product_in.
+ass.
+ass.
+appl op ⟨ x, S n ⟩.
+appl op ⟨ x, n ⟩.
+set_el H6.
+el H5.
+set_el H7.
+el H5.
+assert (m = m0) as m_eq_m0.
+apply pair_property in L9.
+apply pair_property in L3.
+el L3.
+el L9.
+apply pair_property in L11.
+apply pair_property in L3.
+both L11.
+both L3.
+repl_in_goal_backward H4.
+repl_in_goal_backward H8.
+eq_refl.
+assert (fm = fm0).
+take recursion_theorem S_set m N L0 S_set_func.
+right H4.
+apply H5.
+split.
+split.
+ass.
+ass.
+ass.
+split.
+split.
+ass.
+repl_in_goal m_eq_m0.
+ass.
+ass.
+apply pair_property in L3.
+both L3.
+apply pair_property in L9.
+both L9.
+repl_in_goal H8.
+repl_in_goal H10.
+repl_in_goal_backward R3.
+repl_in_goal_backward R0.
+repl_in_goal_backward H4.
+take R n asm.
+assert (n0 = S n).
+apply pair_property in H5.
+both H5.
+apply eq_symm.
+ass.
+repl H12.
+assert (n1 = n).
+apply pair_property in H9.
+both H9.
+apply eq_symm.
+ass.
+repl_in_goal H13.
+take appl_in_range _ _ _ L4 x asm.
+take S_set_func.
+appl S_set (fm⦅x⦆).
+take appl_in_range _ _ _ L4 n asm.
+take S_set_el_appl (fm⦅n⦆) asm.
+repl H17 in H11.
+ass.
+intros f g H1 H2.
+el H1.
+el H2.
+take functional_equality f g (N × N) N asm asm.
+apply H0.
+intros.
+apply cartesian_product_el_2 in H1.
+ex_el H1.
+ex_el H1.
+el H1.
+rename a into m.
+rename b into n.
+repl_in_goal L2.
+take R m asm n asm.
+take R0 m asm n asm.
+el H1.
+el H2.
+apply (induction_applied n).
+ass.
+repl_in_goal L1.
+repl_in_goal L3.
+eq_refl.
+intros.
+take R m asm x0 asm.
+take R0 m asm x0 asm.
+el H3.
+el H4.
+repl_in_goal R5.
+repl_in_goal R6.
+repl_in_goal H2.
+eq_refl.
+Qed.
+
+
 
 
