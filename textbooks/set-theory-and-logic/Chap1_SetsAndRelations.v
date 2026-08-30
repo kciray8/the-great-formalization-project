@@ -8730,11 +8730,7 @@ rename H0 into GP2.
 rename H1 into NN.
 split.
 ex_in (⋃ G).
-split.
-split.
-split.
-split.
-apply union_of_compatible_functions_is_a_function.
+assert (set_of_functions G) as set_of_f.
 (* proof of set_of_functions G*)
 intros.
 take GP1 x0 H0.
@@ -8742,6 +8738,7 @@ el H1.
 left L2.
 left H1.
 ass.
+assert (∀f::G. (∀g::G. compatible f g)) as pairwise_compatible_prop.
 (* proof of pairwise compatibility *)
 intro t.
 intro.
@@ -9211,7 +9208,7 @@ apply H24.
 ass.
 ass.
 ass.
-
+assert (on (⋃ G) N) as ug_on_n.
 (* on (⋃ G) N *)
 unfold on.
 apply eq_in.
@@ -9782,6 +9779,133 @@ ass.
 ass.
 ass.
 (* into (⋃ G) X *)
+assert (into (⋃ G) X) as ug_into.
+intros.
+apply range_el in H0.
+ex_el H0.
+apply big_union_el in H0.
+ex_el H0.
+both H0.
+take GP2 s H2.
+take H0 (⟨ x1, x0 ⟩) H1.
+apply cartesian_product_el in H3.
+both H3.
+ass.
+assert (function_on_into (⋃ G) N X) as ug_function_on_into.
+split.
+split.
+apply union_of_compatible_functions_is_a_function.
+ass.
+ass.
+ass.
+ass.
+split.
+split.
+ass.
+dom ug_function_on_into.
+apply eq_el_2 in P.
+take P 0 PN1_empty_set.
+apply domain_el in H0.
+ex_el H0.
+apply big_union_el in H0.
+ex_el H0.
+both H0.
+take GP1 s H2.
+left H0.
+rename s into t.
+take appl_in_from_pair _ _ _ ug_function_on_into 0 x PN1_empty_set.
+apply H4.
+apply big_union_in.
+ex_in t.
+split.
+take PN1_empty_set.
+right H0.
+ex_el H6.
+el H6.
+assert (0 ∈ S n).
+assert (S n ∈ N).
+apply PN2_succ.
+ass.
+take zero_is_less_than_successor_of_any_nn (n) asm.
+apply H7.
+appl t 0.
+repl R in H9.
+ass.
+ass.
+(* ∀n::N. (⋃ G)⦅S n⦆ = f⦅(⋃ G)⦅n⦆⦆ *)
+intros.
+assert ((S x0) ∈ N).
+apply PN2_succ.
+ass.
+appl (⋃ G) (x0).
+appl (⋃ G) (S x0).
+apply big_union_el in H4.
+apply big_union_el in H5.
+el H4.
+el H5.
+rename s into t.
+rename s0 into t'.
+take GP1 t R.
+el H2.
+take GP1 t' R0.
+el H2.
+take L.
+apply domain_in in H2.
+take L0.
+apply domain_in in H3.
+dom L4.
+dom L7.
+repl P in H2.
+repl P0 in H3.
+take appl_in_from_pair _ _ _ L4 x0 ((⋃ G)⦅x0⦆) H2 L.
+take appl_in_from_pair _ _ _ L7 (S x0) ((⋃ G)⦅S x0⦆) H3 L0.
+repl_in_goal_backward H4.
+repl_in_goal_backward H5.
+(* t'⦅S x0⦆ = f⦅t⦅x0⦆⦆ *)
+assert ((S n0) ∈ N).
+apply PN2_succ.
+ass.
+take m_in_n_equiv_Sm_in_Sn (x0) asm (n0) asm.
+right H7.
+take H8 H3.
+assert (x0 ∈ S n0).
+apply S_in.
+left.
+ass.
+take R3 x0 H9.
+repl_in_goal H11.
+assert ((t'⦅x0⦆ = t⦅x0⦆) -> f⦅t'⦅x0⦆⦆ = f⦅t⦅x0⦆⦆).
+intro. 
+repl H12.
+eq_refl.
+apply H12.
+take pairwise_compatible_prop t asm t' asm x0.
+apply eq_symm.
+apply H13.
+repl_in_goal P.
+repl_in_goal P0.
+apply intersection_in.
+ass.
+ass.
+intros g1 g2 H1 H2.
+el H2.
+el H1.
+take functional_equality _ _ _ _ L1 L0.
+apply H0.
+intros.
+apply (induction_applied x0).
+ass.
+repl R0.
+repl R2.
+eq_refl.
+intros.
+take R x1 asm.
+take R1 x1 asm.
+repl_in_goal H4.
+repl_in_goal H5.
+repl_in_goal H3.
+eq_refl.
+Qed.
 
 
 Definition S_set_ex: ∃1f. (function_on_into f N N) ∧
