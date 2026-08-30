@@ -8258,6 +8258,8 @@ repl H15.
 ass.
 Qed.
 
+
+
 Definition restriction_to_subset_is_still_a_function
 (f X Y A g: Set) (H: function_on_into f X Y) (H2: A ⊆ X) (Hg: g = (f ↾ A)):
 function_on_into g A Y.
@@ -8599,6 +8601,101 @@ let xx := fresh "xx" in
       end
   | _ => fail "Unable to grab f_is_func"
   end.
+  
+Definition appl_in_trick(f x y: Set): 
+(⟨x,y⟩ ∈ f) -> (∀z. ⟨x,z⟩ ∈ f -> z = y) -> f⦅x⦆ = y.
+intros.
+apply eq_in.
+intros.
+apply big_union_el in H1.
+ex_el H1.
+both H1.
+apply relational_image_el in H3.
+take H0 s H3.
+repl_in_goal_backward H1.
+ass.
+intros.
+apply big_union_in.
+ex_in y.
+split.
+ass.
+apply relational_image_in.
+ass.
+Qed.
+
+Definition appl_in_from_pair(f P Q: Set) (f_func: function_on_into f P Q)
+(x y: Set) (x_in_P: x ∈ P): ⟨ x, y ⟩ ∈ f -> f⦅x⦆ = y.
+intro.
+appl_2 f x.
+repl H1.
+fun_prop f_func.
+take P0 x y0 y.
+apply H0.
+split.
+all: ass.
+Qed.
+
+Definition zero_eq_Sn_implies_contradiction (n: Set):  ¬(0 = S n).
+intro.
+apply eq_el_2 in H.
+take n_in_Sn n.
+take H n H0.
+apply any_set_in_empty_set_causes_contradiction in H1.
+ass.
+Qed.
+
+Definition S_el_exclusive(n m: Set) (n_in_N: n ∈ N) (m_in_N: m ∈ N)
+(H: n ∈ S m): 
+(n ∈ m ∧ (¬(n = m))) ∨ (n = m ∧ (¬(n ∈ m))).
+apply union_el in H.
+disj H.
+left.
+split.
+ass.
+intro.
+repl H in H0.
+apply (no_natural_number_is_member_of_itself m).
+ass.
+ass.
+apply unit_set_el in H0.
+right.
+split.
+ass.
+intro.
+repl H0 in H.
+apply (no_natural_number_is_member_of_itself m).
+ass.
+ass.
+Qed.
+
+Definition functional_equality_specific(f g A B C D: Set) 
+(H1: function_on_into f A B) (H2: function_on_into g C D): 
+(∀x::(A ∩ C). (∃y. ⟨x,y⟩ ∈ f ∧ ⟨x,y⟩ ∈ g) -> f⦅x⦆ = g⦅x⦆).
+intros.
+ex_el H0.
+both H0.
+apply intersection_el in H.
+both H.
+appl_2 f x.
+appl_2 g x.
+repl_in_goal H6.
+repl_in_goal H8.
+assert (y0 = y).
+fun_prop H1.
+take P x y0 y.
+apply H.
+split; ass.
+assert (y1 = y).
+fun_prop H2.
+take P x y1 y.
+apply H10.
+split;ass.
+repl_in_goal H.
+repl_in_goal H10.
+eq_refl.
+Qed.
+
+
 
 Definition recursion_theorem(f x X: Set) (x_in_X: x ∈ X) (F: function_on_into f X X):  
 ∃1g. function_on_into g N X ∧ g⦅0⦆ = x ∧ ∀n::N. (g⦅(S n)⦆) = (f⦅(g⦅n⦆)⦆).
@@ -9506,28 +9603,185 @@ take P y0.
 apply H10.
 apply range_in in H12.
 ass.
-Admitted.
-
-Definition appl_in_trick(f x y: Set): 
-(⟨x,y⟩ ∈ f) -> (∀z. ⟨x,z⟩ ∈ f -> z = y) -> f⦅x⦆ = y.
-intros.
-apply eq_in.
-intros.
-apply big_union_el in H1.
-ex_el H1.
-both H1.
-apply relational_image_el in H3.
-take H0 s H3.
-repl_in_goal_backward H1.
+assert ((t ∪ {`⟨ S n, f⦅t⦅n⦆⦆ ⟩})⦅0⦆ = x) as t_prime_at_zero.
+assert (0 ∈ S (S n)).
+apply S_in.
+left.
+assert (S n ∈ N).
+apply PN2_succ.
 ass.
-intros.
-apply big_union_in.
-ex_in y.
+take zero_is_less_than_successor_of_any_nn n H1.
+apply H6.
+take appl_prop _ _ _ 0 (TPrime_is_func) H5.
+ex_el H6.
+both H6.
+repl_in_goal_backward TPrime.
+repl_in_goal H7.
+repl TPrime in H8.
+apply union_el in H8.
+disj H8.
+assert (0 ∈ S n).
+assert (S n ∈ N).
+apply PN2_succ.
+ass.
+take zero_is_less_than_successor_of_any_nn n H1.
+apply H9.
+take appl_in_from_pair _ _ _ t_func 0 y0 H8 H6.
+repl_in_goal_backward t_0.
+repl_in_goal_backward H9.
+eq_refl.
+apply unit_set_el in H6.
+apply pair_property in H6.
+both H6.
+take zero_eq_Sn_implies_contradiction n.
+apply (H6 H8).
+(* t_prime_at_zero ends *)
+ass.
+ex_in (S n).
+repl_in_goal_backward TPrime.
+split.
+apply PN2_succ.
+ass.
+split.
 split.
 ass.
-apply relational_image_in.
+assert ((t ∪ {`⟨ S n, f⦅t⦅n⦆⦆ ⟩})⦅0⦆ = x) as t_prime_at_zero.
+assert (0 ∈ S (S n)).
+apply S_in.
+left.
+assert (S n ∈ N).
+apply PN2_succ.
 ass.
-Qed.
+take zero_is_less_than_successor_of_any_nn n H1.
+apply H6.
+take appl_prop _ _ _ 0 (TPrime_is_func) H5.
+ex_el H6.
+both H6.
+repl_in_goal_backward TPrime.
+repl_in_goal H7.
+repl TPrime in H8.
+apply union_el in H8.
+disj H8.
+assert (0 ∈ S n).
+assert (S n ∈ N).
+apply PN2_succ.
+ass.
+take zero_is_less_than_successor_of_any_nn n H1.
+apply H9.
+take appl_in_from_pair _ _ _ t_func 0 y0 H8 H6.
+repl_in_goal_backward t_0.
+repl_in_goal_backward H9.
+eq_refl.
+apply unit_set_el in H6.
+apply pair_property in H6.
+both H6.
+take zero_eq_Sn_implies_contradiction n.
+apply (H6 H8).
+repl_in_goal TPrime.
+ass.
+intros.
+assert (x1 ∈ S (S n)).
+apply S_in.
+left.
+ass.
+appl_2 t' x1.
+repl TPrime in H9.
+apply union_el in H9.
+apply disj_comm in H9.
+disj H9.
+apply unit_set_el in H7.
+apply pair_property in H7.
+both H7.
+repl H9 in H5.
+assert (S n ∈ N).
+apply PN2_succ.
+ass.
+take no_natural_number_is_member_of_itself (S n) asm.
+apply (H11 H5).
+take appl_in_from_pair  _ _ _ t_func x1 y0 H5 H7.
+assert (x1 ∈ N) as x1_in_N.
+assert (S n ∈ N).
+apply PN2_succ.
+ass.
+take every_number_inside_nn_is_nn (S n) H10 x1 H5.
+ass.
+assert (t⦅x1⦆ = t'⦅x1⦆) as t_eq.
+repl_in_goal H8.
+repl_in_goal H9.
+eq_refl.
+
+(* x1 either < n or =  n *)
+apply S_el_exclusive in H5.
+move H5 at bottom.
+disj H5.
+both H10.
+take t_ind x1 asm.
+repl_in_goal_backward t_eq.
+repl_in_goal_backward H10.
+assert (S x1 ∈ S (S n)).
+assert ((S n) ∈ N).
+apply PN2_succ.
+ass.
+take m_in_n_equiv_Sm_in_Sn x1 asm (n) asm.
+left H13.
+take H14 H5.
+apply union_in.
+left.
+ass.
+(*  t'⦅S x1⦆ = t⦅S x1⦆
+must be equal in t
+*)
+assert (S x1 ∈ S n).
+apply union_el in H12.
+disj H12.
+ass.
+take m_in_n_equiv_Sm_in_Sn x1 asm (n) asm.
+left H12.
+apply H14.
+ass.
+eapply functional_equality_specific.
+apply TPrime_is_func.
+apply t_func.
+apply intersection_in.
+ass.
+ass.
+ex_in (f⦅t⦅x1⦆⦆).
+split.
+repl TPrime.
+apply union_in.
+left.
+repl_in_goal_backward H10.
+appl (t) (S x1).
+ass.
+repl_in_goal_backward H10.
+appl (t) (S x1).
+ass.
+both H10.
+repl_in_goal_backward t_eq.
+repl_in_goal H5.
+assert (S n ∈ S (S n)).
+apply S_in.
+right.
+eq_refl.
+appl_2 t' (S n).
+repl_in_goal H13.
+repl TPrime in H14.
+apply union_el in H14.
+disj H14.
+apply domain_in in H12.
+repl <- key_H in H12.
+assert (S n ∈ N).
+apply PN2_succ.
+ass.
+take no_natural_number_is_member_of_itself (S n) asm.
+apply (H15 H12).
+apply unit_set_el in H12.
+apply pair_property in H12.
+both H12.
+ass.
+ass.
+ass.
+(* into (⋃ G) X *)
 
 
 Definition S_set_ex: ∃1f. (function_on_into f N N) ∧
@@ -9648,6 +9902,7 @@ Qed.
 Definition plus_set_ex: ∃1plus_set. 
 function_on_into plus_set (N×N) N ∧
 ∀m::N. ∀n::N. plus_set⦅m,0⦆ = m ∧ (plus_set⦅m,(S n)⦆ = (S (plus_set⦅m,n⦆))).
+Proof.
 subset ((N×N)×N) (fun triple => ∃m::N. ∃n::N. ∃p::N. triple = ⟨m,n,p⟩∧
 ∃fm. function_on_into fm N N ∧ fm⦅0⦆ = m ∧ (∀k::N. (fm⦅(S k)⦆ = S_set⦅fm⦅k⦆⦆)) ∧ fm⦅n⦆ = p).
 rename b into op.
