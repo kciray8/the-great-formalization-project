@@ -1,0 +1,78 @@
+=How to compile=
+
+coqc  -noinit -Q . BASE Logic.v; 
+coqc  -noinit -Q . BASE Sets1.v; 
+coqc  -noinit -Q . BASE Sets2.v
+
+=Queries=
+Search _ is:Axiom in MathLogic.
+Print Assumptions empty_set_el.
+Set Printing Parentheses.
+Disable Notation "∃"(all).
+Disable Notation "⦅"(all).
+
+=Unicode Characters=
+∈
+∨ ∧
+¬
+⊥
+ (¬∃x:S. (¬P(x))) ⇒ ∀y:S. (P(y)).
+(u: A ⇒ B) (v: B ⇒ A) :  A ⇔ B.
+⇔
+ι ε 𝒫
+ꟲ ∅
+∃
+∃≥1'
+∃≤1
+≔
+⊆ ∩ ∪
+≠
+
+
+=Tips=
+VSCode suggestions: Editor: Quick Suggestions, other:off
+
+=Setoids=
+(*Require Import Setoid.*)
+
+Instance Equivalence_eq : Equivalence eq.
+split.
+intros x.
+apply eq_refl.
+intros a b.
+intro. 
+repl_in_goal H.
+apply eq_refl.
+intros a b c.
+intros.
+take eq_trans a b c H H0.
+apply H1.
+Qed.
+
+Add Parametric Relation : Set eq
+reflexivity  proved by eq_refl
+     symmetry     proved by eq_symm
+     transitivity proved by eq_trans
+ as set_eq_rel.
+
+
+ = Function applicatoin troubleshooting =
+Grabbing from the Definition variable doesn't work for now
+Use brackets if several applications are used in a row (f⦅x⦆) = (f⦅y⦆)
+Replacement won't work inside the brackets; functions_preserve_equality must be used
+
+=First Setup=
+
+Ctrl+Shift+P
+Run Preferences: Open Remote Settings (JSON)
+
+"files.exclude": {
+    "**/*.vo": true,
+    "**/*.vok": true,
+    "**/*.vos": true,
+    "**/*.glob": true,
+    "**/.*.aux": true,
+    "**/*Zone.Identifier": true
+  }
+
+  

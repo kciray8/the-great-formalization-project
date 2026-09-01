@@ -1,6 +1,6 @@
 Require Import Ltac.
-From BASE Require Import MathLogic.
-From BASE Require Import Chap7_InformalAxiomaticSetTheory.
+From BASE Require Import Logic.
+From BASE Require Import Sets1.
 
 Ltac take_core a :=
 let H := fresh "H" in
