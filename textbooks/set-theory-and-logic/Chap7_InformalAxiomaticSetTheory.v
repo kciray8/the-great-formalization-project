@@ -3813,11 +3813,11 @@ Defined.
 
 Definition in_or_equal (a b: Set) := (a ∈ b) ∨ (a = b).
 
-Definition transitive_set (A: Set) := ∀x. ∀a. ((x ∈ a) ∧ (a ∈ A)) -> (x ∈ A).
+Definition transitive_set_deprecated (A: Set) := ∀x. ∀a. ((x ∈ a) ∧ (a ∈ A)) -> (x ∈ A).
 
-Definition every_natual_number_is_transitive: ∀n::N. transitive_set n.
-apply (PN5_induction (fun n => transitive_set n)).
-unfold transitive_set.
+Definition every_natual_number_is_transitive: ∀n::N. transitive_set_deprecated n.
+apply (PN5_induction (fun n => transitive_set_deprecated n)).
+unfold transitive_set_deprecated.
 intro.
 intro.
 intro.
@@ -3826,7 +3826,7 @@ pose proof set_in_zero_causes_contradiction H0.
 apply (abs_el _ H1).
 intro n.
 intro.
-unfold transitive_set.
+unfold transitive_set_deprecated.
 intro.
 intro x.
 intro a.

@@ -5768,6 +5768,14 @@ Qed.
 
 Definition id_in(p X: Set):= identity_relation_in p X.
 
+Definition composition_el_alt(g f p: Set): p ∈ g ∘ f ->
+(∃x. ∃z. p = ⟨ x, z ⟩ ∧ (∃y. ⟨ x, y ⟩ ∈ f ∧ ⟨ y, z ⟩ ∈ g)). 
+intros.
+extract_iota (g ∘ f) H.
+take iota_prop p.
+left H0 H.
+ass.
+Qed.
 
 Definition composition_el(g f x z: Set): ⟨x, z⟩ ∈ g ∘ f ->
 ∃y. ⟨x,y⟩ ∈ f ∧ ⟨y,z⟩ ∈ g. 
@@ -6115,176 +6123,6 @@ Definition bijection_with_exchanged_elements_exists(A a k: Set): ∃f.
 (f⦅x⦆ = k) ∨ ((x = k) ∧ (f⦅x⦆ = a)) ∨ ((x ≠ a ∧ x ≠ k) ∧ (f⦅x⦆ = x)))).
 Abort.
 
-Definition there_is_no_one_to_one_function_from_n_back: 
-∀k::N. ¬∃f. function_on_into f (S k) k ∧  (one_to_one f).
-apply PN5_induction.
-intro.
-ex_el H.
-left H.
-left H0.
-right H0.
-both H1.
-unfold on in H4.
-take function_application f (S 0) 0 H0.
-take H1 0.
-take zero_is_in_one.
-take H5 H6.
-ex_el H7.
-unfold into in H2.
-take element_of_function_in_range f (S 0) 0 0 b H0 H7.
-take empty_set_el b.
-apply H9.
-assumption.
-intro.
-intros.
-intro.
-ex_el H1.
-rename f into h.
-both H1.
-rename x into k.
-take function_application _ _ _ H2 (S k).
-assert (∀ x. x ∈ (S x)).
-intro.
-unfold S.
-apply union_in_2.
-apply every_set_is_in_unit_set.
-take H4 (S k).
-take H1 H5.
-ex_el H6.
-rename b into a.
-right H2.
-unfold into in H7.
-take element_of_function_in_range _ _ _ (S k) a H2.
-take H8 H6.
-take PN2_succ k.
-change (a ∈ S k) with (a < S k) in H9.
-take elimitane_S_and_lt a.
-take PN2_succ k H.
-take every_number_inside_nn_is_nn (S k) H12 a H9.
-take H11 H13.
-take H14 k H H9.
-unfold le in H15.
-(* a < k ∨ a = k 
-  Shall be clean and correst up until now
-*)
-disj H15.
-
-take subset_of_cartesian_short_exists (S k) (S k) 
-(fun x => fun y => 
-((x = a) ∧ (y = k)) ∨ ((x = k) ∧ (y = a)) ∨
-((x ≠ a ∧ x ≠ k) ∧ y = x)).
-ex_el H15.
-rename c into sigma.
-both H15.
-assert (bijection sigma (S k) (S k)).
-
-(* 
-ex_in a b c. !!!
-
-super long but possible 
-shall be OKAY
-https://chatgpt.com/c/6a69cbaa-2ffc-83ea-8ed9-2dcd0c5dce63
-
- construction is too long, can resume later...
-proceed with building step by step the requred set
-https://chatgpt.com/c/6a65a87d-9454-83ea-86e1-14961d7df121
-alternative: https://chatgpt.com/c/6a674c05-b640-83ea-9726-f8edaf797339
-*)
-Admitted.
-
-
-
-Definition two_similar_nn_are_equal(a b: Set) 
-(a_in_N: a ∈ N) (b_in_N: b ∈ N) (H: a ~ b): a = b.
-take trichotomy_for_set_inclusion_only_disj a a_in_N b b_in_N.
-take derive_middle_disjunct_when_others_fail (a ∈ b) (a = b) (b ∈ a).
-rename a into m.
-rename b into n.
-take H1 H0.
-assert (n ∉ m -> m ∉ n -> m = n).
-intros.
-take H2 H4 H3.
-apply H5.
-apply H3.
-clear H0 H1 H2.
-intro.
-assert (((S n) ⊆ m)).
-unfold S.
-intro.
-intro.
-apply union_el in H1.
-disj H1.
-take every_natual_number_is_transitive m a_in_N.
-unfold transitive_set in H1.
-take H1 x n.
-apply H4.
-split.
-assumption.
-assumption.
-take element_of_unit_set x n H2.
-repl H1.
-assumption.
-unfold similar in H.
-ex_el H.
-take restricting_bijection_gives_injection f m n (S n) H H1.
-take there_is_no_one_to_one_function_from_n_back n b_in_N.
-apply H4.
-a.
-intro.
-assert (((S m) ⊆ n)).
-unfold S.
-intro.
-intro.
-apply union_el in H5.
-disj H5.
-take every_natual_number_is_transitive n b_in_N.
-unfold transitive_set in H5.
-take H5 x m.
-apply H7.
-split.
-a. a.
-take element_of_unit_set x m H6.
-repl H5.
-a.
-apply similar_symmetric in H.
-unfold similar in H.
-ex_el H.
-take restricting_bijection_gives_injection f n m (S m) H H5.
-take there_is_no_one_to_one_function_from_n_back m a_in_N.
-apply H7.
-a.
-Qed.
-
-Definition card_ex(s: Set)(H: finite s) : ∃1n. n∈N ∧ similar n s.
-split.
-unfold finite in H.
-ex_el H.
-right H.
-ex_in n.
-assumption.
-intros a b.
-intros H1 H2.
-both H1.
-both H2.
-apply similar_symmetric in H4.
-take similar_transitive a s b.
-unfold finite in H.
-take H2 H3.
-take H5 H4.
-ex_el H.
-both H.
-apply two_similar_nn_are_equal.
-assumption.
-assumption.
-assumption.
-Qed.
-
-
-
-Definition card(s: Set)(H: finite s):= ι _ (card_ex s H).
-
-Notation "| A |" := (card A (ltac:(assumption)))(at level 0, A at level 9, only parsing).
-Notation "| A |" := (card A _)(at level 0, A at level 9, only printing).
 
 Definition S_el(A B: Set): A ∈ S B -> A ∈ B ∨ A = B.
 intro.
@@ -8367,6 +8205,15 @@ left H.
 apply H0.
 Qed.
 
+Definition Sm_in_Sn_implies_m_in_n
+(m: Set) (m_is_natual_number: m ∈ N) 
+(n: Set) (n_is_natual_number: n ∈ N)
+: ((S m) ∈ (S n)) -> (m ∈ n).
+take m_in_n_equiv_Sm_in_Sn m asm n asm.
+right H.
+apply H0.
+Qed.
+
 Definition m_in_n_n_in_N_implies_m_in_N (m n: Set) (H: m ∈ n) (H2: n ∈ N): m ∈ N.
 generalize dependent m.
 intro.
@@ -10005,7 +9852,7 @@ Qed.
 Ltac set_el H :=
 let H2:= fresh "H2" in
 let H3:= fresh "H3" in
-match type of H with
+lazymatch type of H with
 | ?A ∈ ?B => 
   lazymatch goal with
   | H3 : (∀x. x ∈ B ⇔ _) |- _ => 
@@ -10280,6 +10127,744 @@ repl_in_goal H2.
 eq_refl.
 Qed.
 
+Definition injection (f A B: Set) :=
+(function_on_into f A B) ∧ (one_to_one f).
+
+Definition composition_of_functions_is_function
+(A B C f g: Set)
+(H : function_on_into f A B)
+(H1 : function_on_into g B C):
+function_on_into (g ∘ f) A C.
+apply function_on_into_in.
+repeat split.
+intros.
+apply composition_el_alt in H0.
+el H0.
+ex_in x0.
+ex_in z.
+ass.
+intros.
+el H0.
+apply composition_el in H0.
+el H0.
+apply domain_in in L.
+dom H.
+repl_in_goal_backward P.
+ass.
+intros.
+appl f x.
+take H4.
+apply range_in in H2.
+ran H.
+take P (f⦅x⦆) H2.
+appl g (f⦅x⦆).
+ex_in (g⦅f⦅x⦆⦆).
+apply composition_in.
+ex_in (f⦅x⦆).
+split; ass.
+intros.
+both H0.
+apply composition_el in H2.
+apply composition_el in H3.
+el H2.
+el H3.
+fun_prop H1.
+assert (y0 = y1).
+fun_prop H.
+take P0 x y0 y1.
+apply H0.
+split; ass.
+repl H0 in L.
+repl H0 in R.
+take P y1 y z.
+apply H2.
+split; ass.
+intros.
+el H0.
+apply composition_el in H0.
+el H0.
+apply range_in in R.
+ran H1.
+take P x R.
+ass.
+Qed.
+
+
+Definition composition_of_injections_is_injection
+(A B C f g: Set)
+(H : injection f A B)
+(H1 : injection g B C):
+injection (g ∘ f) A C .
+unfold injection in H.
+both H.
+unfold injection in H1.
+both H1.
+unfold one_to_one in H2, H3.
+split.
+take composition_of_functions_is_function _ _ _ _ _ H0 H.
+ass.
+intros.
+both H1.
+apply composition_el in H4.
+apply composition_el in H5.
+el H4.
+el H5.
+take H2 x b y0.
+apply H1.
+assert (y0 = y1).
+take H3 y0 y1 y.
+apply H4.
+split.
+ass.
+ass.
+repl H4.
+repl H4 in L.
+split; ass.
+Qed.
+
+Definition ex_falso (P: Prop): ⊥ -> P.
+intro.
+apply H.
+Qed.
+
+Ltac ex_falso := apply ex_falso.
+
+Definition transitive_set (A: Set) := ∀x::A. x ⊆ A.
+
+Definition N_is_transitive: transitive_set (N).
+take every_number_inside_nn_is_nn.
+apply H.
+Qed.
+
+Definition restricting_injection_gives_injection(f P Q A: Set) (A_subset: A ⊆ P):
+(injection f P Q) -> (injection (f↾A) A Q).
+intros.
+split.
+left H.
+spawn g (f↾A).
+take restriction_to_subset_is_still_a_function f P Q A g H0 A_subset H1.
+repl H1 in H2.
+ass.
+right H.
+intros.
+both H1.
+apply restriction_el_1 in H2.
+apply restriction_el_1 in H3.
+take H0 x b y.
+apply H1.
+split; ass.
+Qed.
+
+Definition there_is_no_one_to_one_function_from_n_back: 
+∀k::N. ¬∃h. function_on_into h (S k) k ∧  (one_to_one h).
+apply PN5_induction.
+intro.
+ex_el H.
+left H.
+left H0.
+right H0.
+both H1.
+unfold on in H4.
+take function_application h (S 0) 0 H0.
+take H1 0.
+take zero_is_in_one.
+take H5 H6.
+ex_el H7.
+unfold into in H2.
+take element_of_function_in_range h (S 0) 0 0 b H0 H7.
+take empty_set_el b.
+apply H9.
+assumption.
+intro.
+intros.
+intro.
+ex_el H1.
+both H1.
+rename x into k.
+take function_application _ _ _ H2 (S k).
+assert (∀ x. x ∈ (S x)).
+intro.
+unfold S.
+apply union_in_2.
+apply every_set_is_in_unit_set.
+take H4 (S k).
+take H1 H5.
+ex_el H6.
+rename b into a.
+right H2.
+unfold into in H7.
+take element_of_function_in_range _ _ _ (S k) a H2.
+take H8 H6.
+take PN2_succ k.
+unfold S in H9.
+apply union_el in H9.
+(* a < k ∨ a = k *)
+disj H9. 
+take subset_of_cartesian_short_exists (S k) (S k) 
+(fun x => fun y => 
+((x = a) ∧ (y = k)) ∨ ((x = k) ∧ (y = a)) ∨
+((x ≠ a ∧ x ≠ k) ∧ y = x)).
+ex_el H9.
+el H9.
+rename c into sigma.
+assert (function_on_into sigma (S k) (S k)).
+apply function_on_into_in.
+repeat split.
+intros.
+take L x H9.
+apply cartesian_product_el_2 in H12.
+el H12.
+ex_in a0.
+ex_in b.
+ass.
+intros.
+el H9.
+take L (⟨ x, y ⟩) H9.
+apply cartesian_product_el_2 in H12.
+el H12.
+apply pair_property in L1.
+el L1.
+repl_in_goal L0.
+ass.
+intros.
+assert (a ∈ S k).
+apply S_in.
+left.
+ass.
+assert (k ∈ S k).
+apply S_in.
+right.
+eq_refl.
+assert ({a,k} ⊆ (S k)).
+intros.
+apply pair_unord_el in H14.
+disj H14.
+repl H15.
+ass.
+repl H15.
+ass.
+take exc_thrd (x = a).
+disj H15.
+repl H16.
+ex_in k.
+take R a asm k asm.
+apply_b H15.
+left.
+left.
+split.
+eq_refl.
+eq_refl.
+take exc_thrd (x = k).
+disj H15.
+repl H17.
+ex_in a.
+take R k asm a asm.
+apply_b H15.
+left.
+right.
+split.
+eq_refl.
+eq_refl.
+ex_in x.
+take R x asm x asm.
+apply_b H15.
+right.
+split.
+split.
+ass.
+ass.
+eq_refl.
+intros.
+both H9.
+assert (x ∈ S k) as x_in_Sk.
+take L ⟨ x, y ⟩ H12.
+apply cartesian_product_el_2 in H9.
+el H9.
+apply pair_property in L1.
+both L1.
+repl H9.
+ass.
+assert (y ∈ S k) as y_in_Sk.
+take L ⟨ x, y ⟩ H12.
+apply cartesian_product_el_2 in H9.
+el H9.
+apply pair_property in L1.
+both L1.
+repl H14.
+ass.
+assert (z ∈ S k) as z_in_Sk.
+take L ⟨ x, z ⟩ H13.
+apply cartesian_product_el_2 in H9.
+el H9.
+apply pair_property in L1.
+both L1.
+repl H14.
+ass.
+take R x asm y asm.
+left H9 H12.
+take R x asm z asm.
+left H15 H13.
+clear H9 H15.
+disj H14.
+disj H9.
+both H14.
+disj H16.
+disj H14.
+both H16.
+repl H15.
+repl H17.
+eq_refl.
+both H16.
+repl H17.
+repl H15.
+repl_in_goal_backward H9.
+apply eq_symm.
+ass.
+el H14.
+repl H15.
+repl R0.
+apply (L1 H9).
+both H14.
+disj H16.
+disj H14.
+both H16.
+repl H15.
+repl H17.
+repl_in_goal_backward H9.
+apply eq_symm.
+ass.
+both H16.
+repl H15.
+repl H17.
+eq_refl.
+el H14.
+apply (R1 H9).
+el H9.
+disj H16.
+disj H9.
+both H14.
+apply (L1 H9).
+both H14.
+apply (R1 H9).
+el H9.
+repl R0.
+repl R2.
+eq_refl.
+intros.
+el H9.
+take L ⟨ x0, x ⟩ H9.
+apply cartesian_product_el in H12.
+both H12.
+ass.
+assert (bijection sigma (S k) (S k)).
+left H9.
+right H9.
+el H12.
+assert ((function sigma ∧ on sigma (S k)) ∧ onto sigma (S k)) as sigma_props.
+split.
+split.
+ass.
+ass.
+unfold onto.
+apply eq_in.
+apply H13.
+intros.
+assert (a ∈ S k).
+apply S_in.
+left.
+ass.
+assert (k ∈ S k).
+apply S_in.
+right.
+eq_refl.
+take exc_thrd (x = a).
+disj H16.
+apply (range_in sigma x k).
+take R k asm x asm.
+apply_b H16.
+left.
+right.
+split.
+eq_refl.
+ass.
+take exc_thrd (x = k).
+disj H16.
+apply (range_in sigma x a).
+take R a asm x asm.
+apply_b H16.
+left.
+left.
+split.
+eq_refl.
+ass.
+apply (range_in sigma x x).
+take R x asm x asm.
+apply_b H16.
+right.
+split.
+split; ass.
+eq_refl.
+split.
+ass.
+intros.
+both H12.
+take H14.
+take H15.
+apply domain_in in H12.
+apply domain_in in H16.
+dom H9.
+repl P in H12.
+repl P in H16.
+unfold on in R0.
+el sigma_props.
+unfold onto in R1.
+take H15.
+apply range_in in H17.
+repl R1 in H17.
+take R x asm y asm.
+left H18 H14.
+take R b asm y asm.
+left H20 H15.
+clear H18 H20.
+disj H19.
+disj H18.
+both H19.
+disj H21.
+disj H19.
+both H21.
+repl H18.
+repl H19.
+eq_refl.
+both H21.
+repl H18.
+repl H19.
+repl_in_goal_backward H20.
+apply eq_symm.
+ass.
+both H19.
+both H21.
+repl H20 in H22.
+apply eq_symm in H22.
+apply (H23 H22).
+disj H21.
+disj H18.
+el H19.
+el H20.
+repl L1.
+repl_in_goal_backward R4.
+repl L3.
+ass.
+el H19.
+el H20.
+repl L3.
+ass.
+el H19.
+el H18.
+repl R3 in R4.
+apply eq_symm in R4.
+apply (L4 R4).
+el H18.
+disj H21.
+disj H18.
+el H19.
+repl R3 in R5.
+apply (R4 R5).
+el H19.
+repl R3 in R5.
+apply (L3 R5).
+el H18.
+repl_in_goal_backward R3.
+repl_in_goal_backward R5.
+eq_refl.
+(* bijection sigma (S k) (S k) finished *)
+assert (injection h (S (S k)) (S k)).
+split.
+ass.
+ass.
+assert (injection sigma (S k) (S k)).
+split.
+ass.
+right H12.
+ass.
+take composition_of_injections_is_injection
+_ _ _ _ _ H13 H14.
+apply H0.
+spawn g ((sigma ∘ h)↾(S k)).
+left H15.
+take restriction_to_subset_is_still_a_function _ _ _ (S k) g H17.
+assert (S k ⊆ S (S k)).
+intros.
+apply S_in.
+left.
+ass.
+take H18 H19 H16.
+ex_in g.
+left H20.
+right H20.
+both H21.
+split.
+split.
+split.
+ass.
+ass.
+unfold into in H22.
+intros.
+take H22 x H21.
+apply S_el in H25.
+disj H25.
+ass.
+ex_falso.
+repl H26 in H21.
+clear H26.
+apply range_el in H21.
+ex_el H21.
+assert (sigma⦅k⦆ = a).
+take H6.
+take H5.
+assert (S k ∈ N).
+apply PN2_succ.
+ass.
+take Sm_in_Sn_implies_m_in_n (k) asm (S k) asm H26.
+assert (S a ∈ N).
+apply PN2_succ.
+take N_is_transitive (k) asm a asm.
+ass.
+assert (a ∈ S k).
+apply S_in.
+left.
+ass.
+take R k asm a asm.
+apply (appl_in_from_pair sigma (S k) (S k)).
+ass.
+ass.
+apply_b H31.
+left.
+right.
+split.
+eq_refl.
+eq_refl.
+take H25.
+assert (sigma⦅a⦆ = k).
+take H6.
+take H5.
+assert (S k ∈ N).
+apply PN2_succ.
+ass.
+take Sm_in_Sn_implies_m_in_n (k) asm (S k) asm H28.
+assert (S a ∈ N).
+apply PN2_succ.
+take N_is_transitive (k) asm a asm.
+ass.
+assert (a ∈ S k).
+apply S_in.
+left.
+ass.
+take R a asm k asm.
+apply (appl_in_from_pair sigma (S k) (S k)).
+ass.
+ass.
+apply_b H33.
+left.
+left.
+split.
+eq_refl.
+eq_refl.
+clear x.
+assert ((sigma ∘ h)⦅S k⦆ =  k).
+apply (appl_in_from_pair (sigma ∘ h) (S (S k)) (S k)). 
+ass.
+ass.
+apply composition_in.
+ex_in a.
+split.
+ass.
+assert (a ∈ S k).
+apply S_in.
+left.
+ass.
+appl_2 sigma a.
+repl H27 in H30.
+repl H30.
+ass.
+take H21.
+repl H16 in H29.
+apply restriction_el_1 in H29.
+appl_2 ((sigma ∘ h)) (S k).
+repl H28 in H31.
+repl H31 in H32.
+right H15.
+apply eq_symm in H31.
+take eq_subs (fun y => ⟨ S y, y ⟩ ∈ sigma ∘ h) y k H31 H32.
+take H30 (x0 ) (S k) k.
+assert ((⟨ x0, k ⟩ ∈ sigma ∘ h ∧ ⟨ S k, k ⟩ ∈ sigma ∘ h)).
+split.
+ass.
+ass.
+take H34 H35.
+take H21.
+repl H36 in H37.
+dom H20.
+apply domain_in in H37.
+repl P in H37.
+apply Sm_in_Sn_implies_m_in_n in H37.
+take no_natural_number_is_member_of_itself k asm.
+apply (H38 H37).
+ass.
+ass.
+repl H16.
+right H15.
+take restricting_injection_gives_injection (sigma ∘ h) (S (S k)) (S k)
+(S k) asm asm.
+right H25.
+ass.
+apply unit_set_el in H11.
+repl H11 in H6.
+take appl_in_from_pair _ _ _ H2 _ _ H5 H6.
+(* case 2 - h⦅S k⦆ = k *)
+apply H0.
+ex_in (h ↾ (S k)).
+spawn g (h ↾ (S k)).
+assert (S k ⊆ S (S k)).
+intros.
+apply S_in.
+left.
+ass.
+take restriction_to_subset_is_still_a_function _ _ _ (S k) g H2 H13 H12.
+repl_in_goal_backward H12.
+split.
+split.
+left H14.
+ass.
+right H14.
+intros.
+take H16.
+apply range_el in H16.
+ex_el H16.
+take H15 x H17.
+apply S_el in H18.
+disj H18.
+ass.
+ex_falso.
+repl H19 in H16.
+clear H17 H19.
+repl H12 in H16.
+take H16.
+apply restriction_el_1 in H16.
+take H6.
+take H3 x0 (S k) k.
+assert ( (⟨ x0, k ⟩ ∈ h ∧ ⟨ S k, k ⟩ ∈ h)).
+split; ass.
+take H19 H20.
+take H17.
+repl H21 in H22.
+repl <- H12 in H22.
+apply domain_in in H22.
+dom H14.
+repl P in H22.
+apply Sm_in_Sn_implies_m_in_n in H22.
+apply (no_natural_number_is_member_of_itself k).
+ass.
+ass.
+ass.
+ass.
+assert (injection h (S (S k)) (S k)).
+split; ass.
+take restricting_injection_gives_injection h (S (S k)) (S k) (S k) asm H15.
+right H16.
+repl H12.
+ass.
+Qed.
+
+
+(* https://chatgpt.com/c/6a65a87d-9454-83ea-86e1-14961d7df121 *)
+Definition two_similar_nn_are_equal(a b: Set) 
+(a_in_N: a ∈ N) (b_in_N: b ∈ N) (H: a ~ b): a = b.
+take trichotomy_for_set_inclusion_only_disj a a_in_N b b_in_N.
+take derive_middle_disjunct_when_others_fail (a ∈ b) (a = b) (b ∈ a).
+rename a into m.
+rename b into n.
+take H1 H0.
+assert (n ∉ m -> m ∉ n -> m = n).
+intros.
+take H2 H4 H3.
+apply H5.
+apply H3.
+clear H0 H1 H2.
+intro.
+assert (((S n) ⊆ m)).
+unfold S.
+intro.
+intro.
+apply union_el in H1.
+disj H1.
+take every_natual_number_is_transitive m a_in_N.
+unfold transitive_set in H1.
+take H1 x n.
+apply H4.
+split.
+assumption.
+assumption.
+take element_of_unit_set x n H2.
+repl H1.
+assumption.
+unfold similar in H.
+ex_el H.
+take restricting_bijection_gives_injection f m n (S n) H H1.
+take there_is_no_one_to_one_function_from_n_back n b_in_N.
+apply H4.
+a.
+intro.
+assert (((S m) ⊆ n)).
+unfold S.
+intro.
+intro.
+apply union_el in H5.
+disj H5.
+take every_natual_number_is_transitive n b_in_N.
+unfold transitive_set in H5.
+take H5 x m.
+apply H7.
+split.
+a. a.
+take element_of_unit_set x m H6.
+repl H5.
+a.
+apply similar_symmetric in H.
+unfold similar in H.
+ex_el H.
+take restricting_bijection_gives_injection f n m (S m) H H5.
+take there_is_no_one_to_one_function_from_n_back m a_in_N.
+apply H7.
+a.
+Qed.
+
+Definition card_ex(s: Set)(H: finite s) : ∃1n. n∈N ∧ similar n s.
+split.
+unfold finite in H.
+ex_el H.
+right H.
+ex_in n.
+assumption.
+intros a b.
+intros H1 H2.
+both H1.
+both H2.
+apply similar_symmetric in H4.
+take similar_transitive a s b.
+unfold finite in H.
+take H2 H3.
+take H5 H4.
+ex_el H.
+both H.
+apply two_similar_nn_are_equal.
+assumption.
+assumption.
+assumption.
+Qed.
 
 
 
+Definition card(s: Set)(H: finite s):= ι _ (card_ex s H).
+
+Notation "| A |" := (card A (ltac:(assumption)))(at level 0, A at level 9, only parsing).
+Notation "| A |" := (card A _)(at level 0, A at level 9, only printing).

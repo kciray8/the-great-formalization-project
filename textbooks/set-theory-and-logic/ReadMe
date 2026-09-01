@@ -61,4 +61,18 @@ Grabbing from the Definition variable doesn't work for now
 Use brackets if several applications are used in a row (f⦅x⦆) = (f⦅y⦆)
 Replacement won't work inside the brackets; functions_preserve_equality must be used
 
+=First Setup=
 
+Ctrl+Shift+P
+Run Preferences: Open Remote Settings (JSON)
+
+"files.exclude": {
+    "**/*.vo": true,
+    "**/*.vok": true,
+    "**/*.vos": true,
+    "**/*.glob": true,
+    "**/.*.aux": true,
+    "**/*Zone.Identifier": true
+  }
+
+  
