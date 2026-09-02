@@ -1,6 +1,5 @@
 Require Import Ltac.
-From BASE Require Import Logic.
-From BASE Require Import Sets1.
+From BASE Require Export Sets1.
 
 Ltac take_core a :=
 let H := fresh "H" in
@@ -655,8 +654,6 @@ repl_in_goal H.
 apply subset_refl.
 Qed.
 
-(* Exercise 3.6. Skipped, need lists!!! *)
-
 Theorem exercise_3_7: ∃s. ∀x. x∈s -> x⊆s.
 apply (ex_in _ {∅, {`∅}}).
 intro.
@@ -684,23 +681,6 @@ repl_in_goal H8.
 apply set_in_unord_pair_1.
 Qed.
 
-(* Exercise 3.8. 
-A = {{1, 2}, {3}, 1}
-000 - {}
-001 - {1}
-010 - {{3}}
-011 - {{3}, 1}
-100 - {{1, 2}}
-101 - {{1, 2}, 1}
-110 - {{1, 2}, {3}}
-111 - {{1, 2}, {3}, 1}
----
-Skipped prove this is the only power set. Maybe cardinality needed
-*)
-
-(* Exercise 3.9. 
-An = {∅, {∅}, {{∅}, ∅}, {{{∅}, ∅}, ∅, {∅}} etc... }
-*)
 
 Definition disjoint (A B: Set) := ((A ∩ B) = ∅).
 Definition intersect (A B: Set) := ((A ∩ B) ≠ ∅).
@@ -2483,13 +2463,6 @@ ass.
 ass.
 Qed.
 
-(* skipped equasion theory because I don't have structural induction yet
-https://en.wikipedia.org/wiki/Knaster%E2%80%93Tarski_theorem maybe this
-And good understanding of the relation theory
-Can also do in Coq, but for now it seems not very comfortable
-*)
-
-
 Ltac repl_forward eq_hyp target_hyp :=
 let symmetric_eq := fresh "symmetric_eq" in
 let target_hyp_repl := fresh target_hyp in
@@ -2561,7 +2534,6 @@ repl H1 in H0.
 repl H0 in H.
 apply H.
 Qed.
-(* I skipped the rest 11 examples because seems boring and not very useful*)
 
 (* Exercise 5.3 - a *)
 
@@ -2753,61 +2725,12 @@ left H.
 ass.
 Qed.
 
-(* Exercise 5.3 - d 
-Too complex and boring -- skipped for later
-Should do on paper first?
-Maybe this exercise is with a typo -
-unable to solve it with membership relation
-*)
-Goal ∀A. ∀B. ∀C. ∀X. ∀Y. ∀U. (A ⊆ U) -> (B ⊆ U)-> (C ⊆ U) -> (X ⊆ U) -> (Y ⊆ U) ->
- (((A ∩ B) ∪ (A ∩ C) ∪ ((U - A) ∩ (U - X) ∩ Y))
-    ∩ (U - ((A ∩ (U - B) ∩ C) ∪ ((U - A) ∩ (U - X) ∩ (U - Y)) ∪ ((U - A) ∩ B ∩ Y))))
-  = ((A ∩ B) ∪ ((U - A) ∩ (U - B) ∩ (U - X) ∩ Y)).
-intros A B C X Y U aU bU cU xU yU.
-get (U - B) as uB.
-get (U - A) as uA.
-get (U - C) as uC.
-get (U - X) as uX.
-get (U - Y) as uY.
-repl <- P.
-repl <- P0.
-repl <- P1.
-repl <- P2.
-repl <- P3.
-take intersection_union_distr A B C.
-repl <- H.
-take deMorganNotIntersection ((A ∩ uB) ∩ C)
-((uA ∩ uX) ∩ uY) U.
-clear H.
-take rc_in_subset B U bU.
-repl <- P in H.
-take intersection_in_alt_subset _ _ _ aU H.
-take intersection_in_alt_subset _ _ _ H1 cU.
-take H0 H2.
-clear H0.
-Admitted.
-
-
-(* Exercise 5.4 -- Rework Exercise 4.9 b 
-Skipped symmetric_difference_assoc because seems extremely complicated
-*)
 Lemma symmetric_difference_comm: ∀A. ∀B. (A + B) = (B + A).
 intros A B.
 unfold symmetric_difference.
 take union_comm (A - B) (B - A).
 apply H.
 Qed.
-
-
-Lemma symmetric_difference_assoc: ∀A. ∀B. ∀C.
- ((A + B) + C) = (A + (B + C)).
-intros A B C.
-unfold symmetric_difference.
-Admitted.
-
-(* Exercise 5.5, 5.6 
-Skipped because I need lists
- *)
 
 (* Exercise 5.7 - a*)
 Goal ∀A. ∀B. (A = B) ⇔ ((A + B) = ∅).
@@ -2820,8 +2743,6 @@ intros H.
 apply (eq_in_symm_diff A B).
 apply H.
 Qed.
-
-(* Exercise 5.7 - b - Skipped, need type theory inside sets*)
 
 (* Exercise 5.7 - c *)
 Goal ∀A. ∀B. ((A = B) ∧ (A = ∅)) ⇔ ((A ∪ B) = ∅).
@@ -2872,27 +2793,6 @@ apply abs_el.
 apply (empty_set_el x).
 ass.
 Qed.
-
-(* Exercise 5.7 - d, e - Skipped, need type theory inside sets*)
-
-(* Exercise 5.8 - a b c - TYPOS TYPOS SKIPPED*)
-
-Goal ∀A. ∀B. ∀X. ∀U. (A ⊆ U) -> (B ⊆ U)-> (X ⊆ U) ->
-(U - ((A ∩ X) ∪ (B ∩ (U - X)))) = (((U - A) ∩ X) ∪ ((U - B) ∩ (U - X))).
-intros A B X U aU bU xU.
-eq_in.
-apply rc_el in H.
-both H.
-apply union_el_neg in H1.
-both H1.
-apply intersection_el_neg in H.
-apply intersection_el_neg in H2.
-apply union_in.
-disj H.
-disj H2.
-Admitted.
-
-(* Exercise 5.9 - Skipped, need type theory inside sets*)
 
 Definition relation_from_x_to_y (p X Y: Set):= (relation p) ∧ (p ⊆ (X × Y)).
 Definition relation_from_z_to_z (p Z: Set):= ∃X. ∃Y.
@@ -5262,12 +5162,6 @@ take similar_transitive _ _ _ H H9.
 apply H7.
 Qed.
 
-(* ==== Graph Theory ====*)
-(* 
-started July 26, 2026 
-finished _
-*)
-
 Definition gt (a b: Set) := b ∈ a.
 
 Notation "a > b" := (gt a b)(at level 70):direct_relations.
@@ -5295,8 +5189,8 @@ apply H3.
 Qed.
 
 
-(* {0,1,…, m−1} *)
-Theorem set_from_0_to_n_minus_1_exists (n: Set) : 
+(* NOT NEEDED ! Deprecated, use von neuman definition *)
+Theorem set_from_0_to_n_minus_1_exists_deprecated (n: Set) : 
 ∃1s. (∀e. e∈s ⇔ (e ∈ N ∧ e ≥ 0 ∧ e < n)).
 split.
 take ZF2_subsets (fun e => e ≥ 0 ∧ e < n) N.
@@ -5327,31 +5221,8 @@ assumption.
 apply any_biimpl_set_is_no_more_than_one.
 Qed.
 
-Definition set_from_0_to_n_minus_1(n: Set)
-:= ι _ (set_from_0_to_n_minus_1_exists n).
-
-(* finite sequence *)
-Definition sequence_len_in(s n A: Set) := 
-(function_on_into s (set_from_0_to_n_minus_1 n) A).
-
-Definition sequence_el_ex (s: Set) (n A: Set) (H: sequence_len_in s n A) 
-(x: Set) (x_in_X: x ∈ (set_from_0_to_n_minus_1 n)):
- ∃1y. (y ∈ A) ∧ (pair x y ∈ s).
-unfold sequence_len_in in H.
-take appl_ex_deprecated s (set_from_0_to_n_minus_1 n) A H x x_in_X.
-apply H0.
-Qed.
-
-Definition sequence_el (s: Set) (n A: Set) (H: sequence_len_in s n A) 
-(x: Set) (x_in_X: x ∈ (set_from_0_to_n_minus_1 n)) := 
-ι _ (sequence_el_ex s n A H x x_in_X).
-
-Definition path(p k V E u v: Set) :=
-∃ p_is_seq: (sequence_len_in p (S k) V). (pair 0 u ∈ p) ∧ (pair k u ∈ p) ∧ ∀i. 
-∀ i_in_domain: (i ∈ (set_from_0_to_n_minus_1 (S k))).
-∀ si_in_domain: (S i ∈ (set_from_0_to_n_minus_1 (S k))).
-pair (sequence_el p (S k) V p_is_seq i i_in_domain) (sequence_el p (S k) V p_is_seq (S i) si_in_domain) ∈ E.
-
+Definition set_from_0_to_n_minus_1_deprecated(n: Set)
+:= ι _ (set_from_0_to_n_minus_1_exists_deprecated n).
 
 Definition finite(s: Set) := ∃n::N. similar n s. 
 

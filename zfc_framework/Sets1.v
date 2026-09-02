@@ -1,5 +1,5 @@
 Require Import Ltac.
-From BASE Require Import Logic.
+From BASE Require Export Logic.
 
 Parameter In: Set -> Set -> Prop.
 Notation "a ∈ b" := (In a b)(at level 81, left associativity).
